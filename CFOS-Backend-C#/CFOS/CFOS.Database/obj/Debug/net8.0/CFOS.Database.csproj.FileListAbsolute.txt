@@ -1,0 +1,15 @@
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\bin\Debug\net8.0\CFOS.Database.deps.json
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\bin\Debug\net8.0\CFOS.Database.runtimeconfig.json
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\bin\Debug\net8.0\CFOS.Database.dll
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\bin\Debug\net8.0\CFOS.Database.pdb
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\obj\Debug\net8.0\CFOS.Database.csproj.AssemblyReference.cache
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\obj\Debug\net8.0\CFOS.Database.GeneratedMSBuildEditorConfig.editorconfig
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\obj\Debug\net8.0\CFOS.Database.AssemblyInfoInputs.cache
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\obj\Debug\net8.0\CFOS.Database.AssemblyInfo.cs
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\obj\Debug\net8.0\CFOS.Database.csproj.CoreCompileInputs.cache
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\obj\Debug\net8.0\CFOS.Database.sourcelink.json
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\obj\Debug\net8.0\CFOS.Database.dll
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\obj\Debug\net8.0\refint\CFOS.Database.dll
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\obj\Debug\net8.0\CFOS.Database.pdb
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\obj\Debug\net8.0\CFOS.Database.genruntimeconfig.cache
+D:\Piti\source\repos\CFOS\Canteen-Food-Order-System\CFOS-Backend-C#\CFOS\CFOS.Database\obj\Debug\net8.0\ref\CFOS.Database.dll

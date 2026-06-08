@@ -1,0 +1,6 @@
+@CFOS.WebAPI_HostAddress = http://localhost:5018
+
+GET {{CFOS.WebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Solution/">
+    <File Path="DB.sql" />
+  </Folder>
+  <Project Path="CFOS.Database/CFOS.Database.csproj" />
+  <Project Path="CFOS.Domain/CFOS.Domain.csproj" />
+  <Project Path="CFOS.Shared/CFOS.Shared.csproj" />
+  <Project Path="CFOS.WebAPI/CFOS.WebAPI.csproj" />
+</Solution>

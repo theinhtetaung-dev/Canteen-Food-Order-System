@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "Tbl_Order")
@@ -25,8 +26,8 @@ public class Order {
     @Column(name = "TotalAmount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
-    @Column(name = "OrderStatus", nullable = false, length = 30)
-    private String orderStatus;
+    @Enumerated(EnumType.STRING)
+    private Status orderStatus = Status.PENDING;
 
     @Column(name = "DeleteFlag")
     private Boolean deleteFlag = false;
@@ -36,6 +37,9 @@ public class Order {
 
     @Column(name = "UpdatedAt")
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OrderItem> orderItems = new java.util.ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

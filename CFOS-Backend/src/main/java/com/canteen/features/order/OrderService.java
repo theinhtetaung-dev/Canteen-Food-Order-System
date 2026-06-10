@@ -36,7 +36,8 @@ public class OrderService {
 
     @Transactional
     public OrderResponseModel createOrder(OrderRequestModel request) {
-        Order order = OrderMapper.toEntity(request);
+        Order order = new Order();
+        order.setOrderStatus(Status.PENDING);
 
         User user = userRepository.findByUserName(request.getUserName())
                 .orElseThrow(() -> new RuntimeException("User not found: " + request.getUserName()));
@@ -44,21 +45,22 @@ public class OrderService {
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        for (OrderItem orderItem : order.getOrderItems()) {
-            Integer foodId = orderItem.getFood().getFoodId();
-            Food food = foodRepository.findById(foodId)
-                    .orElseThrow(() -> new RuntimeException("Food not found: " + foodId));
+        for (var itemRequest : request.getOrderItems()) {
+            Food food = foodRepository.findById(itemRequest.getFoodId())
+                    .orElseThrow(() -> new RuntimeException("Food not found: " + itemRequest.getFoodId()));
 
-            if (!Boolean.TRUE.equals(food.getIsAvailable())) {
-                throw new RuntimeException("Food unavailable: " + food.getFoodName());
-            }
 
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
             orderItem.setFood(food);
+            orderItem.setQuantity(itemRequest.getQuantity());
             orderItem.setSnapPrice(food.getPrice());
 
-            BigDecimal subTotal = food.getPrice().multiply(BigDecimal.valueOf(orderItem.getQuantity()));
+            BigDecimal subTotal = orderItem.getSnapPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
             orderItem.setSubTotal(subTotal);
             totalAmount = totalAmount.add(subTotal);
+
+            order.getOrderItems().add(orderItem);
         }
 
         order.setTotalAmount(totalAmount);

@@ -30,8 +30,8 @@ public class Payment {
     @Column(name = "PaymentMethod", length = 50)
     private String paymentMethod;
 
-    @Column(name = "PaymentStatus", length = 30)
-    private String paymentStatus;
+    // @Column(name = "PaymentStatus", length = 30)
+    // private String paymentStatus;
 
     @Column(name = "DeleteFlag")
     private Boolean deleteFlag = false;

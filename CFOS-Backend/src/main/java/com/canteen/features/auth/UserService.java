@@ -18,6 +18,7 @@ import com.canteen.model.Role;
 import com.canteen.model.User;
 import com.canteen.repository.RoleRepository;
 import com.canteen.repository.UserRepository;
+import com.canteen.utils.JwtUtil;
 import com.canteen.utils.PaginationValidator;
 import com.canteen.utils.exceptions.DuplicateResourceException;
 import com.canteen.utils.exceptions.ResourceNotFoundException;
@@ -31,6 +32,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Transactional
@@ -55,6 +57,31 @@ public class UserService {
         response.setUserId(user.getUserId());
         response.setUserName(user.getUserName());
         response.setMessage("User created successfully");
+
+        return response;
+    }
+
+    @Transactional(readOnly = true)
+    public com.canteen.features.auth.dtos.LoginResModel login(com.canteen.features.auth.dtos.LoginReqModel request) {
+        User user = userRepository.findByUserName(request.getUserName())
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid username or password"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            throw new ResourceNotFoundException("Invalid username or password");
+        }
+        
+        if (Boolean.TRUE.equals(user.getDeleteFlag())) {
+            throw new ResourceNotFoundException("Account is disabled");
+        }
+
+        String roleName = user.getRole() != null ? user.getRole().getRoleName() : "USER";
+        String token = jwtUtil.generateToken(user.getUserName(), user.getUserId(), roleName);
+
+        com.canteen.features.auth.dtos.LoginResModel response = new com.canteen.features.auth.dtos.LoginResModel();
+        response.setToken(token);
+        response.setUserId(user.getUserId());
+        response.setUserName(user.getUserName());
+        response.setRole(roleName);
 
         return response;
     }

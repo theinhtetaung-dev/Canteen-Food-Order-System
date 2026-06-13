@@ -5,8 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.canteen.features.auth.dtos.UserRequestModel;
-import com.canteen.features.auth.dtos.UserResponseModel;
+import com.canteen.features.auth.dtos.CreateUserReqModel;
+import com.canteen.features.auth.dtos.CreateUserResModel;
+import com.canteen.features.auth.dtos.UpdateUserReqModel;
+import com.canteen.features.auth.dtos.UpdateUserResModel;
+import com.canteen.features.auth.dtos.UserResModel;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,33 +22,33 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<UserResponseModel> createUser(@Valid @RequestBody UserRequestModel request) {
-        UserResponseModel response = userService.createUser(request);
+    public ResponseEntity<CreateUserResModel> createUser(@Valid @RequestBody CreateUserReqModel request) {
+        CreateUserResModel response = userService.createUser(request);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseModel> getUserById(@PathVariable Integer id) {
-        UserResponseModel response = userService.getUserById(id);
+    public ResponseEntity<UserResModel> getUserById(@PathVariable Integer id) {
+        UserResModel response = userService.getUserById(id);
         return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    public ResponseEntity<Page<UserResponseModel>> getAllUsers(
+    public ResponseEntity<Page<UserResModel>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String direction) {
         
-        Page<UserResponseModel> response = userService.getAllUsers(page, size, sortBy, direction);
+        Page<UserResModel> response = userService.getAllUsers(page, size, sortBy, direction);
         return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseModel> updateUser(
+    public ResponseEntity<UpdateUserResModel> updateUser(
             @PathVariable Integer id,
-            @Valid @RequestBody UserRequestModel request) {
-        UserResponseModel response = userService.updateUser(id, request);
+            @Valid @RequestBody UpdateUserReqModel request) {
+        UpdateUserResModel response = userService.updateUser(id, request);
         return ResponseEntity.ok(response);
     }
 

@@ -3,10 +3,12 @@ package com.canteen.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Tbl_User")
+@SQLRestriction("delete_flag = false")
 @Data
 @NoArgsConstructor
 public class User {

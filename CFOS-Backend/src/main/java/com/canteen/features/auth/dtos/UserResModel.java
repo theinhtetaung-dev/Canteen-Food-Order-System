@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import lombok.Data;
 
 @Data
-public class UserResponseModel {
+public class UserResModel {
     private Integer userId;
     private String roleName;
     private String userName;

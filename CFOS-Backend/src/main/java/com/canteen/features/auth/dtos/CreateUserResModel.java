@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class CreateUserResModel {
-    private Integer userId;
     private String userName;
+    private String fullName;
     private String message;
 }

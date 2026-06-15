@@ -15,8 +15,17 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResModel> login(@Valid @RequestBody LoginReqModel request) {
-        LoginResModel response = userService.login(request);
-        return ResponseEntity.ok(response);
+    public java.util.concurrent.CompletableFuture<ResponseEntity<LoginResModel>> login(@Valid @RequestBody LoginReqModel request) {
+        return java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+            try {
+                LoginResModel response = userService.login(request);
+                return ResponseEntity.ok(response);
+            } catch (Exception e) {
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                }
+                throw new RuntimeException(e);
+            }
+        });
     }
 }

@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.canteen.features.auth.dtos.CreateUserReqModel;
 import com.canteen.features.auth.dtos.CreateUserResModel;
+import com.canteen.features.auth.dtos.LoginReqModel;
+import com.canteen.features.auth.dtos.LoginResModel;
 import com.canteen.features.auth.dtos.UpdateUserReqModel;
 import com.canteen.features.auth.dtos.UpdateUserResModel;
 import com.canteen.features.auth.dtos.UserResModel;
@@ -17,6 +19,7 @@ import com.canteen.features.auth.mapper.UserMapper;
 import com.canteen.model.Role;
 import com.canteen.model.User;
 import com.canteen.repository.RoleRepository;
+import com.canteen.repository.RolePermissionRepository;
 import com.canteen.repository.UserRepository;
 import com.canteen.utils.JwtUtil;
 import com.canteen.utils.PaginationValidator;
@@ -32,6 +35,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final RolePermissionRepository rolePermissionRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -54,15 +58,15 @@ public class UserService {
         userRepository.save(user);
 
         CreateUserResModel response = new CreateUserResModel();
-        response.setUserId(user.getUserId());
         response.setUserName(user.getUserName());
+        response.setFullName(user.getFullName());
         response.setMessage("User created successfully");
 
         return response;
     }
 
     @Transactional(readOnly = true)
-    public com.canteen.features.auth.dtos.LoginResModel login(com.canteen.features.auth.dtos.LoginReqModel request) {
+    public LoginResModel login(LoginReqModel request) {
         User user = userRepository.findByUserName(request.getUserName())
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid username or password"));
 
@@ -75,11 +79,19 @@ public class UserService {
         }
 
         String roleName = user.getRole() != null ? user.getRole().getRoleName() : "USER";
-        String token = jwtUtil.generateToken(user.getUserName(), user.getUserId(), roleName);
+        
+        java.util.List<String> permissions = new java.util.ArrayList<>();
+        if (user.getRole() != null) {
+            permissions = rolePermissionRepository.findByRole_RoleId(user.getRole().getRoleId())
+                .stream()
+                .map(rp -> rp.getPermission().getMenuName() + "_" + rp.getPermission().getActionName())
+                .toList();
+        }
 
-        com.canteen.features.auth.dtos.LoginResModel response = new com.canteen.features.auth.dtos.LoginResModel();
+        String token = jwtUtil.generateToken(user.getUserName(), roleName, permissions);
+
+        LoginResModel response = new LoginResModel();
         response.setToken(token);
-        response.setUserId(user.getUserId());
         response.setUserName(user.getUserName());
         response.setRole(roleName);
 

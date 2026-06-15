@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "Tbl_Food")
 @Data
 @NoArgsConstructor
+
 public class Food {
 
     @Id
@@ -17,17 +18,17 @@ public class Food {
     @Column(name = "FoodID")
     private Integer foodId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "CategoryID", nullable = false)
     private FoodCategory category;
 
-    @Column(name = "FoodName", nullable = false, length = 100)
+    @Column(name = "FoodName", nullable = false)
     private String foodName;
 
-    @Column(name = "Description", columnDefinition = "TEXT")
+    @Column(name = "Description")
     private String description;
 
-    @Column(name = "Price", nullable = false, precision = 10, scale = 2)
+    @Column(name = "Price", nullable = false)
     private BigDecimal price;
 
     @Column(name = "ImageURL")
@@ -36,26 +37,16 @@ public class Food {
     @Column(name = "IsAvailable")
     private Boolean isAvailable = true;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "CreatedBy", nullable = false)
     private User createdBy;
 
     @Column(name = "DeleteFlag")
     private Boolean deleteFlag = false;
 
-    @Column(name = "CreatedAt", updatable = false)
+    @Column(name = "CreatedAt", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "UpdatedAt")
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }

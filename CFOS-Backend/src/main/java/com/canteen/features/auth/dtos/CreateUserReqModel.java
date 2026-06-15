@@ -11,6 +11,7 @@ public class CreateUserReqModel {
     private Integer roleId;
 
     @NotBlank(message = "Username is required")
+    @jakarta.validation.constraints.Pattern(regexp = "^\\S+$", message = "Username cannot contain spaces")
     private String userName;
 
     @NotBlank(message = "Full name is required")
@@ -24,6 +25,5 @@ public class CreateUserReqModel {
 
     private String phoneNumber;
 
-    @NotBlank(message = "Status is required")
     private String status;
 }

@@ -33,11 +33,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             if (jwtUtil.isTokenValid(jwt)) {
                 String username = jwtUtil.extractUsername(jwt);
-                Integer userId = jwtUtil.extractUserId(jwt);
+                java.util.List<String> permissions = jwtUtil.extractPermissions(jwt);
                 String role = jwtUtil.extractRole(jwt);
 
                 request.setAttribute("username", username);
-                request.setAttribute("userId", userId);
+                request.setAttribute("permissions", permissions);
                 request.setAttribute("role", role);
                 request.setAttribute("isAuthenticated", true);
             }

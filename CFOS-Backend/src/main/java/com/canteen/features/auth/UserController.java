@@ -22,9 +22,18 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<CreateUserResModel> createUser(@Valid @RequestBody CreateUserReqModel request) {
-        CreateUserResModel response = userService.createUser(request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    public java.util.concurrent.CompletableFuture<ResponseEntity<CreateUserResModel>> createUser(@Valid @RequestBody CreateUserReqModel request) {
+        return java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+            try {
+                CreateUserResModel response = userService.createUser(request);
+                return new ResponseEntity<>(response, HttpStatus.CREATED);
+            } catch (Exception e) {
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                }
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @GetMapping("/{id}")

@@ -7,7 +7,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.canteen.features.auth.dtos.CreateUserReqModel;
 import com.canteen.features.auth.dtos.CreateUserResModel;
 import com.canteen.features.auth.dtos.LoginReqModel;

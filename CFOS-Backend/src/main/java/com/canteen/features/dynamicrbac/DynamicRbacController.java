@@ -6,6 +6,7 @@ import com.canteen.features.dynamicrbac.dtos.RolePermissionResModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class DynamicRbacController {
     @PostMapping("/roles/{roleId}/permissions")
     public ResponseEntity<String> assignPermissionsToRole(
             @PathVariable Integer roleId,
-            @RequestBody AssignPermissionsReqModel reqModel) {
+            @Valid @RequestBody AssignPermissionsReqModel reqModel) {
         dynamicRbacService.assignPermissionsToRole(roleId, reqModel);
         return ResponseEntity.ok("Permissions assigned successfully.");
     }

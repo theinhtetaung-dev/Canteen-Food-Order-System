@@ -1,9 +1,7 @@
 package com.canteen.features.food;
 
-
 import com.canteen.features.food.dto.FoodRequest;
 import com.canteen.features.food.dto.FoodResponse;
-import com.canteen.features.food.FoodService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,56 +17,52 @@ public class FoodController {
 
     private final FoodService foodService;
 
-    //creating food with images
+    // creating food with images
     @PostMapping
     public ResponseEntity<FoodResponse> createFood(
             @RequestPart("data") FoodRequest dto,
-            @RequestPart(value = "image", required = false) MultipartFile image
-    ) throws IOException {
+            @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
 
         return ResponseEntity.ok(foodService.createFood(dto, image));
     }
 
-    //getting all food
+    // getting all food
     @GetMapping
     public ResponseEntity<List<FoodResponse>> getAllFoods() {
         return ResponseEntity.ok(foodService.getAllFoods());
     }
 
-    //getting food by id
+    // getting food by id
     @GetMapping("/{id}")
     public ResponseEntity<FoodResponse> getFoodById(@PathVariable Integer id) {
         return ResponseEntity.ok(foodService.getFoodById(id));
     }
 
-    //getting by category
+    // getting by category
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<FoodResponse>> getByCategory(
-            @PathVariable Integer categoryId
-    ) {
+            @PathVariable Integer categoryId) {
         return ResponseEntity.ok(foodService.getByCategory(categoryId));
     }
 
-    //searching food
+    // searching food
     @GetMapping("/search")
     public ResponseEntity<List<FoodResponse>> searchFood(
-            @RequestParam String keyword
-    ) {
+            @RequestParam String keyword) {
         return ResponseEntity.ok(foodService.searchFood(keyword));
     }
 
-    //updating
+    // updating
     @PutMapping("/{id}")
     public ResponseEntity<FoodResponse> updateFood(
             @PathVariable Integer id,
             @RequestPart("data") FoodRequest dto,
-            @RequestPart(value = "image", required = false) MultipartFile image
-    ) throws IOException {
+            @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
 
         return ResponseEntity.ok(foodService.updateFood(id, dto, image));
     }
 
-    //deleting
+    // deleting
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteFood(@PathVariable Integer id) {
 

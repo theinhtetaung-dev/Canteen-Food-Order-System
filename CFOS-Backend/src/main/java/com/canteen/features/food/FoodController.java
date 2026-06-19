@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.validation.Valid;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,7 +21,7 @@ public class FoodController {
     // creating food with images
     @PostMapping
     public ResponseEntity<FoodResponse> createFood(
-            @RequestPart("data") FoodRequest dto,
+            @Valid @RequestPart("data") FoodRequest dto,
             @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
 
         return ResponseEntity.ok(foodService.createFood(dto, image));
@@ -56,7 +57,7 @@ public class FoodController {
     @PutMapping("/{id}")
     public ResponseEntity<FoodResponse> updateFood(
             @PathVariable Integer id,
-            @RequestPart("data") FoodRequest dto,
+            @Valid @RequestPart("data") FoodRequest dto,
             @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
 
         return ResponseEntity.ok(foodService.updateFood(id, dto, image));

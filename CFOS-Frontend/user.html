@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFOS - Student Dashboard</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar glass-panel" style="border-radius: 0; margin-bottom: 2rem;">
+        <a href="#" class="navbar-brand">CFOS <span style="color: var(--secondary); font-weight: 300;">Student</span></a>
+        <div class="nav-links">
+            <span id="user-name" style="color: var(--text-muted);"></span>
+            <button id="cart-btn" class="btn" style="background: rgba(255,255,255,0.1); color: white;">Cart (<span id="cart-count">0</span>)</button>
+            <button id="logout-btn" class="btn btn-danger">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="alert-box" class="alert"></div>
+
+        <!-- Menu Section -->
+        <section id="menu-section">
+            <div class="d-flex justify-between align-center mb-4">
+                <h2>Today's Menu</h2>
+                <div class="form-group mb-0" style="width: 300px;">
+                    <input type="text" id="search-input" class="form-control" placeholder="Search foods...">
+                </div>
+            </div>
+
+            <!-- Categories Filters -->
+            <div id="categories-filter" class="d-flex" style="gap: 1rem; margin-bottom: 2rem; overflow-x: auto; padding-bottom: 1rem;">
+                <button class="btn btn-primary cat-btn" data-id="all">All Foods</button>
+                <!-- Loaded dynamically -->
+            </div>
+
+            <div class="grid grid-cols-3" id="food-list">
+                <!-- Loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- Cart Section (Hidden by default) -->
+        <section id="cart-section" style="display: none;">
+            <div class="glass-panel" style="padding: 2rem;">
+                <div class="d-flex justify-between align-center mb-4">
+                    <h2>Your Order</h2>
+                    <button class="btn" style="background: rgba(255,255,255,0.1); color: white;" onclick="toggleCart()">Back to Menu</button>
+                </div>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-items">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-between align-center" style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--surface-border);">
+                    <div style="font-size: 1.5rem; font-weight: 700;">
+                        Total: $<span id="cart-total">0.00</span>
+                    </div>
+                    <button id="place-order-btn" class="btn btn-primary" style="font-size: 1.25rem; padding: 1rem 3rem;">Place Order</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/user.js"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFOS - Admin Dashboard</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar glass-panel" style="border-radius: 0; margin-bottom: 2rem;">
+        <a href="#" class="navbar-brand">CFOS Admin</a>
+        <div class="nav-links">
+            <span id="admin-name" style="color: var(--text-muted);"></span>
+            <button id="logout-btn" class="btn btn-danger">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Dashboard Tabs -->
+        <div class="d-flex" style="gap: 1rem; margin-bottom: 2rem;">
+            <button class="btn btn-primary" onclick="showTab('food')">Manage Food</button>
+            <button class="btn" style="background: var(--surface); color: white;" onclick="showTab('orders')">Manage Orders</button>
+        </div>
+
+        <div id="alert-box" class="alert"></div>
+
+        <!-- Food Management Section -->
+        <section id="food-section">
+            <div class="glass-panel" style="padding: 2rem; margin-bottom: 2rem;">
+                <h3>Add New Food</h3>
+                <form id="add-food-form" class="grid grid-cols-3 align-center">
+                    <div class="form-group mb-0">
+                        <input type="text" id="foodName" class="form-control" placeholder="Food Name" required>
+                    </div>
+                    <div class="form-group mb-0">
+                        <input type="number" id="foodPrice" step="0.01" class="form-control" placeholder="Price ($)" required>
+                    </div>
+                    <div class="form-group mb-0 d-flex" style="gap: 1rem;">
+                        <select id="foodCategory" class="form-control" required>
+                            <option value="">Select Category</option>
+                            <!-- Dynamically loaded -->
+                        </select>
+                        <button type="submit" class="btn btn-primary">Add Food</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="glass-panel" style="padding: 2rem;">
+                <h3 class="mb-4">Current Menu</h3>
+                <div class="grid grid-cols-3" id="food-list">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Order Management Section (Hidden by default) -->
+        <section id="orders-section" style="display: none;">
+            <div class="glass-panel" style="padding: 2rem;">
+                <h3 class="mb-4">Recent Orders</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>User</th>
+                                <th>Total Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-list">
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/admin.js"></script>
+</body>
+</html>

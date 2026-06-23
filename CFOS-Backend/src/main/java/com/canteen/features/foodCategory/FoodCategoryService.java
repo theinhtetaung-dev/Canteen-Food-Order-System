@@ -2,6 +2,9 @@ package com.canteen.features.foodCategory;
 
 import com.canteen.features.foodCategory.dto.FoodCategoryRequest;
 import com.canteen.features.foodCategory.dto.FoodCategoryResponse;
+import com.canteen.features.foodCategory.exception.CategoryAlreadyExistsException;
+import com.canteen.features.foodCategory.exception.CategoryNotFoundException;
+import com.canteen.features.foodCategory.exception.UserNotFoundException;
 import com.canteen.features.foodCategory.mapper.FoodCategoryMapper;
 import com.canteen.model.FoodCategory;
 import com.canteen.model.User;
@@ -28,13 +31,14 @@ public class FoodCategoryService {
                 .existsByCategoryNameIgnoreCaseAndDeleteFlagFalse(request.getCategoryName());
 
         if (exists) {
-            throw new RuntimeException("Category already exists");
+            throw new CategoryAlreadyExistsException(
+                    request.getCategoryName());
         }
 
         //  find user
-        User user = userRepository.findById(request.getCreatedBy())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
+        User user = userRepository.findByUserName(request.getUserName())
+                .orElseThrow(() ->
+                        new UserNotFoundException(request.getUserName()));
         //  map DTO -> Entity
         FoodCategory category = foodCategoryMapper.toEntity(request, user);
 
@@ -49,7 +53,8 @@ public class FoodCategoryService {
     public FoodCategoryResponse update(Integer id, FoodCategoryRequest request) {
 
         FoodCategory category = foodCategoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() ->
+                        new CategoryNotFoundException(id));
 
         // update fields only
         foodCategoryMapper.updateEntity(request, category);
@@ -72,7 +77,8 @@ public class FoodCategoryService {
     public FoodCategoryResponse getById(Integer id) {
 
         FoodCategory category = foodCategoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() ->
+                        new CategoryNotFoundException(id));
 
         return foodCategoryMapper.toDTO(category);
     }
@@ -81,7 +87,8 @@ public class FoodCategoryService {
     public void delete(Integer id) {
 
         FoodCategory category = foodCategoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() ->
+                        new CategoryNotFoundException(id));
 
         category.setDeleteFlag(true);
 

@@ -40,5 +40,24 @@ public class FileStorageService {
 
         // 5. Return URL (stored in DB)
         return "/food-images/" + fileName;
+
+    }
+
+    // Hard Deleting
+    public void deleteImage(String imageUrl) {
+
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return;
+        }
+        try {
+            String fileName = Paths.get(imageUrl).getFileName().toString();
+
+            Path filePath = Paths.get(uploadDir).resolve(fileName);
+
+            Files.deleteIfExists(filePath);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete image: " + imageUrl);
+        }
     }
 }

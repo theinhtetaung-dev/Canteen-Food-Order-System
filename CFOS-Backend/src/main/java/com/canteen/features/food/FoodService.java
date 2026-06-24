@@ -43,9 +43,9 @@ public class FoodService {
                 .orElseThrow(() ->
                         new FoodCategoryNotFoundException(dto.getCategoryId()));
 
-        User user = userRepository.findByUserName(dto.getUserName())
+        User user = userRepository.findById(dto.getCreatedBy())
                 .orElseThrow(() ->
-                        new UserNotFoundException(dto.getUserName()));
+                        new UserNotFoundException(dto.getCreatedBy()));
 
         food.setCategory(category);
         food.setCreatedBy(user);

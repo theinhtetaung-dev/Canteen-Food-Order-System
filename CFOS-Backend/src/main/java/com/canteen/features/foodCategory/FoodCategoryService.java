@@ -36,9 +36,9 @@ public class FoodCategoryService {
         }
 
         //  find user
-        User user = userRepository.findByUserName(request.getUserName())
+        User user = userRepository.findById(request.getCreatedBy())
                 .orElseThrow(() ->
-                        new UserNotFoundException(request.getUserName()));
+                        new UserNotFoundException(request.getCreatedBy()));
         //  map DTO -> Entity
         FoodCategory category = foodCategoryMapper.toEntity(request, user);
 

@@ -3,7 +3,6 @@ package com.canteen.features.foodCategory;
 
 import com.canteen.features.foodCategory.dto.FoodCategoryRequest;
 import com.canteen.features.foodCategory.dto.FoodCategoryResponse;
-import com.canteen.features.foodCategory.FoodCategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

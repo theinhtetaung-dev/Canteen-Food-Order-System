@@ -10,7 +10,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(title = "Canteen API", version = "v1"),
-        security = @SecurityRequirement(name = "bearerAuth")
+        security = @SecurityRequirement(name = "bearerAuth"),
+        servers = @io.swagger.v3.oas.annotations.servers.Server(url = "/", description = "Default Server URL")
 )
 @SecurityScheme(
         name = "bearerAuth",

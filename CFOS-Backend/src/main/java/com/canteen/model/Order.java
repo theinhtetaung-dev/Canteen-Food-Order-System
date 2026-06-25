@@ -1,17 +1,21 @@
 package com.canteen.model;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "Tbl_Order")
 @Data
 @NoArgsConstructor
+@SQLRestriction("delete_flag = 0") 
 public class Order {
 
     @Id
@@ -39,7 +43,8 @@ public class Order {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<OrderItem> orderItems = new java.util.ArrayList<>();
+    @BatchSize(size = 50)
+    private List<OrderItem> orderItems = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

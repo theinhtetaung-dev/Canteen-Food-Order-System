@@ -16,5 +16,6 @@ public class PaymentRequestModel {
     @Positive(message = "Amount must be positive")
     private BigDecimal amount;
 
+    @NotNull(message = "Payment method is required")
     private String paymentMethod;
 }

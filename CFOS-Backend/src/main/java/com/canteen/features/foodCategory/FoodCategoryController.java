@@ -3,10 +3,10 @@ package com.canteen.features.foodCategory;
 
 import com.canteen.features.foodCategory.dto.FoodCategoryRequest;
 import com.canteen.features.foodCategory.dto.FoodCategoryResponse;
-import com.canteen.features.foodCategory.FoodCategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class FoodCategoryController {
     // CREATE
     @PostMapping
     public ResponseEntity<FoodCategoryResponse> create(
-            @RequestBody FoodCategoryRequest request) {
+            @Valid @RequestBody FoodCategoryRequest request) {
 
         return ResponseEntity.ok(foodCategoryService.create(request));
     }
@@ -29,7 +29,7 @@ public class FoodCategoryController {
     @PutMapping("/{id}")
     public ResponseEntity<FoodCategoryResponse> update(
             @PathVariable Integer id,
-            @RequestBody FoodCategoryRequest request) {
+            @Valid @RequestBody FoodCategoryRequest request) {
 
         return ResponseEntity.ok(foodCategoryService.update(id, request));
     }

@@ -1,6 +1,10 @@
 package com.canteen.features.food;
 
 
+import com.canteen.features.food.exception.FoodCategoryNotFoundException;
+import com.canteen.features.food.exception.FoodDeletedException;
+import com.canteen.features.food.exception.FoodNotFoundException;
+import com.canteen.features.foodCategory.exception.UserNotFoundException;
 import com.canteen.model.Food;
 import com.canteen.model.FoodCategory;
 import com.canteen.model.User;
@@ -36,10 +40,12 @@ public class FoodService {
 
         // 2. Load relationships
         FoodCategory category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+                .orElseThrow(() ->
+                        new FoodCategoryNotFoundException(dto.getCategoryId()));
 
         User user = userRepository.findById(dto.getCreatedBy())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() ->
+                        new UserNotFoundException(dto.getCreatedBy()));
 
         food.setCategory(category);
         food.setCreatedBy(user);
@@ -90,12 +96,8 @@ public class FoodService {
     public FoodResponse getFoodById(Integer id) {
 
         Food food = foodRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Food not found"));
-
-        if (food.getDeleteFlag()) {
-            throw new RuntimeException("Food is deleted");
-        }
-
+                .orElseThrow(() ->
+                        new FoodNotFoundException(id));
         return foodMapper.toDTO(food);
     }
 
@@ -104,7 +106,8 @@ public class FoodService {
             throws IOException {
 
         Food food = foodRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Food not found"));
+                .orElseThrow(() ->
+                        new FoodNotFoundException(id));
 
         // update fields
         food.setFoodName(dto.getFoodName());
@@ -115,7 +118,8 @@ public class FoodService {
         // update category if changed
         if (dto.getCategoryId() != null) {
             FoodCategory category = categoryRepository.findById(dto.getCategoryId())
-                    .orElseThrow(() -> new RuntimeException("Category not found"));
+                    .orElseThrow(() ->
+                            new FoodCategoryNotFoundException(dto.getCategoryId()));
 
             food.setCategory(category);
         }
@@ -135,10 +139,12 @@ public class FoodService {
     public void deleteFood(Integer id) {
 
         Food food = foodRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Food not found"));
 
-        food.setDeleteFlag(true);
+                .orElseThrow(() -> new FoodNotFoundException(id));
 
-        foodRepository.save(food);
+        fileStorageService.deleteImage(food.getImageUrl());
+
+        foodRepository.delete(food);
+
     }
 }

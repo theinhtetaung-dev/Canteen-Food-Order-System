@@ -1,24 +1,51 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { GlobalLayout } from './components/layout/GlobalLayout';
-import { Dashboard } from './pages/Dashboard';
-import { DataTable } from './pages/DataTable';
-import { Settings } from './pages/Settings';
+// Layouts
+import MainLayout from './layouts/MainLayout';
+import AdminLayout from './layouts/AdminLayout';
+
+// Customer Pages
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Menu from './pages/Menu';
+import Cart from './pages/Cart';
+
+// Admin Pages
+import AdminDashboard from './pages/admin/Dashboard';
+import AdminFoods from './pages/admin/Foods';
+import AdminCategories from './pages/admin/Categories';
+import AdminOrders from './pages/admin/Orders';
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="cfos-theme">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<GlobalLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="data" element={<DataTable />} />
-            <Route path="settings" element={<Settings />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </ThemeProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <CartProvider>
+          <Routes>
+            {/* Customer Routes */}
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/menu" element={<Menu />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/login" element={<Login />} />
+            </Route>
+
+            {/* Admin Routes */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="foods" element={<AdminFoods />} />
+              <Route path="categories" element={<AdminCategories />} />
+              <Route path="orders" element={<AdminOrders />} />
+            </Route>
+            
+            {/* Catch all */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </CartProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

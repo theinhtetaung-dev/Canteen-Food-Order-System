@@ -50,9 +50,9 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Integer id) {
-        orderService.deleteOrder(id);
-        return ResponseEntity.noContent().build();
-    }
+    // @DeleteMapping("/{id}")
+    // public ResponseEntity<Void> deleteOrder(@PathVariable Integer id) {
+    //     orderService.deleteOrder(id);
+    //     return ResponseEntity.noContent().build();
+    // }
 }

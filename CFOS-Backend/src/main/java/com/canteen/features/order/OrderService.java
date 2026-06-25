@@ -128,11 +128,11 @@ public class OrderService {
         return OrderMapper.toDto(orderRepository.save(order));
     }
 
-    @Transactional
-    public void deleteOrder(Integer id) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + id));
-        order.setDeleteFlag(true);
-        orderRepository.save(order);
-    }
+    // @Transactional
+    // public void deleteOrder(Integer id) {
+    //     Order order = orderRepository.findById(id)
+    //             .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + id));
+    //     order.setDeleteFlag(true);
+    //     orderRepository.save(order);
+    // }
 }

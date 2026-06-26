@@ -24,7 +24,7 @@ public class FoodCategoryService {
     private final FoodCategoryMapper foodCategoryMapper;
 
     // CREATE
-    public FoodCategoryResponse create(FoodCategoryRequest request) {
+    public FoodCategoryResponse create(FoodCategoryRequest request, String username) {
 
         //  check duplicate
         boolean exists = foodCategoryRepository
@@ -35,17 +35,17 @@ public class FoodCategoryService {
                     request.getCategoryName());
         }
 
-        //  find user
-        User user = userRepository.findById(request.getCreatedBy())
+        //  find user by username from JWT
+        User user = userRepository.findByUserName(username)
                 .orElseThrow(() ->
-                        new UserNotFoundException(request.getCreatedBy()));
+                        new UserNotFoundException(username));
         //  map DTO -> Entity
         FoodCategory category = foodCategoryMapper.toEntity(request, user);
 
         //  save
         category = foodCategoryRepository.save(category);
 
-        // 5. map Entity -> Response DTO
+        // map Entity -> Response DTO
         return foodCategoryMapper.toDTO(category);
     }
 

@@ -23,7 +23,4 @@ public class FoodRequest {
     @NotNull(message = "Availability status is required")
     private Boolean isAvailable;
 
-    @NotNull(message = "Created by is required")
-    private Integer createdBy;
-
 }

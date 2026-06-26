@@ -1,5 +1,6 @@
 package com.canteen.features.order;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,8 +20,12 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<OrderResponseModel> createOrder(@Valid @RequestBody OrderRequestModel request) {
-        OrderResponseModel response = orderService.createOrder(request);
+    public ResponseEntity<OrderResponseModel> createOrder(
+            @Valid @RequestBody OrderRequestModel request,
+            HttpServletRequest httpRequest) {
+
+        String username = (String) httpRequest.getAttribute("username");
+        OrderResponseModel response = orderService.createOrder(request, username);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
@@ -36,7 +41,7 @@ public class OrderController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String direction) {
-        
+
         Page<OrderResponseModel> response = orderService.getAllOrders(page, size, sortBy, direction);
         return ResponseEntity.ok(response);
     }

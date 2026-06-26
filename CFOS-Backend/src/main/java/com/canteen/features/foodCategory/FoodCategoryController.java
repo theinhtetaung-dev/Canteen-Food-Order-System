@@ -3,6 +3,7 @@ package com.canteen.features.foodCategory;
 
 import com.canteen.features.foodCategory.dto.FoodCategoryRequest;
 import com.canteen.features.foodCategory.dto.FoodCategoryResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +21,11 @@ public class FoodCategoryController {
     // CREATE
     @PostMapping
     public ResponseEntity<FoodCategoryResponse> create(
-            @Valid @RequestBody FoodCategoryRequest request) {
+            @Valid @RequestBody FoodCategoryRequest request,
+            HttpServletRequest httpRequest) {
 
-        return ResponseEntity.ok(foodCategoryService.create(request));
+        String username = (String) httpRequest.getAttribute("username");
+        return ResponseEntity.ok(foodCategoryService.create(request, username));
     }
 
     // UPDATE

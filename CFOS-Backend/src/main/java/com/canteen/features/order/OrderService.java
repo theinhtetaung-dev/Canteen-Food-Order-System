@@ -41,10 +41,10 @@ public class OrderService {
     private final OrderStatusValidator orderStatusValidator;
 
     @Transactional
-    public OrderResponseModel createOrder(OrderRequestModel request) {
-        
-        User user = userRepository.findByUserName(request.getUserName())
-                                  .orElseThrow(() -> new ResourceNotFoundException("User not found: " + request.getUserName()));
+    public OrderResponseModel createOrder(OrderRequestModel request, String username) {
+
+        User user = userRepository.findByUserName(username)
+                                  .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
 
         Set<Integer> foodIds = new HashSet<>();
         if (request.getOrderItems() != null) {
@@ -69,10 +69,10 @@ public class OrderService {
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        // 6. Process order items in-memory without hitting the database again
+        // Process order items in-memory without hitting the database again
         if (request.getOrderItems() != null) {
             for (var itemRequest : request.getOrderItems()) {
-        
+
                 Food food = foodMap.get(itemRequest.getFoodId());
 
                 if (food == null) {

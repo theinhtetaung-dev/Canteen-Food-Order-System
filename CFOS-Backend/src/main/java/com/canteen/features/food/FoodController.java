@@ -2,6 +2,7 @@ package com.canteen.features.food;
 
 import com.canteen.features.food.dto.FoodRequest;
 import com.canteen.features.food.dto.FoodResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +23,11 @@ public class FoodController {
     @PostMapping
     public ResponseEntity<FoodResponse> createFood(
             @Valid @RequestPart("data") FoodRequest dto,
-            @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
+            @RequestPart(value = "image", required = false) MultipartFile image,
+            HttpServletRequest httpRequest) throws IOException {
 
-        return ResponseEntity.ok(foodService.createFood(dto, image));
+        String username = (String) httpRequest.getAttribute("username");
+        return ResponseEntity.ok(foodService.createFood(dto, image, username));
     }
 
     // getting all food
@@ -70,4 +73,4 @@ public class FoodController {
         foodService.deleteFood(id);
         return ResponseEntity.ok("Food deleted successfully (soft delete)");
     }
-}
+}

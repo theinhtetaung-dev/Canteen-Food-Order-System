@@ -30,17 +30,19 @@ public class FoodService {
     private final FoodMapper foodMapper;
     private final FileStorageService fileStorageService;
 
-    public FoodResponse createFood(FoodRequest dto, MultipartFile image) throws IOException {
+    public FoodResponse createFood(FoodRequest dto, MultipartFile image, String username) throws IOException {
 
         // 1. DTO → Entity (basic fields only)
         Food food = foodMapper.toEntity(dto);
 
         // 2. Load relationships
         FoodCategory category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new FoodCategoryNotFoundException(dto.getCategoryId()));
+                .orElseThrow(() ->
+                        new FoodCategoryNotFoundException(dto.getCategoryId()));
 
-        User user = userRepository.findById(dto.getCreatedBy())
-                .orElseThrow(() -> new UserNotFoundException(dto.getCreatedBy()));
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() ->
+                        new UserNotFoundException(username));
 
         food.setCategory(category);
         food.setCreatedBy(user);

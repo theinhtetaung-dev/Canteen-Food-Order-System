@@ -23,13 +23,13 @@ const Cart = () => {
 
     setIsSubmitting(true);
     try {
-      const orderDetails = items.map(item => ({
+      const orderItems = items.map(item => ({
         foodId: item.foodId,
         quantity: item.quantity
       }));
 
       await axiosPrivate.post('/orders', {
-        orderDetails
+        orderItems
       });
 
       toast.success('Order placed successfully!');

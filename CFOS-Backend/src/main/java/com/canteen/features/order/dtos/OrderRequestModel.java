@@ -10,9 +10,6 @@ import jakarta.validation.constraints.NotNull;
 @Data
 public class OrderRequestModel {
 
-    @NotNull(message = "Username is required")
-    private String userName;
-
     @NotEmpty(message = "Order must have at least one item")
     private List<OrderItemRequestModel> orderItems;
 

@@ -1,8 +1,6 @@
 package com.canteen.features.food;
 
-
 import com.canteen.features.food.exception.FoodCategoryNotFoundException;
-import com.canteen.features.food.exception.FoodDeletedException;
 import com.canteen.features.food.exception.FoodNotFoundException;
 import com.canteen.features.foodCategory.exception.UserNotFoundException;
 import com.canteen.model.Food;
@@ -32,7 +30,6 @@ public class FoodService {
     private final FoodMapper foodMapper;
     private final FileStorageService fileStorageService;
 
-
     public FoodResponse createFood(FoodRequest dto, MultipartFile image) throws IOException {
 
         // 1. DTO → Entity (basic fields only)
@@ -40,12 +37,10 @@ public class FoodService {
 
         // 2. Load relationships
         FoodCategory category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() ->
-                        new FoodCategoryNotFoundException(dto.getCategoryId()));
+                .orElseThrow(() -> new FoodCategoryNotFoundException(dto.getCategoryId()));
 
         User user = userRepository.findById(dto.getCreatedBy())
-                .orElseThrow(() ->
-                        new UserNotFoundException(dto.getCreatedBy()));
+                .orElseThrow(() -> new UserNotFoundException(dto.getCreatedBy()));
 
         food.setCategory(category);
         food.setCreatedBy(user);
@@ -63,7 +58,6 @@ public class FoodService {
         return foodMapper.toDTO(saved);
     }
 
-
     public List<FoodResponse> getAllFoods() {
 
         return foodRepository.findByDeleteFlagFalse()
@@ -71,7 +65,6 @@ public class FoodService {
                 .map(foodMapper::toDTO)
                 .toList();
     }
-
 
     public List<FoodResponse> getByCategory(Integer categoryId) {
 
@@ -82,7 +75,6 @@ public class FoodService {
                 .toList();
     }
 
-
     public List<FoodResponse> searchFood(String keyword) {
 
         return foodRepository
@@ -92,22 +84,18 @@ public class FoodService {
                 .toList();
     }
 
-
     public FoodResponse getFoodById(Integer id) {
 
         Food food = foodRepository.findById(id)
-                .orElseThrow(() ->
-                        new FoodNotFoundException(id));
+                .orElseThrow(() -> new FoodNotFoundException(id));
         return foodMapper.toDTO(food);
     }
-
 
     public FoodResponse updateFood(Integer id, FoodRequest dto, MultipartFile image)
             throws IOException {
 
         Food food = foodRepository.findById(id)
-                .orElseThrow(() ->
-                        new FoodNotFoundException(id));
+                .orElseThrow(() -> new FoodNotFoundException(id));
 
         // update fields
         food.setFoodName(dto.getFoodName());
@@ -118,8 +106,7 @@ public class FoodService {
         // update category if changed
         if (dto.getCategoryId() != null) {
             FoodCategory category = categoryRepository.findById(dto.getCategoryId())
-                    .orElseThrow(() ->
-                            new FoodCategoryNotFoundException(dto.getCategoryId()));
+                    .orElseThrow(() -> new FoodCategoryNotFoundException(dto.getCategoryId()));
 
             food.setCategory(category);
         }
@@ -134,7 +121,6 @@ public class FoodService {
 
         return foodMapper.toDTO(updated);
     }
-
 
     public void deleteFood(Integer id) {
 

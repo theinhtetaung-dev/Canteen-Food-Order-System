@@ -15,7 +15,9 @@ public class CanteenApplication {
 	public void openBrowser() {
 		try {
 			// Change this URL if the port or context path is different
-			Runtime.getRuntime().exec("cmd /c start http://localhost:8081/scalar.html");
+			new ProcessBuilder("cmd", "/c", "start", "http://localhost:8081/scalar.html")
+					.inheritIO()
+					.start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

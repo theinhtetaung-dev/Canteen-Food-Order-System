@@ -17,6 +17,7 @@ import AdminDashboard from './pages/admin/Dashboard';
 import AdminFoods from './pages/admin/Foods';
 import AdminCategories from './pages/admin/Categories';
 import AdminOrders from './pages/admin/Orders';
+import AdminRbac from './pages/admin/Rbac';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
               <Route path="foods" element={<AdminFoods />} />
               <Route path="categories" element={<AdminCategories />} />
               <Route path="orders" element={<AdminOrders />} />
+              <Route path="rbac" element={<AdminRbac />} />
             </Route>
             
             {/* Catch all */}

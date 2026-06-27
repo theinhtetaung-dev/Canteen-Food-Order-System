@@ -1,7 +1,7 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useEffect } from 'react';
-import { LayoutDashboard, Pizza, Tags, ShoppingBag, LogOut, ArrowLeft, Shield } from 'lucide-react';
+import { LayoutDashboard, Pizza, Tags, ShoppingBag, LogOut, ArrowLeft, Shield, Users } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 
 const AdminLayout = () => {
@@ -30,6 +30,7 @@ const AdminLayout = () => {
     { name: 'Foods', path: '/admin/foods', icon: Pizza },
     { name: 'Categories', path: '/admin/categories', icon: Tags },
     { name: 'RBAC Management', path: '/admin/rbac', icon: Shield },
+    { name: 'User Management', path: '/admin/users', icon: Users },
   ];
 
   return (

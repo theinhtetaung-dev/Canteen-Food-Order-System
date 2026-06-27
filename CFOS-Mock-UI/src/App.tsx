@@ -17,8 +17,12 @@ import AdminDashboard from './pages/admin/Dashboard';
 import AdminFoods from './pages/admin/Foods';
 import AdminCategories from './pages/admin/Categories';
 import AdminOrders from './pages/admin/Orders';
-import AdminRbac from './pages/admin/Rbac';
-import AdminUsers from './pages/admin/Users';
+import AdminRbac from './pages/admin/Rbac.tsx';
+import AdminUsers from './pages/admin/Users.tsx';
+import AdminReport from './pages/admin/Report';
+
+// App component wrapper
+// Force re-index trigger
 
 function App() {
   return (
@@ -42,6 +46,7 @@ function App() {
               <Route path="orders" element={<AdminOrders />} />
               <Route path="rbac" element={<AdminRbac />} />
               <Route path="users" element={<AdminUsers />} />
+              <Route path="reports" element={<AdminReport />} />
             </Route>
             
             {/* Catch all */}

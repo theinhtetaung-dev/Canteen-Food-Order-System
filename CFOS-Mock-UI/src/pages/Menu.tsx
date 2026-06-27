@@ -3,6 +3,8 @@ import { axiosPrivate } from '../api/axios';
 import { useCart } from '../context/CartContext';
 import toast from 'react-hot-toast';
 import { Search, ShoppingCart } from 'lucide-react';
+import { Pagination } from '../components/ui/Pagination';
+import { formatDisplayPrice } from '../lib/utils';
 
 interface FoodCategory {
   id: number;
@@ -27,6 +29,9 @@ const Menu = () => {
   const [activeCategory, setActiveCategory] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
   
   const { addToCart } = useCart();
 
@@ -57,6 +62,7 @@ const Menu = () => {
       
       const response = await axiosPrivate.get(url);
       setFoods(response.data);
+      setCurrentPage(1); // Reset page on data fetch/filter change
     } catch (error) {
       console.error('Failed to fetch foods', error);
       toast.error('Failed to load menu items');
@@ -93,6 +99,9 @@ const Menu = () => {
     });
     toast.success(`Added ${food.name} to cart`);
   };
+
+  const totalPages = Math.ceil(foods.length / pageSize) || 1;
+  const displayedFoods = foods.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -155,54 +164,62 @@ const Menu = () => {
           <p className="text-gray-500 text-lg">No food items found.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {foods.map((food) => (
-            <div key={food.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-              <div className="h-48 bg-gray-200 relative">
-                {food.imageUrl ? (
-                  <img
-                    src={`http://localhost:8081${food.imageUrl}`}
-                    alt={food.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
-                    }}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-orange-100 text-orange-300">
-                    <UtensilsIcon />
-                  </div>
-                )}
-                {!food.isAvailable && (
-                  <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
-                    Sold Out
-                  </div>
-                )}
-              </div>
-              <div className="p-4 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-lg font-bold text-gray-900 line-clamp-1">{food.name}</h3>
-                  <span className="text-lg font-extrabold text-orange-600">${food.price.toFixed(2)}</span>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {displayedFoods.map((food) => (
+              <div key={food.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
+                <div className="h-48 bg-gray-200 relative">
+                  {food.imageUrl ? (
+                    <img
+                      src={`http://localhost:8081${food.imageUrl}`}
+                      alt={food.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-orange-100 text-orange-300">
+                      <UtensilsIcon />
+                    </div>
+                  )}
+                  {!food.isAvailable && (
+                    <div className="absolute top-2 right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
+                      Sold Out
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs text-orange-600 font-medium mb-2">{food.categoryName}</p>
-                <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-1">{food.description}</p>
-                
-                <button
-                  onClick={() => handleAddToCart(food)}
-                  disabled={!food.isAvailable}
-                  className={`w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                    food.isAvailable
-                      ? 'bg-orange-600 hover:bg-orange-700'
-                      : 'bg-gray-400 cursor-not-allowed'
-                  } transition-colors`}
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Add to Cart
-                </button>
+                <div className="p-4 flex-1 flex flex-col">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-lg font-bold text-gray-900 line-clamp-1">{food.name}</h3>
+                    <span className="text-lg font-extrabold text-orange-600">${formatDisplayPrice(food.price)}</span>
+                  </div>
+                  <p className="text-xs text-orange-600 font-medium mb-2">{food.categoryName}</p>
+                  <p className="text-sm text-gray-500 line-clamp-2 mb-4 flex-1">{food.description}</p>
+                  
+                  <button
+                    onClick={() => handleAddToCart(food)}
+                    disabled={!food.isAvailable}
+                    className={`w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                      food.isAvailable
+                        ? 'bg-orange-600 hover:bg-orange-700'
+                        : 'bg-gray-400 cursor-not-allowed'
+                    } transition-colors`}
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Add to Cart
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+          <Pagination
+            current_page={currentPage}
+            total_pages={totalPages}
+            onPageChange={setCurrentPage}
+            className="mt-8 shadow-none border-t-0"
+          />
+        </>
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import com.canteen.features.auth.dtos.CreateUserReqModel;
 import com.canteen.features.auth.dtos.UpdateUserReqModel;
 import com.canteen.features.auth.dtos.UserResModel;
 import com.canteen.model.User;
+import com.canteen.model.UserStatus;
 
 public class UserMapper {
 
@@ -15,7 +16,7 @@ public class UserMapper {
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
         user.setPhoneNumber(request.getPhoneNumber());
-        user.setStatus(request.getStatus());
+        user.setStatus(UserStatus.ACTIVE);
 
         return user;
     }

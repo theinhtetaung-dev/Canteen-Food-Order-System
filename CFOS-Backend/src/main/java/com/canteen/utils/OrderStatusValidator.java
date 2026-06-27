@@ -11,13 +11,13 @@ public class OrderStatusValidator {
         switch (current) {
 
             // Pending order can be completed or canceled
-            case PENDING -> allow(target, Status.COMPLETED, Status.CANCELED);
+            case PENDING -> allow(target, Status.COMPLETE, Status.CANCEL);
 
             // Completed order is final
-            case COMPLETED -> allow(target, Status.COMPLETED);
+            case COMPLETE -> allow(target, Status.COMPLETE);
 
             // Canceled order is final
-            case CANCELED -> allow(target, Status.CANCELED);
+            case CANCEL -> allow(target, Status.CANCEL);
 
             default -> throw new RuntimeException("Invalid status change");
         }

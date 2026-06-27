@@ -37,8 +37,9 @@ public class User {
     @Column(name = "PhoneNumber", length = 20)
     private String phoneNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "Status", nullable = false, length = 20)
-    private String status;
+    private UserStatus status;
 
     @Column(name = "DeleteFlag")
     private Boolean deleteFlag = false;

@@ -97,7 +97,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         adminUser.setEmail("admin@canteen.com");
         adminUser.setPasswordHash(passwordEncoder.encode("admin123"));
         adminUser.setPhoneNumber("1234567890");
-        adminUser.setStatus("Active");
+        adminUser.setStatus(UserStatus.ACTIVE);
         adminUser.setRole(adminRole);
         
         User normalUser = new User();
@@ -106,7 +106,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         normalUser.setEmail("user@canteen.com");
         normalUser.setPasswordHash(passwordEncoder.encode("user123"));
         normalUser.setPhoneNumber("0987654321");
-        normalUser.setStatus("Active");
+        normalUser.setStatus(UserStatus.ACTIVE);
         normalUser.setRole(userRole);
 
         userRepository.saveAll(List.of(adminUser, normalUser));

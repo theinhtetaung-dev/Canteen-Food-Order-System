@@ -44,7 +44,7 @@ public class OrderService {
     public OrderResponseModel createOrder(OrderRequestModel request, String username) {
 
         User user = userRepository.findByUserName(username)
-                                  .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
 
         Set<Integer> foodIds = new HashSet<>();
         if (request.getOrderItems() != null) {
@@ -117,11 +117,10 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponseModel updateStatus(Integer id, String status) {
+    public OrderResponseModel updateStatus(Integer id, Status targetStatus) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + id));
 
-        Status targetStatus = Status.valueOf(status.toUpperCase());
         orderStatusValidator.validateTransition(order.getOrderStatus(), targetStatus);
 
         order.setOrderStatus(targetStatus);
@@ -130,9 +129,9 @@ public class OrderService {
 
     // @Transactional
     // public void deleteOrder(Integer id) {
-    //     Order order = orderRepository.findById(id)
-    //             .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + id));
-    //     order.setDeleteFlag(true);
-    //     orderRepository.save(order);
+    // Order order = orderRepository.findById(id)
+    // .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + id));
+    // order.setDeleteFlag(true);
+    // orderRepository.save(order);
     // }
 }

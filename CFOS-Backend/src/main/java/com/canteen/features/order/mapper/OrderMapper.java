@@ -21,7 +21,7 @@ public class OrderMapper {
         dto.setTotalAmount(order.getTotalAmount());
         
         if (order.getOrderStatus() != null) {
-            dto.setOrderStatus(order.getOrderStatus().name());
+            dto.setOrderStatus(order.getOrderStatus());
         }
         if (order.getOrderItems() != null) {
             dto.setOrderItems(order.getOrderItems().stream()

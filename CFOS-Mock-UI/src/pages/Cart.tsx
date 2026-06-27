@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { axiosPrivate } from '../api/axios';
 import toast from 'react-hot-toast';
 import { Trash2, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
+import { formatDisplayPrice } from '../lib/utils';
 
 const Cart = () => {
   const { items, updateQuantity, removeFromCart, totalAmount, clearCart } = useCart();
@@ -90,9 +91,9 @@ const Cart = () => {
                   <div className="sm:ml-6 flex-1 flex flex-col justify-between">
                     <div className="flex justify-between">
                       <h3 className="text-lg font-medium text-gray-900">{item.name}</h3>
-                      <p className="text-lg font-medium text-gray-900">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="text-lg font-medium text-gray-900">${formatDisplayPrice(item.price * item.quantity)}</p>
                     </div>
-                    <p className="mt-1 text-sm text-gray-500">${item.price.toFixed(2)} each</p>
+                    <p className="mt-1 text-sm text-gray-500">${formatDisplayPrice(item.price)} each</p>
                     
                     <div className="mt-4 flex items-center justify-between">
                       <div className="flex items-center border border-gray-300 rounded-md">
@@ -139,15 +140,15 @@ const Cart = () => {
             <div className="space-y-4 mb-6">
               <div className="flex justify-between text-sm text-gray-600">
                 <p>Subtotal</p>
-                <p className="font-medium text-gray-900">${totalAmount.toFixed(2)}</p>
+                <p className="font-medium text-gray-900">${formatDisplayPrice(totalAmount)}</p>
               </div>
               <div className="flex justify-between text-sm text-gray-600">
                 <p>Tax (Estimated)</p>
-                <p className="font-medium text-gray-900">${(totalAmount * 0.08).toFixed(2)}</p>
+                <p className="font-medium text-gray-900">${formatDisplayPrice(totalAmount * 0.08)}</p>
               </div>
               <div className="border-t border-gray-200 pt-4 flex justify-between">
                 <p className="text-base font-medium text-gray-900">Order Total</p>
-                <p className="text-xl font-bold text-orange-600">${(totalAmount * 1.08).toFixed(2)}</p>
+                <p className="text-xl font-bold text-orange-600">${formatDisplayPrice(totalAmount * 1.08)}</p>
               </div>
             </div>
 

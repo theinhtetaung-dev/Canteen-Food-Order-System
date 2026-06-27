@@ -2,6 +2,7 @@ package com.canteen.features.auth.dtos;
 
 import java.time.LocalDateTime;
 import lombok.Data;
+import com.canteen.model.UserStatus;
 
 @Data
 public class UserResModel {
@@ -11,7 +12,7 @@ public class UserResModel {
     private String fullName;
     private String email;
     private String phoneNumber;
-    private String status;
+    private UserStatus status;
     private Boolean deleteFlag;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

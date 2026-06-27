@@ -24,6 +24,4 @@ public class CreateUserReqModel {
     private String password;
 
     private String phoneNumber;
-
-    private String status;
 }

@@ -46,18 +46,17 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-
     @PatchMapping("/{id}/status")
     public ResponseEntity<OrderResponseModel> updateOrderStatus(
             @PathVariable Integer id,
-            @RequestParam String status) {
+            @RequestParam com.canteen.model.Status status) {
         OrderResponseModel response = orderService.updateStatus(id, status);
         return ResponseEntity.ok(response);
     }
 
     // @DeleteMapping("/{id}")
     // public ResponseEntity<Void> deleteOrder(@PathVariable Integer id) {
-    //     orderService.deleteOrder(id);
-    //     return ResponseEntity.noContent().build();
+    // orderService.deleteOrder(id);
+    // return ResponseEntity.noContent().build();
     // }
 }

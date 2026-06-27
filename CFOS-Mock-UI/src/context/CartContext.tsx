@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
+import { parsePrice } from '../lib/utils';
 
 export interface CartItem {
   foodId: number;
@@ -24,16 +25,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
   const addToCart = (newItem: CartItem) => {
+    const cleanedItem = { ...newItem, price: parsePrice(newItem.price) };
     setItems((prevItems) => {
-      const existingItem = prevItems.find((item) => item.foodId === newItem.foodId);
+      const existingItem = prevItems.find((item) => item.foodId === cleanedItem.foodId);
       if (existingItem) {
         return prevItems.map((item) =>
-          item.foodId === newItem.foodId
-            ? { ...item, quantity: item.quantity + newItem.quantity }
+          item.foodId === cleanedItem.foodId
+            ? { ...item, quantity: item.quantity + cleanedItem.quantity }
             : item
         );
       }
-      return [...prevItems, newItem];
+      return [...prevItems, cleanedItem];
     });
   };
 

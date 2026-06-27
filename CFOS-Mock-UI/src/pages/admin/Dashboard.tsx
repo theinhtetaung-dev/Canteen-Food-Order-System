@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { axiosPrivate } from '../../api/axios';
 import { Users, ShoppingBag, Pizza, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { formatDisplayPrice, parsePrice } from '../../lib/utils';
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -24,10 +25,10 @@ const Dashboard = () => {
         const foodsRes = await axiosPrivate.get('/foods');
         
         const totalRev = orders
-          .filter((o: any) => o.status !== 'CANCELLED')
-          .reduce((sum: number, o: any) => sum + o.totalAmount, 0);
+          .filter((o: any) => o.orderStatus !== 'CANCEL')
+          .reduce((sum: number, o: any) => sum + parsePrice(o.totalAmount), 0);
 
-        const pending = orders.filter((o: any) => o.status === 'PENDING').length;
+        const pending = orders.filter((o: any) => o.orderStatus === 'PENDING').length;
 
         setStats({
           totalOrders: orders.length,
@@ -52,9 +53,8 @@ const Dashboard = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'PENDING': return 'bg-yellow-100 text-yellow-800';
-      case 'PROCESSING': return 'bg-blue-100 text-blue-800';
-      case 'COMPLETED': return 'bg-green-100 text-green-800';
-      case 'CANCELLED': return 'bg-red-100 text-red-800';
+      case 'COMPLETE': return 'bg-green-100 text-green-800';
+      case 'CANCEL': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -82,7 +82,7 @@ const Dashboard = () => {
           </div>
           <div>
             <p className="text-sm font-medium text-gray-500">Total Revenue</p>
-            <p className="text-2xl font-semibold text-gray-900">${stats.totalRevenue.toFixed(2)}</p>
+            <p className="text-2xl font-semibold text-gray-900">${formatDisplayPrice(stats.totalRevenue)}</p>
           </div>
         </div>
         
@@ -124,15 +124,15 @@ const Dashboard = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {recentOrders.length > 0 ? (
                 recentOrders.map((order) => (
-                  <tr key={order.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{order.id}</td>
+                  <tr key={order.orderId}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{order.orderId}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(order.createdAt).toLocaleString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${order.totalAmount.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${formatDisplayPrice(order.totalAmount)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.status)}`}>
-                        {order.status}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(order.orderStatus)}`}>
+                        {order.orderStatus}
                       </span>
                     </td>
                   </tr>

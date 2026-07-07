@@ -17,6 +17,7 @@ import com.canteen.features.auth.dtos.UserResModel;
 import com.canteen.features.auth.mapper.UserMapper;
 import com.canteen.model.Role;
 import com.canteen.model.User;
+import com.canteen.model.UserStatus;
 import com.canteen.repository.RoleRepository;
 import com.canteen.repository.RolePermissionRepository;
 import com.canteen.repository.UserRepository;
@@ -75,6 +76,10 @@ public class UserService {
         
         if (Boolean.TRUE.equals(user.getDeleteFlag())) {
             throw new ResourceNotFoundException("Account is disabled");
+        }
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new ResourceNotFoundException("Account is inactive");
         }
 
         String roleName = user.getRole() != null ? user.getRole().getRoleName() : "USER";

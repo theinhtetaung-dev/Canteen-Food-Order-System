@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
+
+import com.canteen.utils.UserStatusConverter;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -37,7 +40,7 @@ public class User {
     @Column(name = "PhoneNumber", length = 20)
     private String phoneNumber;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = UserStatusConverter.class)
     @Column(name = "Status", nullable = false, length = 20)
     private UserStatus status;
 

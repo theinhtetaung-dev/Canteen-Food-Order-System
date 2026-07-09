@@ -30,7 +30,7 @@ public class Order {
     @Column(name = "TotalAmount", nullable = false, precision = 10, scale = 2)
     private BigDecimal totalAmount;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = StatusConverter.class)
     private Status orderStatus = Status.PENDING;
 
     @Column(name = "DeleteFlag")

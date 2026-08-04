@@ -14,15 +14,20 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@furniture": path.resolve(__dirname, "./src/furniture"),
-      "@admin": path.resolve(__dirname, "./src/admin"),
-      "@superadmin": path.resolve(__dirname, "./src/superadmin"),
+      "@furniture": path.resolve(import.meta.dirname, "./src/furniture"),
+      "@admin": path.resolve(import.meta.dirname, "./src/admin"),
+      "@superadmin": path.resolve(import.meta.dirname, "./src/superadmin"),
     },
   },
   server: {
+    host: "127.0.0.1",
+    port: 5173,
+    watch: {
+      usePolling: true,
+    },
     proxy: {
       "/api": {
-        target: "http://localhost:8080",
+        target: "http://localhost:8081",
         changeOrigin: true,
       },
     },

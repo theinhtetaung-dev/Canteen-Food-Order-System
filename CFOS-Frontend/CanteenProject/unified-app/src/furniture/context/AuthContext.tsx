@@ -26,7 +26,7 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (payload: LoginPayload) => Promise<User>;
-  register: (payload: RegisterPayload) => Promise<User>;
+  register: (payload: RegisterPayload) => Promise<void>;
   logout: () => void;
   updateProfile: (payload: ProfileUpdatePayload) => Promise<void>;
 }
@@ -48,10 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return loggedIn;
   }, []);
 
-  const register = useCallback(async (payload: RegisterPayload): Promise<User> => {
-    const registered = await registerUser(payload);
-    setUser(registered);
-    return registered;
+  const register = useCallback(async (payload: RegisterPayload): Promise<void> => {
+    await registerUser(payload);
   }, []);
 
   const logout = useCallback(() => {

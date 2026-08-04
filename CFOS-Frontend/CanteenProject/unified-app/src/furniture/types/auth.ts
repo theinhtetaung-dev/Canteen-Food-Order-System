@@ -11,6 +11,9 @@ export interface User {
 
 export interface RegisterPayload {
   rollNumber: string;
+  fullName: string;
+  email: string;
+  phoneNumber?: string;
   password: string;
 }
 

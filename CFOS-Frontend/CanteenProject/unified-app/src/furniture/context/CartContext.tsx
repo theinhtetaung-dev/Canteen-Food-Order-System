@@ -2,12 +2,15 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useReducer,
+  useState,
   type ReactNode,
 } from "react";
-import { menuItems } from "@furniture/data/menuItems";
+import { fetchMenuItems } from "@furniture/api/menu.api";
 import type { CartAction, CartLine, CartState } from "@furniture/types/cart";
+import type { MenuItem } from "@furniture/types/menu";
 
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
@@ -59,13 +62,27 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-const menuById = new Map(menuItems.map((item) => [item.id, item]));
-
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, {
     quantities: {},
     isOpen: false,
   });
+
+  const [menuItemsList, setMenuItemsList] = useState<MenuItem[]>([]);
+
+  useEffect(() => {
+    fetchMenuItems()
+      .then((data) => {
+        setMenuItemsList(data);
+      })
+      .catch((err) => {
+        console.error("CartProvider: Error loading menu items:", err);
+      });
+  }, [state.isOpen]); // Refresh menu item lookup when cart is opened or on initial load
+
+  const menuById = useMemo(() => {
+    return new Map(menuItemsList.map((item) => [item.id, item]));
+  }, [menuItemsList]);
 
   const lines = useMemo<CartLine[]>(() => {
     return Object.entries(state.quantities)
@@ -74,7 +91,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return item ? { item, quantity } : null;
       })
       .filter((line): line is CartLine => line !== null);
-  }, [state.quantities]);
+  }, [state.quantities, menuById]);
 
   const totalItems = useMemo(
     () => lines.reduce((sum, line) => sum + line.quantity, 0),

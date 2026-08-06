@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { User, Shield, CheckCircle2, LogOut, Pencil } from 'lucide-react';
+import { useAuth } from "@furniture/hooks/useAuth";
 
 export const AdminProfile: React.FC = () => {
+  const { logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   
   // Profile state
@@ -220,7 +222,10 @@ export const AdminProfile: React.FC = () => {
             Logging out will terminate your current administrative session across all devices.
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-[#C5221F] hover:bg-[#A81B18] text-white text-xs font-bold rounded-xl transition-all shadow-sm">
+        <button
+          onClick={logout}
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#C5221F] hover:bg-[#A81B18] text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+        >
           <LogOut className="w-4 h-4" />
           Logout from System
         </button>

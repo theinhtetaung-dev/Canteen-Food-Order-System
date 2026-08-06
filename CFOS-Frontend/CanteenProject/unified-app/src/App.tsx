@@ -20,6 +20,26 @@ const rootRouter = createBrowserRouter([
     element: <RedirectToFurniture />,
   },
   {
+    path: "/login",
+    element: <Navigate to="/furniture/login" replace />,
+  },
+  {
+    path: "/register",
+    element: <Navigate to="/furniture/register" replace />,
+  },
+  {
+    path: "/menu",
+    element: <Navigate to="/furniture/menu" replace />,
+  },
+  {
+    path: "/profile",
+    element: <Navigate to="/furniture/profile" replace />,
+  },
+  {
+    path: "/orders",
+    element: <Navigate to="/furniture/orders" replace />,
+  },
+  {
     path: "/furniture/*",
     element: (
       <FurnitureProviders>
@@ -34,12 +54,20 @@ export function App() {
 
   // Admin panel - separate router with basename '/admin'
   if (path.startsWith("/admin")) {
-    return <RouterProvider router={AdminRouter} />;
+    return (
+      <FurnitureProviders>
+        <RouterProvider router={AdminRouter} />
+      </FurnitureProviders>
+    );
   }
 
   // SuperAdmin panel - separate router with basename '/superadmin'
   if (path.startsWith("/superadmin")) {
-    return <RouterProvider router={SuperAdminRouter} />;
+    return (
+      <FurnitureProviders>
+        <RouterProvider router={SuperAdminRouter} />
+      </FurnitureProviders>
+    );
   }
 
   // Root and Furniture

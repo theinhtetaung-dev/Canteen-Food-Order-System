@@ -7,4 +7,5 @@ import com.canteen.model.Role;
 
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Integer> {
+    java.util.Optional<Role> findByRoleName(String roleName);
 }

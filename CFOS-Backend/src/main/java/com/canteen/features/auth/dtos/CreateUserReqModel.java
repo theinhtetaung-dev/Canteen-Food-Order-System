@@ -7,7 +7,6 @@ import lombok.Data;
 
 @Data
 public class CreateUserReqModel {
-    @NotNull(message = "Role ID is required")
     private Integer roleId;
 
     @NotBlank(message = "Username is required")

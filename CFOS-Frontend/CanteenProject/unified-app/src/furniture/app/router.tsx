@@ -8,6 +8,8 @@ import ContactPage from "@furniture/pages/ContactPage";
 import NotFoundPage from "@furniture/pages/NotFoundPage";
 import ProfilePage from "@furniture/pages/ProfilePage";
 import OrdersPage from "@furniture/pages/OrdersPage";
+import LoginPage from "@furniture/pages/auth/LoginPage";
+import RegisterPage from "@furniture/pages/auth/RegisterPage";
 
 export function FurnitureRoutes() {
   return (
@@ -17,6 +19,8 @@ export function FurnitureRoutes() {
         <Route path="menu" element={<MenuPage />} />
         <Route path="reviews" element={<ReviewsPage />} />
         <Route path="contact" element={<ContactPage />} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} />
         <Route
           path="profile"
           element={

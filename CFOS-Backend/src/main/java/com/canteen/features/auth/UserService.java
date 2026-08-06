@@ -48,8 +48,14 @@ public class UserService {
             throw new DuplicateResourceException("Email already exists: " + request.getEmail());
         }
 
-        Role role = roleRepository.findById(request.getRoleId())
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + request.getRoleId()));
+        Role role;
+        if (request.getRoleId() != null) {
+            role = roleRepository.findById(request.getRoleId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + request.getRoleId()));
+        } else {
+            role = roleRepository.findByRoleName("User")
+                    .orElseThrow(() -> new ResourceNotFoundException("Default 'User' role not found"));
+        }
 
         User user = UserMapper.toEntity(request);
         user.setRole(role);

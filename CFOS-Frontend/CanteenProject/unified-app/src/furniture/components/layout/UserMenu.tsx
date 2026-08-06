@@ -42,7 +42,7 @@ export function UserMenu() {
         className="flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 text-sm font-semibold text-brand-dark shadow-sm"
       >
         <User className="h-4 w-4" />
-        {user.name.split(" ")[0]}
+        {(user.name || user.rollNumber || "User").split(" ")[0]}
         <ChevronDown className={cn("h-4 w-4 transition-transform", open && "rotate-180")} />
       </button>
 

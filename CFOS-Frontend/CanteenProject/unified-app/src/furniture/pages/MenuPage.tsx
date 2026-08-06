@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { PageContainer } from "@furniture/components/layout/PageContainer";
 import { CanteenTabs } from "@furniture/components/menu/CanteenTabs";
@@ -6,7 +6,7 @@ import { CategoryFilter } from "@furniture/components/menu/CategoryFilter";
 import { FoodDetailModal } from "@furniture/components/menu/FoodDetailModal";
 import { FoodGrid } from "@furniture/components/menu/FoodGrid";
 import { useCart } from "@furniture/hooks/useCart";
-import { menuItems } from "@furniture/data/menuItems";
+import { fetchMenuItems } from "@furniture/api/menu.api";
 import type { FoodCategory, MenuItem } from "@furniture/types/menu";
 
 export default function MenuPage() {
@@ -17,10 +17,25 @@ export default function MenuPage() {
     "all",
   );
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [items, setItems] = useState<MenuItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { addToCart } = useCart();
 
+  useEffect(() => {
+    fetchMenuItems()
+      .then((data) => {
+        setItems(data);
+      })
+      .catch((err) => {
+        console.error("Error loading menu items:", err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, []);
+
   const filteredItems = useMemo(() => {
-    return menuItems.filter((item) => {
+    return items.filter((item) => {
       const matchesCanteen = item.canteen === activeCanteen;
       const matchesSearch =
         !search ||
@@ -30,7 +45,7 @@ export default function MenuPage() {
         activeCategory === "all" || item.category === activeCategory;
       return matchesCanteen && matchesSearch && matchesCategory;
     });
-  }, [activeCanteen, search, activeCategory]);
+  }, [items, activeCanteen, search, activeCategory]);
 
   return (
     <PageContainer>

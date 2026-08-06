@@ -41,7 +41,13 @@ export function OrderProvider({ children }: { children: ReactNode }) {
       setNotifications([]);
       return;
     }
-    setOrders(fetchUserOrders(user.id));
+    fetchUserOrders(user.id)
+      .then((userOrders) => {
+        setOrders(userOrders);
+      })
+      .catch((err) => {
+        console.error("Failed to load user orders:", err);
+      });
     setNotifications(fetchUserNotifications(user.id));
   }, [user]);
 

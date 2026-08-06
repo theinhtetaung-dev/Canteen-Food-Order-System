@@ -1,7 +1,9 @@
 import React, { useState, useRef } from "react";
 import { User, ShieldCheck, PenTool, Edit2, LogOut, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@furniture/hooks/useAuth";
 
 export const Profile: React.FC = () => {
+  const { logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
 
   const initialData = () => {
@@ -282,6 +284,7 @@ export const Profile: React.FC = () => {
         </div>
         <button
           type="button"
+          onClick={logout}
           className="bg-[#b91c1c] text-white flex items-center gap-2.5 px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#991b1b] transition-colors shrink-0"
         >
           <LogOut className="w-4 h-4" />

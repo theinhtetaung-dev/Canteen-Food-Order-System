@@ -18,18 +18,10 @@ import { useAuth } from "@furniture/hooks/useAuth";
 const loginSchema = z.object({
   rollNumber: z
     .string()
-    .min(1, { message: "Roll Number required." })
-    .regex(/^\d{4}-[a-zA-Z0-9]+-[a-zA-Z0-9]+-\d+$/, {
-      message: "Roll Number format is invalid. (Example - 2019-mit-cse-001)",
-    }),
+    .min(1, { message: "Roll Number or Username is required." }),
   password: z
     .string()
-    .min(8, { message: "Password must be at least 8 characters long." })
-    .max(20, { message: "Password must be no longer than 20 characters long." })
-    .regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/, {
-      message:
-        "Password must contain at least one English letter and one number",
-    }),
+    .min(1, { message: "Password is required." }),
 });
 
 export function LoginForm({

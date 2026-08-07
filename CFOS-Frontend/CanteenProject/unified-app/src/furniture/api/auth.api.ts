@@ -42,11 +42,21 @@ export async function loginUser(payload: LoginPayload): Promise<User> {
 
   localStorage.setItem("canteen_token", data.token);
 
+  let profile;
+  try {
+    const res = await api.get("/api/users/me");
+    profile = res.data;
+  } catch (err) {
+    console.error("Failed to fetch user profile", err);
+  }
+
   const user: User = {
     id: data.userName,
     rollNumber: data.userName,
     role: data.role.toLowerCase() as any,
-    name: data.userName,
+    name: profile?.fullName || data.userName,
+    email: profile?.email || "",
+    phone: profile?.phoneNumber || "",
   };
 
   writeStorage(SESSION_KEY, user);
@@ -58,10 +68,18 @@ export async function updateUserProfile(
   payload: ProfileUpdatePayload,
 ): Promise<User> {
   const sessionUser = getSessionUser();
-  if (sessionUser) {
-    const updated = { ...sessionUser, ...payload };
-    writeStorage(SESSION_KEY, updated);
-    return updated;
+  if (!sessionUser) {
+    throw new Error("User not logged in");
   }
-  throw new Error("User not logged in");
+
+  // Call the backend to update profile
+  await api.put("/api/users/me", {
+    fullName: payload.name,
+    email: payload.email,
+    phoneNumber: payload.phone,
+  });
+
+  const updated = { ...sessionUser, ...payload };
+  writeStorage(SESSION_KEY, updated);
+  return updated;
 }

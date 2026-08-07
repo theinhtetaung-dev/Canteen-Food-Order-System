@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { ArrowRight, ShoppingCart, Star } from "lucide-react";
 import { PageContainer } from "@furniture/components/layout/PageContainer";
 import { heroSlides } from "@furniture/data/heroItems";
+import { useAuth } from "@furniture/hooks/useAuth";
 
 export default function HomePage() {
+  const { user } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -34,7 +36,7 @@ export default function HomePage() {
       <div className="grid w-full grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-12">
         <div className="animate-fadeIn space-y-6">
           <span className="inline-block rounded-full border border-brand/30 bg-brand-muted px-6 py-2 text-sm font-medium text-brand-dark">
-            Hello, Student 👋
+            Hello {user?.name || 'Student'} 👋
           </span>
 
           <h1 className="text-3xl font-bold leading-tight text-brand sm:text-4xl lg:text-5xl">

@@ -7,7 +7,6 @@
     "types": ["vite/client"],
     "skipLibCheck": true,
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@furniture/*": ["./src/furniture/*"],
       "@admin/*": ["./src/admin/*"],

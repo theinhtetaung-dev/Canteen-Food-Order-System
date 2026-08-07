@@ -13,6 +13,7 @@ import com.canteen.features.auth.dtos.LoginReqModel;
 import com.canteen.features.auth.dtos.LoginResModel;
 import com.canteen.features.auth.dtos.UpdateUserReqModel;
 import com.canteen.features.auth.dtos.UpdateUserResModel;
+import com.canteen.features.auth.dtos.UpdateProfileReqModel;
 import com.canteen.features.auth.dtos.UserResModel;
 import com.canteen.features.auth.mapper.UserMapper;
 import com.canteen.model.Role;
@@ -151,6 +152,36 @@ public class UserService {
         response.setUserId(user.getUserId());
         response.setUserName(user.getUserName());
         response.setMessage("User updated successfully");
+
+        return response;
+    }
+
+    @Transactional(readOnly = true)
+    public UserResModel getUserProfile(String username) {
+        return userRepository.findByUserName(username)
+                .map(UserMapper::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+    }
+
+    @Transactional
+    public UpdateUserResModel updateUserProfile(String username, UpdateProfileReqModel request) {
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException("Email already exists: " + request.getEmail());
+        }
+
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
+        user.setPhoneNumber(request.getPhoneNumber());
+
+        userRepository.save(user);
+
+        UpdateUserResModel response = new UpdateUserResModel();
+        response.setUserId(user.getUserId());
+        response.setUserName(user.getUserName());
+        response.setMessage("Profile updated successfully");
 
         return response;
     }

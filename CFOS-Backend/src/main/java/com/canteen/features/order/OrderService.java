@@ -116,6 +116,16 @@ public class OrderService {
         return orderRepository.findAll(pageable).map(OrderMapper::toDto);
     }
 
+    public Page<OrderResponseModel> getMyOrders(String username, int page, int size, String sortBy, String direction) {
+        PaginationValidator.validate(page, size, sortBy, direction,
+                Set.of("orderId", "totalAmount", "createdAt", "updatedAt", "orderStatus"));
+
+        Sort sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return orderRepository.findByUser_UserName(username, pageable).map(OrderMapper::toDto);
+    }
+
     @Transactional
     public OrderResponseModel updateStatus(Integer id, Status targetStatus) {
         Order order = orderRepository.findById(id)

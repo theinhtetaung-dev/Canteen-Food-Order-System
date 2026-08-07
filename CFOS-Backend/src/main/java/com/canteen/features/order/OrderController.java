@@ -46,6 +46,19 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/my-orders")
+    public ResponseEntity<Page<OrderResponseModel>> getMyOrders(
+            HttpServletRequest httpRequest,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+        
+        String username = (String) httpRequest.getAttribute("username");
+        Page<OrderResponseModel> response = orderService.getMyOrders(username, page, size, sortBy, direction);
+        return ResponseEntity.ok(response);
+    }
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<OrderResponseModel> updateOrderStatus(
             @PathVariable Integer id,

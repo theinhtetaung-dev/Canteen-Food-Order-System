@@ -9,8 +9,10 @@ import com.canteen.features.auth.dtos.CreateUserReqModel;
 import com.canteen.features.auth.dtos.CreateUserResModel;
 import com.canteen.features.auth.dtos.UpdateUserReqModel;
 import com.canteen.features.auth.dtos.UpdateUserResModel;
+import com.canteen.features.auth.dtos.UpdateProfileReqModel;
 import com.canteen.features.auth.dtos.UserResModel;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -65,5 +67,21 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResModel> getMyProfile(HttpServletRequest httpRequest) {
+        String username = (String) httpRequest.getAttribute("username");
+        UserResModel response = userService.getUserProfile(username);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<UpdateUserResModel> updateMyProfile(
+            @Valid @RequestBody UpdateProfileReqModel request,
+            HttpServletRequest httpRequest) {
+        String username = (String) httpRequest.getAttribute("username");
+        UpdateUserResModel response = userService.updateUserProfile(username, request);
+        return ResponseEntity.ok(response);
     }
 }

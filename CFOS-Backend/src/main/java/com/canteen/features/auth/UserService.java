@@ -53,6 +53,9 @@ public class UserService {
         if (request.getRoleId() != null) {
             role = roleRepository.findById(request.getRoleId())
                     .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + request.getRoleId()));
+        } else if (request.getRoleName() != null) {
+            role = roleRepository.findByRoleName(request.getRoleName())
+                    .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + request.getRoleName()));
         } else {
             role = roleRepository.findByRoleName("User")
                     .orElseThrow(() -> new ResourceNotFoundException("Default 'User' role not found"));

@@ -37,3 +37,29 @@ export async function fetchMenuByCanteen(canteenId: number): Promise<MenuItem[]>
   const items = await fetchMenuItems();
   return items.filter((item) => item.canteen === canteenId);
 }
+
+export async function createMenuItem(data: Partial<MenuItem>): Promise<MenuItem> {
+  const res = await api.post("/api/foods", {
+    foodName: data.name,
+    price: data.price,
+    categoryName: data.category,
+    description: data.description,
+    imageUrl: data.image,
+  });
+  return res.data;
+}
+
+export async function updateMenuItem(id: string | number, data: Partial<MenuItem>): Promise<MenuItem> {
+  const res = await api.put(`/api/foods/${id}`, {
+    foodName: data.name,
+    price: data.price,
+    categoryName: data.category,
+    description: data.description,
+    imageUrl: data.image,
+  });
+  return res.data;
+}
+
+export async function deleteMenuItem(id: string | number): Promise<void> {
+  await api.delete(`/api/foods/${id}`);
+}

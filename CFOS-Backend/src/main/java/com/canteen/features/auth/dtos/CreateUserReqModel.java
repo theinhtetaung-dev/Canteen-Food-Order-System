@@ -7,6 +7,7 @@ import lombok.Data;
 @Data
 public class CreateUserReqModel {
     private Integer roleId;
+    private String roleName;
 
     @NotBlank(message = "Username is required")
     @jakarta.validation.constraints.Pattern(regexp = "^\\S+$", message = "Username cannot contain spaces")

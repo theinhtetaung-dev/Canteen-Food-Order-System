@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LogOut, Menu as MenuIcon, Package, Star, Phone, Utensils, User, UtensilsCrossed, X } from "lucide-react";
 import { NotificationBell } from "@furniture/components/layout/NotificationBell";
-import { UserMenu } from "@furniture/components/layout/UserMenu";
 import { useAuth } from "@furniture/hooks/useAuth";
 import { cn } from "@furniture/lib/utils";
 
@@ -26,7 +25,7 @@ export function Navbar() {
 
   const isHomePage = location.pathname === "/furniture" || location.pathname === "/furniture/";
 
-  if (isHomePage) {
+  if (!isAuthenticated) {
     return null;
   }
 
@@ -213,10 +212,6 @@ export function Navbar() {
                 </Link>
               </>
             )}
-          </div>
-
-          <div className="mt-auto flex items-center justify-end border-t border-gray-100 pt-6 shrink-0">
-            <UserMenu />
           </div>
         </div>
       </aside>

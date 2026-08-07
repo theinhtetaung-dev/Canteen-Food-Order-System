@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Header, type DayFilterKey } from "../components/layout/Header";
 import { Calendar, ChevronDown } from "lucide-react";
+import { fetchReport, type ReportResponseModel } from "@furniture/api/report.api";
 
 type TimeRangeKey = "weekly" | "monthly" | "last_6_months" | "last_year";
 
@@ -16,82 +17,109 @@ interface DashboardMetrics {
   totalRevenue: string;
 }
 
-const DASHBOARD_METRICS_MAP: Record<DayFilterKey, DashboardMetrics> = {
-  today: {
-    totalOrders: "42",
-    averageRating: "4.9",
-    totalRevenue: "MMK 12,500",
-  },
-  yesterday: {
-    totalOrders: "88",
-    averageRating: "4.7",
-    totalRevenue: "MMK 24,100",
-  },
-  last_7_days: {
-    totalOrders: "1,240",
-    averageRating: "4.8",
-    totalRevenue: "MMK 385,000",
-  },
-  last_30_days: {
-    totalOrders: "10,102",
-    averageRating: "4.6",
-    totalRevenue: "MMK 1,450,000",
-  },
-};
-
-const GROWTH_DATA_MAP: Record<TimeRangeKey, ChartDataSet> = {
-  weekly: {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    points: [
-      { x: 20, y: 100 },
-      { x: 90, y: 85 },
-      { x: 160, y: 110 },
-      { x: 230, y: 70 },
-      { x: 300, y: 95 },
-      { x: 370, y: 60 },
-      { x: 440, y: 45 },
-    ],
-    growthText: "+12% vs Last Week",
-  },
-  monthly: {
-    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-    points: [
-      { x: 35, y: 110 },
-      { x: 155, y: 80 },
-      { x: 275, y: 95 },
-      { x: 395, y: 55 },
-    ],
-    growthText: "+15% vs Last Month",
-  },
-  last_6_months: {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    points: [
-      { x: 20, y: 120 },
-      { x: 100, y: 105 },
-      { x: 180, y: 90 },
-      { x: 260, y: 100 },
-      { x: 340, y: 80 },
-      { x: 420, y: 70 },
-    ],
-    growthText: "+18% vs Last Period",
-  },
-  last_year: {
-    labels: ["Q1", "Q2", "Q3", "Q4"],
-    points: [
-      { x: 40, y: 115 },
-      { x: 160, y: 85 },
-      { x: 280, y: 95 },
-      { x: 400, y: 50 },
-    ],
-    growthText: "+24% vs Last Year",
-  },
-};
-
 export const Dashboard = () => {
   const [selectedDayFilter, setSelectedDayFilter] = useState<DayFilterKey>("today");
   const [selectedRange, setSelectedRange] = useState<TimeRangeKey>("last_6_months");
   const [isChartDropdownOpen, setIsChartDropdownOpen] = useState(false);
   const chartDropdownRef = useRef<HTMLDivElement>(null);
+
+  const [currentMetrics, setCurrentMetrics] = useState<DashboardMetrics>({
+    totalOrders: "0",
+    averageRating: "4.8",
+    totalRevenue: "MMK 0",
+  });
+  
+  const [currentDataset, setCurrentDataset] = useState<ChartDataSet>({
+    labels: [],
+    points: [],
+    growthText: "",
+  });
+
+  // Calculate Dates for Day Filter
+  const getDatesForFilter = (filter: DayFilterKey) => {
+    const end = new Date();
+    const start = new Date();
+    if (filter === "yesterday") {
+      start.setDate(end.getDate() - 1);
+      end.setDate(end.getDate() - 1);
+    } else if (filter === "last_7_days") {
+      start.setDate(end.getDate() - 7);
+    } else if (filter === "last_30_days") {
+      start.setDate(end.getDate() - 30);
+    }
+    return {
+      startDate: start.toISOString().split("T")[0],
+      endDate: end.toISOString().split("T")[0],
+    };
+  };
+
+  useEffect(() => {
+    async function loadMetrics() {
+      try {
+        const { startDate, endDate } = getDatesForFilter(selectedDayFilter);
+        const data = await fetchReport("daily", startDate, endDate);
+        setCurrentMetrics({
+          totalOrders: data.totalOrders.toLocaleString(),
+          averageRating: "4.8", // Mocked as no endpoint
+          totalRevenue: `MMK ${data.totalRevenue.toLocaleString()}`,
+        });
+      } catch (err) {
+        console.error("Failed to load metrics", err);
+      }
+    }
+    loadMetrics();
+  }, [selectedDayFilter]);
+
+  // Calculate Dates for Range Filter
+  const getDatesForRange = (range: TimeRangeKey) => {
+    const end = new Date();
+    const start = new Date();
+    let type = "daily";
+    if (range === "weekly") {
+      start.setDate(end.getDate() - 7);
+    } else if (range === "monthly") {
+      start.setDate(end.getDate() - 30);
+    } else if (range === "last_6_months") {
+      start.setMonth(end.getMonth() - 6);
+      type = "monthly";
+    } else if (range === "last_year") {
+      start.setFullYear(end.getFullYear() - 1);
+      type = "monthly";
+    }
+    return {
+      type,
+      startDate: start.toISOString().split("T")[0],
+      endDate: end.toISOString().split("T")[0],
+    };
+  };
+
+  useEffect(() => {
+    async function loadChart() {
+      try {
+        const { type, startDate, endDate } = getDatesForRange(selectedRange);
+        const data = await fetchReport(type, startDate, endDate);
+        
+        // Map to SVG coordinates
+        const labels = data.periodBreakdown.map(p => p.periodLabel.substring(0, 5));
+        const maxOrder = Math.max(...data.periodBreakdown.map(p => p.orderCount), 1);
+        
+        const points = data.periodBreakdown.map((p, i) => {
+          const x = 40 + (i * (420 / Math.max(labels.length - 1, 1)));
+          const y = 120 - ((p.orderCount / maxOrder) * 80);
+          return { x, y };
+        });
+
+        setCurrentDataset({
+          labels,
+          points: points.length > 0 ? points : [{ x: 40, y: 115 }],
+          growthText: "Live Data",
+        });
+      } catch (err) {
+        console.error("Failed to load chart", err);
+      }
+    }
+    loadChart();
+  }, [selectedRange]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -102,9 +130,6 @@ export const Dashboard = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const currentMetrics = DASHBOARD_METRICS_MAP[selectedDayFilter] || DASHBOARD_METRICS_MAP.today;
-  const currentDataset = GROWTH_DATA_MAP[selectedRange] || GROWTH_DATA_MAP.last_6_months;
 
   const rangeLabels: Record<TimeRangeKey, string> = {
     weekly: "Weekly",

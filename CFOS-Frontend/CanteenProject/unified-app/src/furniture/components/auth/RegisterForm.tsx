@@ -100,7 +100,7 @@ export function RegisterForm({
                 htmlFor="rollNumber"
                 className="font-semibold text-slate-700"
               >
-                Username (or) Roll Number
+                Roll Number
               </FieldLabel>
               <Input
                 {...field}

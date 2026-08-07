@@ -109,3 +109,36 @@ export function markAllNotificationsRead(userId: string): void {
   saveNotifications(notifications);
   window.dispatchEvent(new CustomEvent("canteen-orders-updated"));
 }
+
+export async function fetchAllOrders(): Promise<Order[]> {
+  try {
+    const { data } = await api.get<{ content: any[] }>("/api/orders", {
+      params: { size: 1000 }
+    });
+
+    return data.content.map((order) => ({
+      id: `ORD-${order.orderId}`,
+      userId: order.userName,
+      items: order.orderItems.map((item: any) => ({
+        menuItemId: item.orderItemId,
+        name: item.foodName,
+        price: Number(item.snapPrice),
+        quantity: item.quantity,
+        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000",
+      })),
+      totalPrice: Number(order.totalAmount),
+      pickupTime: "12:00 PM",
+      status: mapBackendStatus(order.orderStatus),
+      createdAt: order.createdAt || new Date().toISOString(),
+      updatedAt: order.updatedAt || new Date().toISOString(),
+    }));
+  } catch (err) {
+    console.error("Error fetching all orders:", err);
+    return [];
+  }
+}
+
+export async function updateOrderStatus(orderId: string | number, status: string): Promise<void> {
+  const numericId = typeof orderId === 'string' ? orderId.replace('ORD-', '') : orderId;
+  await api.put(`/api/orders/${numericId}`, { orderStatus: status });
+}

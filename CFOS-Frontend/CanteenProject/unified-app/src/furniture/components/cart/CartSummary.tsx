@@ -3,9 +3,10 @@ import { formatPrice } from "@furniture/lib/utils";
 interface CartSummaryProps {
   totalPrice: number;
   onCheckout?: () => void;
+  onCancel?: () => void;
 }
 
-export function CartSummary({ totalPrice, onCheckout }: CartSummaryProps) {
+export function CartSummary({ totalPrice, onCheckout, onCancel }: CartSummaryProps) {
   return (
     <div className="border-t border-gray-100 bg-brand-light/30 p-5">
       <div className="mb-4 flex items-center justify-between">
@@ -14,13 +15,22 @@ export function CartSummary({ totalPrice, onCheckout }: CartSummaryProps) {
           {formatPrice(totalPrice)}
         </span>
       </div>
-      <button
-        type="button"
-        onClick={onCheckout}
-        className="w-full rounded-xl bg-brand py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-brand-dark hover:shadow-lg active:scale-[0.98]"
-      >
-        Place Order
-      </button>
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 rounded-xl bg-red-500 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-red-600 active:scale-[0.98]"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={onCheckout}
+          className="flex-[2] rounded-xl bg-brand py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-brand-dark hover:shadow-lg active:scale-[0.98]"
+        >
+          Place Order
+        </button>
+      </div>
     </div>
   );
 }

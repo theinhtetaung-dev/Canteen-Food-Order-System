@@ -46,16 +46,15 @@ export function LoginForm({
       const user = await login(data);
       // Redirect based on role
       if (user.role === "superadmin") {
-        window.location.href = "/superadmin";
+        window.location.href = "/admin"; // Platform admin
       } else if (user.role === "admin") {
-        window.location.href = "/admin";
-      } else {
+        window.location.href = "/superadmin"; // Canteen admin
         // Regular user stays in furniture
         const from = (location.state as { from?: string } | null)?.from ?? "/furniture";
         navigate(from, { replace: true });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError("Username or password is incorrect");
     }
   }
 

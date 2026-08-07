@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
+import { fetchMenuItems, createMenuItem, updateMenuItem, deleteMenuItem } from "@furniture/api/menu.api";
 import {
   Search,
   Plus,
@@ -121,23 +122,34 @@ const categoryStyles: Record<CategoryType, string> = {
   Snacks: "bg-[#fef3c7] text-[#854d0e]",
 };
 
+
 export function Menu() {
-  const [items, setItems] = useState<MenuItem[]>(() => {
-    const saved = localStorage.getItem("campus_bites_menu");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      } catch (e) {
-        console.error("Failed to parse menu items from storage", e);
-      }
-    }
-    return INITIAL_MENU_ITEMS;
-  });
+  const [items, setItems] = useState<MenuItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    localStorage.setItem("campus_bites_menu", JSON.stringify(items));
-  }, [items]);
+    async function loadMenu() {
+      try {
+        setIsLoading(true);
+        const data = await fetchMenuItems();
+        const mapped = data.map((d: any) => ({
+          id: String(d.id),
+          name: d.name,
+          price: d.price,
+          category: (d.category === 'main' ? 'Main Course' : d.category === 'drinks' ? 'Beverages' : 'Snacks') as CategoryType,
+          description: d.description,
+          available: true,
+          image: d.image
+        }));
+        setItems(mapped);
+      } catch (error) {
+        console.error("Failed to load menu", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadMenu();
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
@@ -193,17 +205,22 @@ export function Menu() {
     );
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (deletingItem) {
-      setItems((prev) => prev.filter((item) => item.id !== deletingItem.id));
-      setDeletingItem(null);
+      try {
+        await deleteMenuItem(deletingItem.id);
+        setItems((prev) => prev.filter((item) => item.id !== deletingItem.id));
+      } catch (error) {
+        console.error("Failed to delete menu item", error);
+      } finally {
+        setDeletingItem(null);
+      }
     }
   };
 
   const handleResetMenu = () => {
-    localStorage.removeItem("campus_bites_menu");
-    setItems(INITIAL_MENU_ITEMS);
-    setStartIndex(0);
+    // We cannot reset the menu easily with real backend, so we'll just reload
+    window.location.reload();
   };
 
   const handleAddImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -218,40 +235,62 @@ export function Menu() {
     }
   };
 
-  const handleAddItem = (e: React.FormEvent) => {
+  const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItemName.trim() || !newItemPrice) return;
 
-    const newItem: MenuItem = {
-      id: Date.now().toString(),
-      name: newItemName,
-      price: Number(newItemPrice),
-      category: newItemCategory,
-      description: newItemDescription,
-      available: true,
-      image:
-        newItemImage ||
-        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=300",
-    };
+    try {
+      const saved = await createMenuItem({
+        name: newItemName,
+        price: Number(newItemPrice),
+        category: newItemCategory as any,
+        description: newItemDescription,
+        image: newItemImage || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=300",
+      } as any);
 
-    setItems((prev) => [newItem, ...prev]);
-    setNewItemName("");
-    setNewItemPrice("");
-    setNewItemCategory("Main Course");
-    setNewItemDescription("");
-    setNewItemImage(null);
-    setIsAddModalOpen(false);
-    setStartIndex(0);
+      const newItem: MenuItem = {
+        id: String(saved.id),
+        name: saved.name,
+        price: saved.price,
+        category: newItemCategory,
+        description: saved.description,
+        available: true,
+        image: saved.image,
+      };
+
+      setItems((prev) => [newItem, ...prev]);
+      setNewItemName("");
+      setNewItemPrice("");
+      setNewItemCategory("Main Course");
+      setNewItemDescription("");
+      setNewItemImage(null);
+      setIsAddModalOpen(false);
+      setStartIndex(0);
+    } catch (error) {
+      console.error("Failed to add menu item", error);
+    }
   };
 
-  const handleSaveEdit = (e: React.FormEvent) => {
+  const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem) return;
 
-    setItems((prev) =>
-      prev.map((item) => (item.id === editingItem.id ? editingItem : item))
-    );
-    setEditingItem(null);
+    try {
+      await updateMenuItem(editingItem.id, {
+        name: editingItem.name,
+        price: editingItem.price,
+        category: editingItem.category as any,
+        description: editingItem.description,
+        image: editingItem.image,
+      } as any);
+
+      setItems((prev) =>
+        prev.map((item) => (item.id === editingItem.id ? editingItem : item))
+      );
+      setEditingItem(null);
+    } catch (error) {
+      console.error("Failed to edit menu item", error);
+    }
   };
 
   const processedItems = useMemo(() => {

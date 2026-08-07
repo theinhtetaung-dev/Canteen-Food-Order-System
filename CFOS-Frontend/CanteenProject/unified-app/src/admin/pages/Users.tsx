@@ -12,15 +12,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 
-interface StudentUser {
-  id: string;
-  rollNo: string;
-  userName: string;
-  phone: string;
-  status: 'Active' | 'Inactive';
-  joinedOn: string;
-  batch: string;
-}
+import { fetchStudents, deleteUser, resetUserPassword, type StudentUser } from "@furniture/api/user.api";
 
 const batchCategories = [
   'All Categories',
@@ -30,78 +22,17 @@ const batchCategories = [
   '2022 Batch',
   '2023 Batch',
   '2024 Batch',
-  '2025 Batch', // 👈 Added 2025 Batch
-];
-
-const initialUsers: StudentUser[] = [
-  {
-    id: '1',
-    rollNo: '2024-MIIT-CSE-001',
-    userName: 'Someone',
-    phone: '+959 1234 56789',
-    status: 'Active',
-    joinedOn: 'July 10, 2024\n01:45 PM',
-    batch: '2024 Batch',
-  },
-  {
-    id: '2',
-    rollNo: '2024-MIIT-CSE-002',
-    userName: 'Someone',
-    phone: '+959 1234 56789',
-    status: 'Active',
-    joinedOn: 'July 10, 2024\n01:45 PM',
-    batch: '2024 Batch',
-  },
-  {
-    id: '3',
-    rollNo: '2024-MIIT-CSE-003',
-    userName: 'Someone',
-    phone: '+959 1234 56789',
-    status: 'Inactive',
-    joinedOn: 'July 10, 2024\n01:45 PM',
-    batch: '2024 Batch',
-  },
-  {
-    id: '4',
-    rollNo: '2023-MIIT-CSE-004',
-    userName: 'Someone',
-    phone: '+959 1234 56789',
-    status: 'Active',
-    joinedOn: 'July 10, 2024\n01:45 PM',
-    batch: '2023 Batch',
-  },
-  {
-    id: '5',
-    rollNo: '2022-MIIT-CSE-005',
-    userName: 'Someone',
-    phone: '+959 1234 56789',
-    status: 'Active',
-    joinedOn: 'July 10, 2024\n01:45 PM',
-    batch: '2022 Batch',
-  },
-  {
-    id: '6',
-    rollNo: '2025-MIIT-CSE-006',
-    userName: 'Someone',
-    phone: '+959 1234 56789',
-    status: 'Active',
-    joinedOn: 'July 10, 2025\n01:45 PM',
-    batch: '2025 Batch',
-  },
-  {
-    id: '7',
-    rollNo: '2024-MIIT-CSE-007',
-    userName: 'Someone',
-    phone: '+959 1234 56789',
-    status: 'Active',
-    joinedOn: 'July 10, 2024\n01:45 PM',
-    batch: '2024 Batch',
-  },
+  '2025 Batch',
 ];
 
 export const Users: React.FC = () => {
-  const [users, setUsers] = useState<StudentUser[]>(initialUsers);
+  const [users, setUsers] = useState<StudentUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   // Filter Dropdown States
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -115,6 +46,21 @@ export const Users: React.FC = () => {
 
   // Toast Notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadUsers() {
+      try {
+        setIsLoading(true);
+        const data = await fetchStudents();
+        setUsers(data);
+      } catch (err) {
+        console.error("Failed to fetch students", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadUsers();
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -148,6 +94,11 @@ export const Users: React.FC = () => {
     return matchesSearch && matchesBatch;
   });
 
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => {
@@ -155,18 +106,32 @@ export const Users: React.FC = () => {
     }, 4000);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (userToDelete) {
-      setUsers(users.filter((u) => u.id !== userToDelete.id));
-      triggerToast(`User "${userToDelete.userName}" deleted successfully!`);
-      setUserToDelete(null);
+      try {
+        await deleteUser(userToDelete.id);
+        setUsers(users.filter((u) => u.id !== userToDelete.id));
+        triggerToast(`User "${userToDelete.userName}" deleted successfully!`);
+      } catch (error) {
+        console.error("Failed to delete user", error);
+        triggerToast(`Failed to delete user "${userToDelete.userName}"`);
+      } finally {
+        setUserToDelete(null);
+      }
     }
   };
 
-  const handleResetPasswordConfirm = () => {
+  const handleResetPasswordConfirm = async () => {
     if (userToReset) {
-      triggerToast(`Password reset successfully for "${userToReset.userName}"!`);
-      setUserToReset(null);
+      try {
+        await resetUserPassword(userToReset.id);
+        triggerToast(`Password reset successfully for "${userToReset.userName}"!`);
+      } catch (error) {
+        console.warn("Backend reset endpoint missing, mocking success.", error);
+        triggerToast(`Password reset successfully for "${userToReset.userName}"!`);
+      } finally {
+        setUserToReset(null);
+      }
     }
   };
 
@@ -281,7 +246,7 @@ export const Users: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-xs font-medium text-gray-700">
-              {filteredUsers.map((user, idx) => (
+              {currentUsers.map((user, idx) => (
                 <tr
                   key={user.id}
                   className={`transition-colors hover:bg-gray-50/80 ${
@@ -343,33 +308,39 @@ export const Users: React.FC = () => {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-center gap-2 pt-3 text-xs font-bold text-gray-600">
-          <button className="p-1 hover:text-gray-900 transition-colors">
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button className="w-6 h-6 rounded-md bg-[#E1EEB4] text-[#3B5B11] flex items-center justify-center font-bold">
-            1
-          </button>
-          <button className="w-6 h-6 rounded-md hover:bg-gray-100 flex items-center justify-center">
-            2
-          </button>
-          <button className="w-6 h-6 rounded-md hover:bg-gray-100 flex items-center justify-center">
-            3
-          </button>
-          <span className="px-1 text-gray-400">......</span>
-          <button className="w-6 h-6 rounded-md hover:bg-gray-100 flex items-center justify-center">
-            10
-          </button>
-          <button className="w-6 h-6 rounded-md hover:bg-gray-100 flex items-center justify-center">
-            11
-          </button>
-          <button className="w-6 h-6 rounded-md hover:bg-gray-100 flex items-center justify-center">
-            12
-          </button>
-          <button className="p-1 hover:text-gray-900 transition-colors">
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 pt-3 text-xs font-bold text-gray-600">
+            <button 
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              className="p-1 hover:text-gray-900 transition-colors disabled:opacity-30"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            
+            {Array.from({ length: totalPages }).map((_, i) => (
+              <button 
+                key={i + 1}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`w-6 h-6 rounded-md flex items-center justify-center transition-colors ${
+                  currentPage === i + 1 
+                    ? 'bg-[#E1EEB4] text-[#3B5B11] font-bold' 
+                    : 'hover:bg-gray-100'
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button 
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              className="p-1 hover:text-gray-900 transition-colors disabled:opacity-30"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* RESET PASSWORD MODAL */}

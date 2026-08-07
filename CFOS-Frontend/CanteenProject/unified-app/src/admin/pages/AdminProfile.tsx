@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, Shield, CheckCircle2, LogOut, Pencil } from 'lucide-react';
+import { updateUserProfile } from "@furniture/api/auth.api";
 import { useAuth } from "@furniture/hooks/useAuth";
 
 export const AdminProfile: React.FC = () => {
@@ -27,9 +28,20 @@ export const AdminProfile: React.FC = () => {
     setIsEditing(false);
   };
 
-  const handleSave = () => {
-    setProfile(formData);
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      await updateUserProfile("me", {
+        name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+      });
+      setProfile(formData);
+      setIsEditing(false);
+      alert("Profile updated successfully!");
+    } catch (err) {
+      console.error("Failed to update profile", err);
+      alert("Failed to update profile on the backend.");
+    }
   };
 
   return (

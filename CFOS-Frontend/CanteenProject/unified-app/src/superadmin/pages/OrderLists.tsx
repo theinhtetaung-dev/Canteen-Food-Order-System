@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { fetchAllOrders, updateOrderStatus } from "@furniture/api/order.api";
 import { List, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
 type OrderStatus = "Pending" | "In Progress" | "Ready" | "Completed";
@@ -42,25 +43,74 @@ const INITIAL_ORDERS: Order[] = [
   },
 ];
 
+
+
 export function OrderLists() {
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    async function loadOrders() {
+      try {
+        setIsLoading(true);
+        const data = await fetchAllOrders();
+        const mapped = data.map((d: any) => {
+          // Map backend status to superadmin status
+          let mappedStatus: OrderStatus = "Pending";
+          if (d.status === "completed") mappedStatus = "Completed";
+          if (d.status === "cancelled") mappedStatus = "Completed"; // Hack for now
+          
+          return {
+            id: String(d.id),
+            studentId: d.userId,
+            items: d.items.map((i: any) => `${i.quantity}x ${i.name}`).join(", "),
+            pickupTime: d.pickupTime || "12:00 PM",
+            status: mappedStatus,
+          };
+        });
+        setOrders(mapped);
+      } catch (error) {
+        console.error("Failed to load orders", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadOrders();
+  }, []);
 
   // Stats Counters
   const activeOrdersCount = orders.filter((o) => o.status !== "Completed").length;
   const readyCount = orders.filter((o) => o.status === "Ready").length;
-  const completedTodayCount = 45;
+  const completedTodayCount = orders.filter((o) => o.status === "Completed").length;
 
-  const handleNextStatus = (id: string, currentStatus: OrderStatus) => {
-    setOrders((prev) =>
-      prev.map((order) => {
-        if (order.id !== id) return order;
-        if (currentStatus === "Pending") return { ...order, status: "In Progress" };
-        if (currentStatus === "In Progress") return { ...order, status: "Ready" };
-        if (currentStatus === "Ready") return { ...order, status: "Completed" };
-        return order;
-      })
-    );
+  const handleNextStatus = async (id: string, currentStatus: OrderStatus) => {
+    let nextStatus: OrderStatus = currentStatus;
+    let backendStatus = "pending";
+    if (currentStatus === "Pending") {
+      nextStatus = "In Progress";
+      backendStatus = "IN_PROGRESS";
+    }
+    else if (currentStatus === "In Progress") {
+      nextStatus = "Ready";
+      backendStatus = "READY";
+    }
+    else if (currentStatus === "Ready") {
+      nextStatus = "Completed";
+      backendStatus = "COMPLETE";
+    }
+
+    try {
+      await updateOrderStatus(id, backendStatus);
+      setOrders((prev) =>
+        prev.map((order) => {
+          if (order.id !== id) return order;
+          return { ...order, status: nextStatus };
+        })
+      );
+    } catch (error) {
+      console.error("Failed to update status", error);
+    }
   };
 
   // Custom Status Badges

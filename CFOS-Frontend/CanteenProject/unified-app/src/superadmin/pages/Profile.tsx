@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { User, ShieldCheck, PenTool, Edit2, LogOut, CheckCircle2 } from "lucide-react";
+import { updateUserProfile } from "@furniture/api/auth.api";
 import { useAuth } from "@furniture/hooks/useAuth";
 
 export const Profile: React.FC = () => {
@@ -53,10 +54,21 @@ export const Profile: React.FC = () => {
     }
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    localStorage.setItem("campus_bites_profile", JSON.stringify(formData));
-    window.dispatchEvent(new Event("profileUpdated"));
+  const handleSave = async () => {
+    try {
+      await updateUserProfile("me", {
+        name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+      });
+      localStorage.setItem("campus_bites_profile", JSON.stringify(formData));
+      window.dispatchEvent(new Event("profileUpdated"));
+      setIsEditing(false);
+      alert("Profile updated successfully!");
+    } catch (err) {
+      console.error("Failed to update profile", err);
+      alert("Failed to update profile on the backend.");
+    }
   };
 
   const handleDiscard = () => {

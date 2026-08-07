@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { ShoppingBag, X } from "lucide-react";
 import { CartItem } from "@furniture/components/cart/CartItem";
 import { CartSummary } from "@furniture/components/cart/CartSummary";
@@ -17,13 +18,16 @@ export function CartDrawer() {
     deleteFromCart,
     isOpen,
     closeCart,
+    clearCart,
   } = useCart();
+  const location = useLocation();
+  const isMenuPage = location.pathname.includes("/furniture/menu");
   const isMobile = useMediaQuery("(max-width: 640px)");
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   return (
     <>
-      {isOpen && isMobile && (
+      {isOpen && isMobile && isMenuPage && (
         <button
           type="button"
           aria-label="Close cart overlay"
@@ -39,10 +43,10 @@ export function CartDrawer() {
             ? "fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] rounded-t-3xl border-t border-gray-100"
             : "sticky top-0 z-40 h-screen shrink-0 border-l border-gray-100",
           isMobile
-            ? isOpen
+            ? (isOpen && isMenuPage)
               ? "translate-y-0"
               : "translate-y-full"
-            : (totalItems > 0 || isOpen)
+            : (isMenuPage && (totalItems > 0 || isOpen))
               ? "w-80 lg:w-[400px] opacity-100 translate-x-0"
               : "w-0 overflow-hidden border-none opacity-0 translate-x-full",
         )}
@@ -98,6 +102,7 @@ export function CartDrawer() {
               <CartSummary
                 totalPrice={totalPrice}
                 onCheckout={() => setCheckoutOpen(true)}
+                onCancel={clearCart}
               />
             </div>
           )}

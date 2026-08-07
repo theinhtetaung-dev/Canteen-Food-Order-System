@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import { useAuth } from "@furniture/hooks/useAuth";
 
 const footerLinks = [
   { name: "Home", path: "/" },
@@ -9,12 +10,19 @@ const footerLinks = [
 ];
 
 export function Footer() {
+  const location = useLocation();
+  const { isAuthenticated } = useAuth();
+  const isHomePage = location.pathname === "/furniture" || location.pathname === "/furniture/";
+
+  if (isHomePage && !isAuthenticated) {
+    return null;
+  }
+
   return (
     <footer className="mt-auto border-t border-gray-200 bg-white">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div>
-
             <p className="max-w-xs text-sm leading-relaxed text-gray-500">
               Fresh, affordable meals for students. Order online and pick up at
               your campus canteen.

@@ -1,16 +1,19 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Package, LayoutGrid, List } from "lucide-react";
+import { Package, LayoutGrid, List, X } from "lucide-react";
 import { PageContainer } from "@furniture/components/layout/PageContainer";
 import { OrderCard } from "@furniture/components/orders/OrderCard";
 import { useOrders } from "@furniture/hooks/useOrders";
 import { Button } from "@furniture/components/ui/button";
+import { formatDateTime, formatPrice } from "@furniture/lib/utils";
+import type { Order } from "@furniture/types/order";
 
 export default function OrdersPage() {
   const { orders } = useOrders();
   const location = useLocation();
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [viewStyle, setViewStyle] = useState<"card" | "table">("table");
+  const [detailOrder, setDetailOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     const state = location.state as { newOrderId?: string } | null;
@@ -88,9 +91,9 @@ export default function OrdersPage() {
                   <th scope="col" className="px-6 py-4 font-medium">No</th>
                   <th scope="col" className="px-6 py-4 font-medium">Order ID</th>
                   <th scope="col" className="px-6 py-4 font-medium">Date</th>
-                  <th scope="col" className="px-6 py-4 font-medium">Items</th>
                   <th scope="col" className="px-6 py-4 font-medium">Total Price</th>
                   <th scope="col" className="px-6 py-4 font-medium">Status</th>
+                  <th scope="col" className="px-6 py-4 font-medium">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -98,11 +101,8 @@ export default function OrdersPage() {
                   <tr key={order.id} className={`hover:bg-gray-50 transition-colors ${highlightId === order.id ? 'bg-brand-light/20' : ''}`}>
                     <td className="px-6 py-4 font-medium text-gray-900">{index + 1}</td>
                     <td className="px-6 py-4 font-medium text-gray-900">{order.id}</td>
-                    <td className="px-6 py-4">{new Date(order.createdAt).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 max-w-[200px] truncate" title={order.items.map(item => `${item.quantity}x ${item.name}`).join(', ')}>
-                      {order.items.map(item => `${item.quantity}x ${item.name}`).join(', ')}
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-brand-dark">${order.totalPrice.toFixed(2)}</td>
+                    <td className="px-6 py-4">{formatDateTime(order.createdAt)}</td>
+                    <td className="px-6 py-4 font-semibold text-brand-dark">{formatPrice(order.totalPrice)}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
                         ${order.status === 'completed' ? 'bg-green-100 text-green-800' : 
@@ -112,12 +112,62 @@ export default function OrdersPage() {
                         {order.status}
                       </span>
                     </td>
+                    <td className="px-6 py-4">
+                      <Button size="sm" variant="outline" className="text-brand hover:text-brand-dark" onClick={() => setDetailOrder(order)}>
+                        Detail
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )
+      )}
+
+      {detailOrder && (
+        <>
+          <button
+            type="button"
+            aria-label="Close modal"
+            className="fixed inset-0 z-[60] bg-gray-900/50 backdrop-blur-sm"
+            onClick={() => setDetailOrder(null)}
+          />
+          <div className="fixed left-1/2 top-1/2 z-[60] w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-5 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-gray-800">Order Details</h2>
+              <button type="button" onClick={() => setDetailOrder(null)} className="text-gray-400 hover:text-gray-700">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="mb-4 space-y-4 max-h-64 overflow-y-auto pr-2">
+              {detailOrder.items.map((item) => (
+                <div key={item.menuItemId} className="flex items-center gap-3">
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="h-12 w-12 rounded-lg object-cover"
+                  />
+                  <div className="flex-1 text-sm">
+                    <p className="font-medium text-gray-800">{item.name}</p>
+                    <p className="text-gray-500">
+                      {item.quantity} × {formatPrice(item.price)}
+                    </p>
+                  </div>
+                  <div className="text-sm font-semibold text-gray-800">
+                    {formatPrice(item.price * item.quantity)}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-gray-100 pt-4 flex justify-between items-center text-sm">
+              <span className="font-semibold text-gray-600">Total Price</span>
+              <span className="text-lg font-bold text-brand-dark">{formatPrice(detailOrder.totalPrice)}</span>
+            </div>
+          </div>
+        </>
       )}
     </PageContainer>
   );

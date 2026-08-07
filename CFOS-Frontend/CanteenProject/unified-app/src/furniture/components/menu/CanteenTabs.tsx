@@ -12,7 +12,7 @@ const canteens = [
 
 export function CanteenTabs({ activeCanteen, onChange }: CanteenTabsProps) {
   return (
-    <div className="flex justify-center gap-4">
+    <div className="flex gap-8 border-b border-gray-200 px-2 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       {canteens.map((canteen) => {
         const isActive = activeCanteen === canteen.id;
         return (
@@ -21,13 +21,16 @@ export function CanteenTabs({ activeCanteen, onChange }: CanteenTabsProps) {
             type="button"
             onClick={() => onChange(canteen.id)}
             className={cn(
-              "rounded-full px-6 py-2 text-sm font-semibold transition-all duration-300",
+              "whitespace-nowrap pb-3 text-sm font-semibold transition-all duration-300 relative",
               isActive
-                ? "bg-brand text-white shadow-md"
-                : "border border-gray-200 bg-white text-gray-600 hover:border-brand hover:text-brand",
+                ? "text-brand"
+                : "text-gray-500 hover:text-gray-800",
             )}
           >
             {canteen.label}
+            {isActive && (
+              <span className="absolute bottom-0 left-0 h-[2px] w-full bg-brand rounded-t-full" />
+            )}
           </button>
         );
       })}

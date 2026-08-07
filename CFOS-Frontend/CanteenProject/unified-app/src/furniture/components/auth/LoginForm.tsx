@@ -80,7 +80,7 @@ export function LoginForm({
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="rollNumber" className="font-semibold text-slate-700">
-                Roll Number
+                Username (or) Roll Number
               </FieldLabel>
               <Input
                 {...field}

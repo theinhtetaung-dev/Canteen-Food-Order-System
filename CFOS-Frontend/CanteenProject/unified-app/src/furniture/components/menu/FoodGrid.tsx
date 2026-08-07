@@ -17,7 +17,7 @@ export function FoodGrid({ items, onAddToCart, onViewDetails }: FoodGridProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-6">
       {items.map((item, index) => (
         <FoodCard
           key={item.id}

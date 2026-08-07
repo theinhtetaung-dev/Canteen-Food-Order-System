@@ -14,9 +14,7 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <div>
-            <div className="mb-3 inline-block rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white shadow-sm">
-              MIT Canteen
-            </div>
+
             <p className="max-w-xs text-sm leading-relaxed text-gray-500">
               Fresh, affordable meals for students. Order online and pick up at
               your campus canteen.
@@ -66,9 +64,11 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 border-t border-gray-100 pt-6 text-center text-xs text-gray-400">
-          © {new Date().getFullYear()} MIT Canteen Management. All rights
-          reserved.
+        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+          <p className="text-sm text-gray-500">
+            © {new Date().getFullYear()} MIIT Canteen Management. All rights
+            reserved.
+          </p>
         </div>
       </div>
     </footer>

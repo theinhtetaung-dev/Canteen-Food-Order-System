@@ -4,7 +4,7 @@ import { useAuth } from "@furniture/hooks/useAuth";
 import { useOrders } from "@furniture/hooks/useOrders";
 import { cn } from "@furniture/lib/utils";
 
-export function NotificationBell() {
+export function NotificationBell({ className }: { className?: string }) {
   const { isAuthenticated } = useAuth();
   const { notifications, unreadCount, markRead, markAllRead } = useOrders();
   const [open, setOpen] = useState(false);
@@ -16,7 +16,7 @@ export function NotificationBell() {
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="relative text-white transition-colors hover:text-brand-light"
+        className={cn("relative transition-colors", className || "text-white hover:text-brand-light")}
         aria-label="Notifications"
       >
         <Bell className="h-6 w-6" />

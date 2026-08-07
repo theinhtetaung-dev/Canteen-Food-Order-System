@@ -65,11 +65,27 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
           </button>
         </div>
 
-        <div className="mb-4 rounded-xl bg-brand-light/40 p-4">
-          <p className="text-sm text-gray-600">
-            {lines.length} item(s) · Total{" "}
-            <span className="font-bold text-gray-800">{formatPrice(totalPrice)}</span>
-          </p>
+        <div className="mb-4 max-h-48 overflow-y-auto rounded-xl border border-gray-100 bg-gray-50 p-4">
+          <h3 className="mb-3 text-sm font-semibold text-gray-700">Order Summary</h3>
+          <ul className="space-y-3">
+            {lines.map((line) => (
+              <li key={line.item.id} className="flex justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-800">{line.item.name}</span>
+                  <span className="rounded-md bg-white px-2 py-0.5 text-xs font-semibold text-gray-500 shadow-sm">
+                    x{line.quantity}
+                  </span>
+                </div>
+                <span className="font-semibold text-gray-700">
+                  {formatPrice(line.item.price * line.quantity)}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 flex justify-between border-t border-gray-200 pt-3">
+            <span className="font-semibold text-gray-800">Total</span>
+            <span className="text-lg font-bold text-brand-dark">{formatPrice(totalPrice)}</span>
+          </div>
         </div>
 
         <div className="mb-6">

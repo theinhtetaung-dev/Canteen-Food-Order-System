@@ -1,6 +1,6 @@
 import { Clock, Package } from "lucide-react";
 import { OrderStatusBadge } from "@furniture/components/orders/OrderStatusBadge";
-import { formatPrice } from "@furniture/lib/utils";
+import { formatPrice, formatDateTime } from "@furniture/lib/utils";
 import type { Order } from "@furniture/types/order";
 
 interface OrderCardProps {
@@ -8,7 +8,7 @@ interface OrderCardProps {
 }
 
 export function OrderCard({ order }: OrderCardProps) {
-  const date = new Date(order.createdAt).toLocaleString();
+  const date = formatDateTime(order.createdAt);
 
   return (
     <article className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md">

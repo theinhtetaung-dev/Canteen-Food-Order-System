@@ -143,7 +143,7 @@ export function CategoryFilter({
           isMouseDown ? "cursor-grabbing" : "cursor-grab",
         )}
       >
-        <div className="flex items-center gap-2 m-auto w-max px-2">
+        <div className="flex items-center gap-8 m-auto w-max px-2">
           {foodCategories.map((category) => {
             const isActive = activeCategory === category.id;
             return (
@@ -152,13 +152,16 @@ export function CategoryFilter({
                 type="button"
                 onClick={() => handleCategoryClick(category.id)}
                 className={cn(
-                  "whitespace-nowrap rounded-full px-5 py-2 text-sm font-medium transition-all duration-300 flex-shrink-0",
+                  "whitespace-nowrap pb-2 text-sm font-medium transition-all duration-300 flex-shrink-0 relative",
                   isActive
-                    ? "bg-brand text-white shadow-sm"
-                    : "bg-brand-light/60 text-gray-600 hover:bg-brand-light hover:text-brand-dark",
+                    ? "text-brand"
+                    : "text-gray-500 hover:text-gray-800",
                 )}
               >
                 {category.label}
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 h-[2px] w-full bg-brand rounded-t-full" />
+                )}
               </button>
             );
           })}

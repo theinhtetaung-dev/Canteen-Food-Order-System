@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { Search } from "lucide-react";
 import { PageContainer } from "@furniture/components/layout/PageContainer";
 import { CanteenTabs } from "@furniture/components/menu/CanteenTabs";
 import { CategoryFilter } from "@furniture/components/menu/CategoryFilter";
@@ -10,7 +11,7 @@ import { fetchMenuItems } from "@furniture/api/menu.api";
 import type { FoodCategory, MenuItem } from "@furniture/types/menu";
 
 export default function MenuPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const search = searchParams.get("search")?.toLowerCase() ?? "";
   const [activeCanteen, setActiveCanteen] = useState(1);
   const [activeCategory, setActiveCategory] = useState<FoodCategory | "all">(
@@ -49,23 +50,13 @@ export default function MenuPage() {
 
   return (
     <PageContainer>
-      <div className="mb-2 text-center">
-        <h1 className="text-3xl font-bold sm:text-4xl">
-          <span className="text-brand">Order</span>{" "}
-          <span className="text-gray-800">Now</span>
-        </h1>
-        <p className="mt-2 text-sm text-gray-500">
-          Browse menu, view details, and add items to your cart
-        </p>
-      </div>
-
       {search && (
-        <p className="mb-4 text-center text-sm text-gray-500">
+        <p className="mb-4 text-sm text-gray-500">
           Results for &ldquo;{searchParams.get("search")}&rdquo;
         </p>
       )}
 
-      <div className="mb-6 mt-8 space-y-5">
+      <div className="mb-6 mt-6 space-y-5">
         <CanteenTabs
           activeCanteen={activeCanteen}
           onChange={(canteen) => {

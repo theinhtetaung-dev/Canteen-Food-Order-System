@@ -9,11 +9,21 @@ import { formatDateTime, formatPrice } from "@furniture/lib/utils";
 import type { Order } from "@furniture/types/order";
 
 export default function OrdersPage() {
-  const { orders } = useOrders();
+  const { orders, cancelUserOrder } = useOrders();
   const location = useLocation();
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [viewStyle, setViewStyle] = useState<"card" | "table">("table");
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
+
+  const handleCancelOrder = async (orderId: string) => {
+    if (!window.confirm("Are you sure you want to cancel this order?")) return;
+    try {
+      await cancelUserOrder(orderId);
+      setDetailOrder(null);
+    } catch (error) {
+      console.error("Failed to cancel order:", error);
+    }
+  };
 
   useEffect(() => {
     const state = location.state as { newOrderId?: string } | null;
@@ -113,9 +123,21 @@ export default function OrdersPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <Button size="sm" variant="outline" className="text-brand hover:text-brand-dark" onClick={() => setDetailOrder(order)}>
-                        Detail
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" className="text-brand hover:text-brand-dark" onClick={() => setDetailOrder(order)}>
+                          Detail
+                        </Button>
+                        {order.status === 'pending' && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:text-red-700 text-xs font-bold px-2.5 py-1 h-auto rounded-lg"
+                            onClick={() => handleCancelOrder(order.id)}
+                          >
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -166,6 +188,17 @@ export default function OrdersPage() {
               <span className="font-semibold text-gray-600">Total Price</span>
               <span className="text-lg font-bold text-brand-dark">{formatPrice(detailOrder.totalPrice)}</span>
             </div>
+
+            {detailOrder.status === 'pending' && (
+              <div className="mt-4 border-t border-gray-100 pt-4">
+                <Button
+                  onClick={() => handleCancelOrder(detailOrder.id)}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs"
+                >
+                  Cancel Order
+                </Button>
+              </div>
+            )}
           </div>
         </>
       )}

@@ -237,7 +237,8 @@ export const Users: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#EAEFE4] text-gray-700 text-[10px] font-extrabold uppercase tracking-wider">
-                <th className="py-3 px-4 rounded-l-md">ROLL NO</th>
+                <th className="py-3 px-4 rounded-l-md">NO</th>
+                <th className="py-3 px-4">ROLL NO</th>
                 <th className="py-3 px-4">USER NAME</th>
                 <th className="py-3 px-4">PHONE NUMBER</th>
                 <th className="py-3 px-4">STATUS</th>
@@ -253,6 +254,9 @@ export const Users: React.FC = () => {
                     idx % 2 === 1 ? 'bg-[#FAFBF8]' : 'bg-white'
                   }`}
                 >
+                  <td className="py-3 px-4 font-bold text-gray-500 font-mono text-[11px]">
+                    {startIndex + idx + 1}
+                  </td>
                   <td className="py-3 px-4 font-bold text-gray-900 font-mono text-[11px]">
                     {user.rollNo}
                   </td>

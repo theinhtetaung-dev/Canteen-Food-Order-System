@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum Status {
     PENDING,
+    PREPARING,
     COMPLETE,
     CANCEL;
 
@@ -22,6 +23,9 @@ public enum Status {
         }
         if (cleaned.equals("PENDING")) {
             return PENDING;
+        }
+        if (cleaned.equals("PREPARING")) {
+            return PREPARING;
         }
         throw new IllegalArgumentException("No enum constant " + Status.class.getCanonicalName() + "." + value);
     }

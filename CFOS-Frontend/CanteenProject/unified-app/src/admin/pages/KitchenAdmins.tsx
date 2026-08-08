@@ -378,7 +378,8 @@ export const KitchenAdmins: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#B2C5A3] text-gray-800 text-[11px] font-extrabold uppercase tracking-wider">
-                <th className="py-3 px-4 rounded-l-md">ADMIN ID</th>
+                <th className="py-3 px-4 rounded-l-md">NO</th>
+                <th className="py-3 px-4">ADMIN ID</th>
                 <th className="py-3 px-4">RESTAURANT</th>
                 <th className="py-3 px-4">PHONE</th>
                 <th className="py-3 px-4">STATUS</th>
@@ -394,6 +395,9 @@ export const KitchenAdmins: React.FC = () => {
                     idx % 2 === 1 ? 'bg-[#F9FAF4]' : 'bg-white'
                   }`}
                 >
+                  <td className="py-3 px-4 font-bold text-gray-500 font-mono text-[11px]">
+                    {startIndex + idx + 1}
+                  </td>
                   <td className="py-3 px-4 flex items-center gap-3 font-semibold text-gray-900">
                     {admin.isAvatarText ? (
                       <div className="w-7 h-7 rounded-full bg-[#88C425] text-white text-[10px] font-bold flex items-center justify-center shrink-0">

@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { fetchMenuItems, createMenuItem, updateMenuItem, deleteMenuItem } from "@furniture/api/menu.api";
+import { fetchCategories, type Category } from "../../furniture/api/category.api";
 import {
   Search,
   Plus,
@@ -21,34 +22,16 @@ import {
   Info,
 } from "lucide-react";
 
-type CategoryType =
-  | "Salads"
-  | "Main Course"
-  | "Beverages"
-  | "Desserts"
-  | "Breakfast"
-  | "Snacks";
-
 interface MenuItem {
   id: string;
   name: string;
-  category: CategoryType;
+  category: string;
+  categoryId?: number;
   price: number;
   available: boolean;
   image: string;
   description?: string;
 }
-
-const CATEGORIES: CategoryType[] = [
-  "Salads",
-  "Main Course",
-  "Beverages",
-  "Desserts",
-  "Breakfast",
-  "Snacks",
-];
-
-const FILTER_CATEGORIES = ["All Categories", ...CATEGORIES];
 
 const SORT_OPTIONS = [
   { label: "Sort by: Default", value: "default" },
@@ -58,98 +41,24 @@ const SORT_OPTIONS = [
   { label: "Price: High to Low", value: "price-desc" },
 ];
 
-const INITIAL_MENU_ITEMS: MenuItem[] = [
-  {
-    id: "1",
-    name: "Mohinga",
-    category: "Breakfast",
-    price: 5000,
-    available: true,
-    image:
-      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=300",
-    description:
-      "Fluffy quinoa, bright cherry tomatoes, cucumber, Kalamata olives, and a dollop of creamy hummus, garnished with fresh parsley.",
-  },
-  {
-    id: "2",
-    name: "Angus Classic Burger",
-    category: "Main Course",
-    price: 6500,
-    available: true,
-    image:
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&q=80&w=300",
-    description:
-      "Juicy beef patty served with melted cheddar and caramelized onions.",
-  },
-  {
-    id: "3",
-    name: "Iced Matcha Latte",
-    category: "Beverages",
-    price: 4000,
-    available: true,
-    image:
-      "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&q=80&w=300",
-    description: "Ceremonial grade matcha whisked with fresh oat milk.",
-  },
-  {
-    id: "4",
-    name: "Chocolate Lava Cake",
-    category: "Desserts",
-    price: 4500,
-    available: false,
-    image:
-      "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&q=80&w=300",
-    description: "Warm chocolate cake with a rich molten center.",
-  },
-  {
-    id: "5",
-    name: "Herb Roasted Chicken",
-    category: "Main Course",
-    price: 8000,
-    available: true,
-    image:
-      "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&q=80&w=300",
-    description: "Oven roasted half chicken served with seasonal greens.",
-  },
-];
-
-const categoryStyles: Record<CategoryType, string> = {
-  Salads: "bg-[#e2f5ec] text-[#1e724d]",
-  "Main Course": "bg-[#e0f7ed] text-[#1b7a53]",
-  Beverages: "bg-[#f2f8d5] text-[#557317]",
-  Desserts: "bg-[#fde8e8] text-[#9b2c2c]",
-  Breakfast: "bg-[#e8f3d6] text-[#4f6f1c]",
-  Snacks: "bg-[#fef3c7] text-[#854d0e]",
+const getCategoryStyle = (catName: string) => {
+  const normalized = (catName || "").trim().toLowerCase();
+  if (normalized.includes("main") || normalized.includes("course")) {
+    return "bg-[#e0f7ed] text-[#1b7a53]";
+  }
+  if (normalized.includes("beverage") || normalized.includes("drink") || normalized.includes("tea") || normalized.includes("coffee")) {
+    return "bg-[#f2f8d5] text-[#557317]";
+  }
+  if (normalized.includes("dessert") || normalized.includes("sweet")) {
+    return "bg-[#fde8e8] text-[#9b2c2c]";
+  }
+  return "bg-[#fef3c7] text-[#854d0e]";
 };
-
 
 export function Menu() {
   const [items, setItems] = useState<MenuItem[]>([]);
+  const [dbCategories, setDbCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadMenu() {
-      try {
-        setIsLoading(true);
-        const data = await fetchMenuItems();
-        const mapped = data.map((d: any) => ({
-          id: String(d.id),
-          name: d.name,
-          price: d.price,
-          category: (d.category === 'main' ? 'Main Course' : d.category === 'drinks' ? 'Beverages' : 'Snacks') as CategoryType,
-          description: d.description,
-          available: true,
-          image: d.image
-        }));
-        setItems(mapped);
-      } catch (error) {
-        console.error("Failed to load menu", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadMenu();
-  }, []);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
@@ -163,12 +72,14 @@ export function Menu() {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [deletingItem, setDeletingItem] = useState<MenuItem | null>(null);
 
+  // Form states
   const [newItemName, setNewItemName] = useState("");
   const [newItemPrice, setNewItemPrice] = useState("");
-  const [newItemCategory, setNewItemCategory] =
-    useState<CategoryType>("Main Course");
+  const [newItemCategoryId, setNewItemCategoryId] = useState<number | "">("");
   const [newItemDescription, setNewItemDescription] = useState("");
   const [newItemImage, setNewItemImage] = useState<string | null>(null);
+  const [newImageFile, setNewImageFile] = useState<File | null>(null);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
 
   const [startIndex, setStartIndex] = useState(0);
   const ITEMS_PER_PAGE = 5;
@@ -177,6 +88,43 @@ export function Menu() {
   const sortRef = useRef<HTMLDivElement>(null);
   const addFileInputRef = useRef<HTMLInputElement>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      const [menuData, catData] = await Promise.all([
+        fetchMenuItems(),
+        fetchCategories()
+      ]);
+      setDbCategories(catData);
+      
+      const mapped = menuData.map((d: any) => ({
+        id: String(d.id),
+        name: d.name,
+        price: d.price,
+        category: d.category,
+        categoryId: d.categoryId,
+        description: d.description,
+        available: d.isAvailable !== false,
+        image: d.image
+      }));
+      setItems(mapped);
+    } catch (error) {
+      console.error("Failed to load data", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    if (dbCategories.length > 0 && !newItemCategoryId) {
+      setNewItemCategoryId(dbCategories[0].categoryId);
+    }
+  }, [dbCategories]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -197,12 +145,29 @@ export function Menu() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleToggleAvailability = (id: string) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, available: !item.available } : item
-      )
-    );
+  const handleToggleAvailability = async (id: string) => {
+    const itemToToggle = items.find((item) => item.id === id);
+    if (!itemToToggle) return;
+
+    const updatedAvailability = !itemToToggle.available;
+
+    try {
+      await updateMenuItem(id, {
+        foodName: itemToToggle.name,
+        price: itemToToggle.price,
+        categoryId: itemToToggle.categoryId || 0,
+        description: itemToToggle.description,
+        isAvailable: updatedAvailability,
+      });
+
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, available: updatedAvailability } : item
+        )
+      );
+    } catch (error) {
+      console.error("Failed to toggle availability", error);
+    }
   };
 
   const handleConfirmDelete = async () => {
@@ -219,51 +184,57 @@ export function Menu() {
   };
 
   const handleResetMenu = () => {
-    // We cannot reset the menu easily with real backend, so we'll just reload
-    window.location.reload();
+    loadData();
   };
 
   const handleAddImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setNewItemImage(URL.createObjectURL(file));
+    if (file) {
+      setNewImageFile(file);
+      setNewItemImage(URL.createObjectURL(file));
+    }
   };
 
   const handleEditImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && editingItem) {
+      setEditImageFile(file);
       setEditingItem({ ...editingItem, image: URL.createObjectURL(file) });
     }
   };
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newItemName.trim() || !newItemPrice) return;
+    if (!newItemName.trim() || !newItemPrice || !newItemCategoryId) return;
 
     try {
       const saved = await createMenuItem({
-        name: newItemName,
+        foodName: newItemName,
         price: Number(newItemPrice),
-        category: newItemCategory as any,
+        categoryId: Number(newItemCategoryId),
         description: newItemDescription,
-        image: newItemImage || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=300",
-      } as any);
+        isAvailable: true,
+        imageFile: newImageFile,
+      });
 
+      const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8081";
       const newItem: MenuItem = {
-        id: String(saved.id),
-        name: saved.name,
-        price: saved.price,
-        category: newItemCategory,
+        id: String(saved.foodId),
+        name: saved.foodName,
+        price: Number(saved.price),
+        category: saved.categoryName || "Snacks",
+        categoryId: saved.categoryId,
         description: saved.description,
-        available: true,
-        image: saved.image,
+        available: saved.isAvailable !== false,
+        image: saved.imageUrl ? (saved.imageUrl.startsWith("http") ? saved.imageUrl : `${baseUrl}${saved.imageUrl}`) : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=300",
       };
 
       setItems((prev) => [newItem, ...prev]);
       setNewItemName("");
       setNewItemPrice("");
-      setNewItemCategory("Main Course");
       setNewItemDescription("");
       setNewItemImage(null);
+      setNewImageFile(null);
       setIsAddModalOpen(false);
       setStartIndex(0);
     } catch (error) {
@@ -273,21 +244,35 @@ export function Menu() {
 
   const handleSaveEdit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingItem) return;
+    if (!editingItem || !editingItem.categoryId) return;
 
     try {
-      await updateMenuItem(editingItem.id, {
-        name: editingItem.name,
+      const saved = await updateMenuItem(editingItem.id, {
+        foodName: editingItem.name,
         price: editingItem.price,
-        category: editingItem.category as any,
+        categoryId: editingItem.categoryId,
         description: editingItem.description,
-        image: editingItem.image,
-      } as any);
+        isAvailable: editingItem.available,
+        imageFile: editImageFile,
+      });
+
+      const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8081";
+      const updatedItem: MenuItem = {
+        id: String(saved.foodId),
+        name: saved.foodName,
+        price: Number(saved.price),
+        category: saved.categoryName || "Snacks",
+        categoryId: saved.categoryId,
+        description: saved.description,
+        available: saved.isAvailable !== false,
+        image: saved.imageUrl ? (saved.imageUrl.startsWith("http") ? saved.imageUrl : `${baseUrl}${saved.imageUrl}`) : editingItem.image,
+      };
 
       setItems((prev) =>
-        prev.map((item) => (item.id === editingItem.id ? editingItem : item))
+        prev.map((item) => (item.id === editingItem.id ? updatedItem : item))
       );
       setEditingItem(null);
+      setEditImageFile(null);
     } catch (error) {
       console.error("Failed to edit menu item", error);
     }
@@ -317,14 +302,20 @@ export function Menu() {
     return result;
   }, [items, searchQuery, selectedCategory, sortBy]);
 
-  const filteredCategories = FILTER_CATEGORIES.filter((cat) =>
-    cat.toLowerCase().includes(categorySearch.toLowerCase())
-  );
+  const filterCategories = useMemo(() => {
+    const uniqueCats = Array.from(new Set(items.map((item) => item.category)));
+    return ["All Categories", ...uniqueCats];
+  }, [items]);
 
-  const visibleItems = processedItems.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
-  );
+  const filteredCategories = useMemo(() => {
+    return filterCategories.filter((cat) =>
+      cat.toLowerCase().includes(categorySearch.toLowerCase())
+    );
+  }, [filterCategories, categorySearch]);
+
+  const visibleItems = processedItems.length >= 10
+    ? processedItems.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+    : processedItems;
   const totalCount = processedItems.length;
 
   return (
@@ -455,7 +446,7 @@ export function Menu() {
               className="flex items-center gap-1.5 px-3.5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-xl text-xs font-semibold transition-colors"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Defaults</span>
+              <span>Refresh</span>
             </button>
 
             <button
@@ -474,6 +465,7 @@ export function Menu() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-gray-100 text-xs font-bold text-gray-600 bg-[#fafcf7]">
+                <th className="py-4 px-6 w-16 text-left">NO</th>
                 <th className="py-4 px-6 w-28">Image</th>
                 <th className="py-4 px-6">Item Name</th>
                 <th className="py-4 px-6">Category</th>
@@ -483,12 +475,21 @@ export function Menu() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-sm">
-              {visibleItems.length > 0 ? (
-                visibleItems.map((item) => (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-gray-500 font-semibold">
+                    Loading menu items...
+                  </td>
+                </tr>
+              ) : visibleItems.length > 0 ? (
+                visibleItems.map((item, idx) => (
                   <tr
                     key={item.id}
                     className="hover:bg-[#fbfdf8]/80 transition-colors"
                   >
+                    <td className="py-4 px-6 font-bold text-gray-500 font-mono text-[11px]">
+                      {startIndex + idx + 1}
+                    </td>
                     <td className="py-4 px-6">
                       <img
                         src={item.image}
@@ -509,7 +510,7 @@ export function Menu() {
                     <td className="py-4 px-6">
                       <span
                         className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                          categoryStyles[item.category]
+                          getCategoryStyle(item.category)
                         }`}
                       >
                         {item.category}
@@ -561,22 +562,12 @@ export function Menu() {
               ) : (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="py-12 text-center text-gray-500 font-medium"
                   >
                     <p className="text-base font-semibold text-gray-700 mb-1">
                       No menu items found
                     </p>
-                    <p className="text-xs text-gray-400 mb-4">
-                      Click "Reset Defaults" or "Add New Item" to populate the menu.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={handleResetMenu}
-                      className="px-4 py-2 bg-[#518218] text-white rounded-xl text-xs font-bold hover:bg-[#3f6711] transition-colors"
-                    >
-                      Restore Default Menu
-                    </button>
                   </td>
                 </tr>
               )}
@@ -585,64 +576,66 @@ export function Menu() {
         </div>
 
         {/* 4. Table Pagination Footer */}
-        <div className="p-4 border-t border-gray-100 bg-[#fafcf7] flex items-center justify-between text-xs text-gray-500">
-          <div>
-            {totalCount > 0
-              ? `${startIndex + 1}-${Math.min(
-                  startIndex + ITEMS_PER_PAGE,
-                  totalCount
-                )} of ${totalCount}`
-              : "0 of 0"}
-          </div>
+        {processedItems.length >= 10 && (
+          <div className="p-4 border-t border-gray-100 bg-[#fafcf7] flex items-center justify-between text-xs text-gray-500">
+            <div>
+              {totalCount > 0
+                ? `${startIndex + 1}-${Math.min(
+                    startIndex + ITEMS_PER_PAGE,
+                    totalCount
+                  )} of ${totalCount}`
+                : "0 of 0"}
+            </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() =>
-                setStartIndex((p) => Math.max(0, p - ITEMS_PER_PAGE))
-              }
-              disabled={startIndex === 0}
-              className="p-1 hover:text-gray-900 disabled:opacity-30 transition-opacity"
-            >
-              <ChevronsLeft className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setStartIndex((p) => Math.max(0, p - 1))}
-              disabled={startIndex === 0}
-              className="p-1 hover:text-gray-900 disabled:opacity-30 transition-opacity"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setStartIndex((p) =>
-                  Math.min(totalCount - ITEMS_PER_PAGE, p + 1)
-                )
-              }
-              disabled={startIndex + ITEMS_PER_PAGE >= totalCount}
-              className="p-1 hover:text-gray-900 disabled:opacity-30 transition-opacity"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setStartIndex((p) =>
-                  Math.min(
-                    Math.max(0, totalCount - ITEMS_PER_PAGE),
-                    p + ITEMS_PER_PAGE
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setStartIndex((p) => Math.max(0, p - ITEMS_PER_PAGE))
+                }
+                disabled={startIndex === 0}
+                className="p-1 hover:text-gray-900 disabled:opacity-30 transition-opacity"
+              >
+                <ChevronsLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setStartIndex((p) => Math.max(0, p - 1))}
+                disabled={startIndex === 0}
+                className="p-1 hover:text-gray-900 disabled:opacity-30 transition-opacity"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setStartIndex((p) =>
+                    Math.min(totalCount - ITEMS_PER_PAGE, p + 1)
                   )
-                )
-              }
-              disabled={startIndex + ITEMS_PER_PAGE >= totalCount}
-              className="p-1 hover:text-gray-900 disabled:opacity-30 transition-opacity"
-            >
-              <ChevronsRight className="w-4 h-4" />
-            </button>
+                }
+                disabled={startIndex + ITEMS_PER_PAGE >= totalCount}
+                className="p-1 hover:text-gray-900 disabled:opacity-30 transition-opacity"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setStartIndex((p) =>
+                    Math.min(
+                      Math.max(0, totalCount - ITEMS_PER_PAGE),
+                      p + ITEMS_PER_PAGE
+                    )
+                  )
+                }
+                disabled={startIndex + ITEMS_PER_PAGE >= totalCount}
+                className="p-1 hover:text-gray-900 disabled:opacity-30 transition-opacity"
+              >
+                <ChevronsRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* 5. EXACT DELETE CONFIRMATION MODAL */}
@@ -738,6 +731,7 @@ export function Menu() {
                         onClick={(e) => {
                           e.stopPropagation();
                           setNewItemImage(null);
+                          setNewImageFile(null);
                         }}
                         className="absolute top-2 right-2 p-1 bg-black/60 text-white rounded-full hover:bg-black/80"
                       >
@@ -789,15 +783,15 @@ export function Menu() {
                     Category
                   </label>
                   <select
-                    value={newItemCategory}
+                    value={newItemCategoryId}
                     onChange={(e) =>
-                      setNewItemCategory(e.target.value as CategoryType)
+                      setNewItemCategoryId(Number(e.target.value))
                     }
                     className="w-full px-4 py-2.5 bg-[#f5f7f2] border border-gray-200 rounded-xl text-sm font-medium text-gray-700 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 cursor-pointer"
                   >
-                    {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
+                    {dbCategories.map((cat) => (
+                      <option key={cat.categoryId} value={cat.categoryId}>
+                        {cat.categoryName}
                       </option>
                     ))}
                   </select>
@@ -810,26 +804,26 @@ export function Menu() {
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="Describe the ingredients and dietary info..."
+                  placeholder="Enter details..."
                   value={newItemDescription}
                   onChange={(e) => setNewItemDescription(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#f5f7f2] border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 transition-all resize-none"
+                  className="w-full px-4 py-2.5 bg-[#f5f7f2] border border-gray-200 rounded-xl text-xs outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 transition-all resize-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+              <div className="flex items-center justify-end gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                  className="px-4 py-2 border border-gray-300 text-gray-700 text-xs font-semibold rounded-xl hover:bg-gray-50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-[#518218] hover:bg-[#3f6711] text-white rounded-xl text-sm font-semibold shadow-sm transition-colors"
+                  className="px-5 py-2 bg-[#518218] hover:bg-[#3f6711] text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
                 >
-                  Add Item
+                  Create
                 </button>
               </div>
             </form>
@@ -840,9 +834,11 @@ export function Menu() {
       {/* 7. EDIT ITEM MODAL */}
       {editingItem && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-6 pb-4 flex items-center justify-between border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">Edit Menu Item</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                Edit Menu Item
+              </h2>
               <button
                 type="button"
                 onClick={() => setEditingItem(null)}
@@ -904,18 +900,18 @@ export function Menu() {
                       Category
                     </label>
                     <select
-                      value={editingItem.category}
+                      value={editingItem.categoryId || ""}
                       onChange={(e) =>
                         setEditingItem({
                           ...editingItem,
-                          category: e.target.value as CategoryType,
+                          categoryId: Number(e.target.value),
                         })
                       }
                       className="w-full px-4 py-2 bg-[#f4f6f0] border border-gray-200/80 rounded-xl text-sm font-medium text-gray-800 outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 cursor-pointer"
                     >
-                      {CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
+                      {dbCategories.map((cat) => (
+                        <option key={cat.categoryId} value={cat.categoryId}>
+                          {cat.categoryName}
                         </option>
                       ))}
                     </select>

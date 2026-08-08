@@ -1,8 +1,11 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Store, Users, UtensilsCrossed } from 'lucide-react';
+import { useAuth } from "@furniture/hooks/useAuth";
 
 export const Sidebar: React.FC = () => {
+  const { user } = useAuth();
+
   return (
     <aside className="w-60 bg-[#F2F7E6] flex flex-col justify-between border-r border-gray-200/60 p-4 h-screen sticky top-0 shrink-0">
       <div>
@@ -77,7 +80,9 @@ export const Sidebar: React.FC = () => {
           className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
         />
         <div className="flex flex-col overflow-hidden">
-          <span className="font-bold text-sm truncate text-gray-900 leading-tight">Ta sone Ta yout</span>
+          <span className="font-bold text-sm truncate text-gray-900 leading-tight">
+            {user?.name || 'Ta sone Ta yout'}
+          </span>
           <span className="text-[11px] text-gray-500 font-medium">Super Admin</span>
         </div>
       </NavLink>

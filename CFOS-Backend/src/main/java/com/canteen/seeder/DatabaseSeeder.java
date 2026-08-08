@@ -69,12 +69,17 @@ public class DatabaseSeeder implements CommandLineRunner {
         log.info("Seeding Role Permissions...");
         List<RolePermission> rolePermissions = new ArrayList<>();
         
-        // Admin gets all permissions
+        // Admin and Manager get all permissions
         for (Permission p : permissions) {
-            RolePermission rp = new RolePermission();
-            rp.setRole(adminRole);
-            rp.setPermission(p);
-            rolePermissions.add(rp);
+            RolePermission rpAdmin = new RolePermission();
+            rpAdmin.setRole(adminRole);
+            rpAdmin.setPermission(p);
+            rolePermissions.add(rpAdmin);
+
+            RolePermission rpManager = new RolePermission();
+            rpManager.setRole(managerRole);
+            rpManager.setPermission(p);
+            rolePermissions.add(rpManager);
         }
         
         // User gets Read permissions for Food and FoodCategory
@@ -91,14 +96,23 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // 5. Seed Users
         log.info("Seeding Users...");
-        User adminUser = new User();
-        adminUser.setUserName("admin");
-        adminUser.setFullName("Administrator");
-        adminUser.setEmail("admin@canteen.com");
-        adminUser.setPasswordHash(passwordEncoder.encode("admin123"));
-        adminUser.setPhoneNumber("1234567890");
-        adminUser.setStatus(UserStatus.ACTIVE);
-        adminUser.setRole(adminRole);
+        User superAdminUser = new User();
+        superAdminUser.setUserName("superadmin");
+        superAdminUser.setFullName("Super Administrator");
+        superAdminUser.setEmail("superadmin@canteen.com");
+        superAdminUser.setPasswordHash(passwordEncoder.encode("superadmin123"));
+        superAdminUser.setPhoneNumber("1112223333");
+        superAdminUser.setStatus(UserStatus.ACTIVE);
+        superAdminUser.setRole(adminRole);
+
+        User managerUser = new User();
+        managerUser.setUserName("manager");
+        managerUser.setFullName("Kitchen Manager");
+        managerUser.setEmail("manager@canteen.com");
+        managerUser.setPasswordHash(passwordEncoder.encode("manager123"));
+        managerUser.setPhoneNumber("4445556666");
+        managerUser.setStatus(UserStatus.ACTIVE);
+        managerUser.setRole(managerRole);
         
         User normalUser = new User();
         normalUser.setUserName("user");
@@ -109,26 +123,26 @@ public class DatabaseSeeder implements CommandLineRunner {
         normalUser.setStatus(UserStatus.ACTIVE);
         normalUser.setRole(userRole);
 
-        userRepository.saveAll(List.of(adminUser, normalUser));
+        userRepository.saveAll(List.of(superAdminUser, managerUser, normalUser));
 
         // 6. Seed Food Categories
         log.info("Seeding Food Categories...");
-        FoodCategory mainCourse = createCategory("Main Course", "Heavy meals for lunch or dinner", adminUser);
-        FoodCategory dessert = createCategory("Dessert", "Sweet treats after meals", adminUser);
-        FoodCategory beverage = createCategory("Beverage", "Drinks and refreshments", adminUser);
+        FoodCategory mainCourse = createCategory("Main Course", "Heavy meals for lunch or dinner", superAdminUser);
+        FoodCategory dessert = createCategory("Dessert", "Sweet treats after meals", superAdminUser);
+        FoodCategory beverage = createCategory("Beverage", "Drinks and refreshments", superAdminUser);
         
         foodCategoryRepository.saveAll(List.of(mainCourse, dessert, beverage));
 
         // 7. Seed Food Items
         log.info("Seeding Food Items...");
-        Food food1 = createFood("Fried Rice", "Delicious chicken fried rice", new BigDecimal("3500.00"), mainCourse, adminUser);
-        Food food2 = createFood("Noodle Soup", "Hot and spicy noodle soup", new BigDecimal("2500.00"), mainCourse, adminUser);
+        Food food1 = createFood("Fried Rice", "Delicious chicken fried rice", new BigDecimal("3500.00"), mainCourse, superAdminUser);
+        Food food2 = createFood("Noodle Soup", "Hot and spicy noodle soup", new BigDecimal("2500.00"), mainCourse, superAdminUser);
         
-        Food food3 = createFood("Ice Cream", "Vanilla and chocolate mix", new BigDecimal("1500.00"), dessert, adminUser);
-        Food food4 = createFood("Pudding", "Caramel custard pudding", new BigDecimal("1200.00"), dessert, adminUser);
+        Food food3 = createFood("Ice Cream", "Vanilla and chocolate mix", new BigDecimal("1500.00"), dessert, superAdminUser);
+        Food food4 = createFood("Pudding", "Caramel custard pudding", new BigDecimal("1200.00"), dessert, superAdminUser);
         
-        Food food5 = createFood("Coffee", "Hot brewed coffee", new BigDecimal("800.00"), beverage, adminUser);
-        Food food6 = createFood("Orange Juice", "Fresh squeezed orange juice", new BigDecimal("1000.00"), beverage, adminUser);
+        Food food5 = createFood("Coffee", "Hot brewed coffee", new BigDecimal("800.00"), beverage, superAdminUser);
+        Food food6 = createFood("Orange Juice", "Fresh squeezed orange juice", new BigDecimal("1000.00"), beverage, superAdminUser);
 
         foodRepository.saveAll(List.of(food1, food2, food3, food4, food5, food6));
 

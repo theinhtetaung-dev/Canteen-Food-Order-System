@@ -13,6 +13,7 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
   placeOrder,
+  updateOrderStatus,
 } from "@furniture/api/order.api";
 import { useAuth } from "@furniture/context/AuthContext";
 import type { AppNotification, Order } from "@furniture/types/order";
@@ -23,6 +24,7 @@ interface OrderContextValue {
   notifications: AppNotification[];
   unreadCount: number;
   placeNewOrder: (items: { menuItem: MenuItem; quantity: number }[], pickupTime: string) => Promise<Order>;
+  cancelUserOrder: (id: string) => Promise<void>;
   refresh: () => void;
   markRead: (id: string) => void;
   markAllRead: () => void;
@@ -90,17 +92,26 @@ export function OrderProvider({ children }: { children: ReactNode }) {
     [notifications],
   );
 
+  const cancelUserOrder = useCallback(
+    async (id: string) => {
+      await updateOrderStatus(id, "CANCEL");
+      refresh();
+    },
+    [refresh],
+  );
+
   const value = useMemo<OrderContextValue>(
     () => ({
       orders,
       notifications,
       unreadCount,
       placeNewOrder,
+      cancelUserOrder,
       refresh,
       markRead,
       markAllRead,
     }),
-    [orders, notifications, unreadCount, placeNewOrder, refresh, markRead, markAllRead],
+    [orders, notifications, unreadCount, placeNewOrder, cancelUserOrder, refresh, markRead, markAllRead],
   );
 
   return <OrderContext.Provider value={value}>{children}</OrderContext.Provider>;

@@ -9,6 +9,7 @@ export interface MenuItem {
   canteen: number;
   category: FoodCategory;
   description: string;
+  isAvailable?: boolean;
 }
 
 export interface Review {

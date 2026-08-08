@@ -5,6 +5,7 @@ import {
   ListOrdered,
   UtensilsCrossed,
   MessageSquare,
+  Layers,
 } from "lucide-react";
 
 import vegetarianLogo from "../../assets/vegetarian-food.svg";
@@ -56,6 +57,7 @@ export function Sidebar() {
     { label: "Dashboard", path: "/", icon: LayoutDashboard },
     { label: "Order Lists", path: "/orders", icon: ListOrdered },
     { label: "Menu", path: "/menu", icon: UtensilsCrossed },
+    { label: "Categories", path: "/categories", icon: Layers },
     { label: "Reviews", path: "/reviews", icon: MessageSquare },
   ];
 

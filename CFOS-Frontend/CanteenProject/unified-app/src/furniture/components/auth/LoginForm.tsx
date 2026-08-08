@@ -45,10 +45,11 @@ export function LoginForm({
     try {
       const user = await login(data);
       // Redirect based on role
-      if (user.role === "superadmin") {
-        window.location.href = "/admin"; // Platform admin
-      } else if (user.role === "admin") {
-        window.location.href = "/superadmin"; // Canteen admin
+      if (user.role === "admin" || user.role === "superadmin") {
+        window.location.href = "/admin"; // Platform admin / SuperAdmin
+      } else if (user.role === "manager") {
+        window.location.href = "/superadmin"; // Kitchen/Canteen manager
+      } else {
         // Regular user stays in furniture
         const from = (location.state as { from?: string } | null)?.from ?? "/furniture";
         navigate(from, { replace: true });

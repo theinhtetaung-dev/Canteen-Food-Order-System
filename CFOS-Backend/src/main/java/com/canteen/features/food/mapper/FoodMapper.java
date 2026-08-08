@@ -56,7 +56,7 @@ public class FoodMapper {
             User user = food.getCreatedBy();
 
             dto.setCreatedBy(user.getUserId());
-            dto.setCreatedByName(user.getUserName());
+            dto.setCreatedByName(user.getFullName());
         }
 
         dto.setCreatedAt(food.getCreatedAt());

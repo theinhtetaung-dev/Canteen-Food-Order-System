@@ -10,8 +10,11 @@ public class OrderStatusValidator {
 
         switch (current) {
 
-            // Pending order can be completed or canceled
-            case PENDING -> allow(target, Status.COMPLETE, Status.CANCEL);
+            // Pending order can transition to PREPARING or CANCEL
+            case PENDING -> allow(target, Status.PREPARING, Status.CANCEL);
+
+            // Preparing order can transition to COMPLETE only
+            case PREPARING -> allow(target, Status.COMPLETE);
 
             // Completed order is final
             case COMPLETE -> allow(target, Status.COMPLETE);

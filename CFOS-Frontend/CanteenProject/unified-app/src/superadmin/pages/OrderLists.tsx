@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { fetchAllOrders, updateOrderStatus } from "@furniture/api/order.api";
 import { List, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
-type OrderStatus = "Pending" | "In Progress" | "Ready" | "Completed";
+type OrderStatus = "Pending" | "Preparing" | "Completed" | "Cancelled";
 
 interface Order {
   id: string;
@@ -12,96 +12,62 @@ interface Order {
   status: OrderStatus;
 }
 
-const INITIAL_ORDERS: Order[] = [
-  {
-    id: "1",
-    studentId: "2024-miit-cse-001",
-    items: "Burger",
-    pickupTime: "11:45 PM",
-    status: "Pending",
-  },
-  {
-    id: "2",
-    studentId: "2023-miit-cse-002",
-    items: "Pizza, Bubble Tea",
-    pickupTime: "10:45 PM",
-    status: "In Progress",
-  },
-  {
-    id: "3",
-    studentId: "2022-miit-ece-004",
-    items: "Orange Juice",
-    pickupTime: "11:25 PM",
-    status: "Pending",
-  },
-  {
-    id: "4",
-    studentId: "2019-miit-cse-021",
-    items: "Burger",
-    pickupTime: "11:00 PM",
-    status: "Ready",
-  },
-];
-
-
-
 export function OrderLists() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+
+  async function loadOrders() {
+    try {
+      setIsLoading(true);
+      const data = await fetchAllOrders();
+      const mapped = data.map((d: any) => {
+        // Map backend status to superadmin status
+        let mappedStatus: OrderStatus = "Pending";
+        if (d.status === "completed") mappedStatus = "Completed";
+        if (d.status === "cancelled") mappedStatus = "Cancelled";
+        if (d.status === "preparing") mappedStatus = "Preparing";
+        
+        return {
+          id: String(d.id),
+          studentId: d.userId,
+          items: d.items.map((i: any) => `${i.quantity}x ${i.name}`).join(", "),
+          pickupTime: d.pickupTime || "12:00 PM",
+          status: mappedStatus,
+        };
+      });
+      setOrders(mapped);
+    } catch (error) {
+      console.error("Failed to load orders", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function loadOrders() {
-      try {
-        setIsLoading(true);
-        const data = await fetchAllOrders();
-        const mapped = data.map((d: any) => {
-          // Map backend status to superadmin status
-          let mappedStatus: OrderStatus = "Pending";
-          if (d.status === "completed") mappedStatus = "Completed";
-          if (d.status === "cancelled") mappedStatus = "Completed"; // Hack for now
-          
-          return {
-            id: String(d.id),
-            studentId: d.userId,
-            items: d.items.map((i: any) => `${i.quantity}x ${i.name}`).join(", "),
-            pickupTime: d.pickupTime || "12:00 PM",
-            status: mappedStatus,
-          };
-        });
-        setOrders(mapped);
-      } catch (error) {
-        console.error("Failed to load orders", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
     loadOrders();
   }, []);
 
+  const ORDERS_PER_PAGE = 10;
+  const totalPages = Math.ceil(orders.length / ORDERS_PER_PAGE);
+  const visibleOrders = orders.length >= 10
+    ? orders.slice((currentPage - 1) * ORDERS_PER_PAGE, currentPage * ORDERS_PER_PAGE)
+    : orders;
+
   // Stats Counters
-  const activeOrdersCount = orders.filter((o) => o.status !== "Completed").length;
-  const readyCount = orders.filter((o) => o.status === "Ready").length;
+  const activeOrdersCount = orders.filter((o) => o.status !== "Completed" && o.status !== "Cancelled").length;
+  const readyCount = orders.filter((o) => o.status === "Preparing").length;
   const completedTodayCount = orders.filter((o) => o.status === "Completed").length;
 
-  const handleNextStatus = async (id: string, currentStatus: OrderStatus) => {
-    let nextStatus: OrderStatus = currentStatus;
-    let backendStatus = "pending";
-    if (currentStatus === "Pending") {
-      nextStatus = "In Progress";
-      backendStatus = "IN_PROGRESS";
-    }
-    else if (currentStatus === "In Progress") {
-      nextStatus = "Ready";
-      backendStatus = "READY";
-    }
-    else if (currentStatus === "Ready") {
-      nextStatus = "Completed";
-      backendStatus = "COMPLETE";
-    }
+  const handleNextStatus = async (id: string, targetBackendStatus: "PREPARING" | "COMPLETE" | "CANCEL") => {
+    let nextStatus: OrderStatus = "Pending";
+    if (targetBackendStatus === "PREPARING") nextStatus = "Preparing";
+    else if (targetBackendStatus === "COMPLETE") nextStatus = "Completed";
+    else if (targetBackendStatus === "CANCEL") nextStatus = "Cancelled";
 
     try {
-      await updateOrderStatus(id, backendStatus);
+      await updateOrderStatus(id, targetBackendStatus);
       setOrders((prev) =>
         prev.map((order) => {
           if (order.id !== id) return order;
@@ -123,18 +89,18 @@ export function OrderLists() {
             Pending
           </span>
         );
-      case "In Progress":
+      case "Preparing":
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#b3e5fc] text-[#0277bd]">
             <span className="w-2 h-2 rounded-full bg-[#0288d1]" />
-            In Progress
+            Preparing
           </span>
         );
-      case "Ready":
+      case "Cancelled":
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-[#dbedc7] text-[#33691e]">
-            <span className="w-2 h-2 rounded-full bg-[#689f38]" />
-            Ready
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-red-100 text-red-700">
+            <span className="w-2 h-2 rounded-full bg-red-500" />
+            Cancelled
           </span>
         );
       default:
@@ -148,40 +114,81 @@ export function OrderLists() {
 
   // Action Buttons
   const renderActionButton = (order: Order) => {
-    switch (order.status) {
-      case "Pending":
-        return (
-          <button
-            type="button"
-            onClick={() => handleNextStatus(order.id, order.status)}
-            className="w-24 py-1.5 bg-[#f87171] hover:bg-[#ef4444] text-white rounded-md text-xs font-bold transition-colors shadow-sm"
-          >
-            Start Prep
-          </button>
-        );
-      case "In Progress":
-        return (
-          <button
-            type="button"
-            onClick={() => handleNextStatus(order.id, order.status)}
-            className="w-24 py-1.5 bg-[#fde047] hover:bg-[#facc15] text-[#422006] rounded-md text-xs font-bold transition-colors shadow-sm"
-          >
-            Make Ready
-          </button>
-        );
-      case "Ready":
-        return (
-          <button
-            type="button"
-            onClick={() => handleNextStatus(order.id, order.status)}
-            className="w-24 py-1.5 bg-[#4ade80] hover:bg-[#22c55e] text-[#052e16] rounded-md text-xs font-bold transition-colors shadow-sm"
-          >
-            Complete
-          </button>
-        );
-      default:
-        return <span className="text-xs text-gray-400 font-bold">Done</span>;
+    if (order.status === "Completed" || order.status === "Cancelled") {
+      return <span className="text-xs text-gray-400 font-bold">Done</span>;
     }
+
+    const isOpen = openDropdownId === order.id;
+
+    return (
+      <div className="relative inline-block text-left">
+        <div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenDropdownId(isOpen ? null : order.id);
+            }}
+            className="inline-flex justify-between items-center gap-1.5 w-28 px-3 py-1.5 bg-[#414b35] hover:bg-[#2d3424] text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+          >
+            <span>Actions</span>
+            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
+          </button>
+        </div>
+
+        {isOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-10"
+              onClick={() => setOpenDropdownId(null)}
+            />
+            <div className="absolute right-0 mt-1.5 w-36 rounded-xl bg-white border border-[#b8c5a4]/50 shadow-lg py-1 z-20 focus:outline-none">
+              {order.status === "Pending" && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleNextStatus(order.id, "PREPARING");
+                      setOpenDropdownId(null);
+                    }}
+                    className="flex w-full items-center px-3 py-2 text-[11px] font-bold text-gray-700 hover:bg-[#f6f8f0] transition-colors"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-[#3b82f6] mr-2" />
+                    Start Prep
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleNextStatus(order.id, "CANCEL");
+                      setOpenDropdownId(null);
+                    }}
+                    className="flex w-full items-center px-3 py-2 text-[11px] font-bold text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-red-500 mr-2" />
+                    Cancel Order
+                  </button>
+                </>
+              )}
+              {order.status === "Preparing" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleNextStatus(order.id, "COMPLETE");
+                    setOpenDropdownId(null);
+                  }}
+                  className="flex w-full items-center px-3 py-2 text-[11px] font-bold text-green-700 hover:bg-green-50 transition-colors"
+                >
+                  <span className="w-2 h-2 rounded-full bg-[#4ade80] mr-2" />
+                  Complete
+                </button>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -234,7 +241,7 @@ export function OrderLists() {
           </div>
           <div className="space-y-1">
             <span className="text-[11px] font-extrabold tracking-wider text-[#2d3126] uppercase">
-              READY FOR PICKUP
+              PREPARING
             </span>
             <div className="text-[42px] font-black text-[#111111] leading-none">
               {readyCount}
@@ -267,7 +274,7 @@ export function OrderLists() {
           </h2>
           <button
             type="button"
-            onClick={() => setOrders(INITIAL_ORDERS)}
+            onClick={loadOrders}
             className="flex items-center gap-2 px-5 py-2 bg-black text-white rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors shadow-sm"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -280,6 +287,7 @@ export function OrderLists() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#b9c2a8] text-[11px] font-extrabold text-[#2a2e23] uppercase tracking-wider">
+                <th className="py-3.5 px-7 w-16">NO</th>
                 <th className="py-3.5 px-7">STUDENT ID</th>
                 <th className="py-3.5 px-6">ITEMS</th>
                 <th className="py-3.5 px-6">PICKUP TIME</th>
@@ -288,90 +296,77 @@ export function OrderLists() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e7d8] text-xs font-semibold text-[#3d4235]">
-              {orders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="hover:bg-[#f6f8f0] transition-colors"
-                >
-                  <td className="py-4 px-7 font-medium text-gray-700">
-                    {order.studentId}
-                  </td>
-                  <td className="py-4 px-6 font-bold text-[#111111]">
-                    {order.items}
-                  </td>
-                  <td className="py-4 px-6 font-medium text-gray-700">
-                    {order.pickupTime}
-                  </td>
-                  <td className="py-4 px-6 text-center">
-                    {renderStatusBadge(order.status)}
-                  </td>
-                  <td className="py-4 px-7 text-center">
-                    {renderActionButton(order)}
-                  </td>
-                </tr>
-              ))}
+              {visibleOrders.map((order, idx) => {
+                const globalIndex = orders.length >= 10
+                  ? (currentPage - 1) * ORDERS_PER_PAGE + idx + 1
+                  : idx + 1;
+                return (
+                  <tr
+                    key={order.id}
+                    className="hover:bg-[#f6f8f0] transition-colors"
+                  >
+                    <td className="py-4 px-7 font-bold text-gray-500 font-mono text-[11px]">
+                      {globalIndex}
+                    </td>
+                    <td className="py-4 px-7 font-medium text-gray-700">
+                      {order.studentId}
+                    </td>
+                    <td className="py-4 px-6 font-bold text-[#111111]">
+                      {order.items}
+                    </td>
+                    <td className="py-4 px-6 font-medium text-gray-700">
+                      {order.pickupTime}
+                    </td>
+                    <td className="py-4 px-6 text-center">
+                      {renderStatusBadge(order.status)}
+                    </td>
+                    <td className="py-4 px-7 text-center">
+                      {renderActionButton(order)}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
 
         {/* Pagination Footer */}
-        <div className="p-5 px-7 flex items-center justify-end gap-2 bg-[#fcfdfa]">
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="w-9 h-9 flex items-center justify-center text-[#555555] hover:text-black transition-colors"
-          >
-            <ChevronLeft className="w-6 h-6 stroke-[3]" />
-          </button>
+        {orders.length >= 10 && (
+          <div className="p-5 px-7 flex items-center justify-end gap-2 bg-[#fcfdfa]">
+            <button
+              type="button"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="w-9 h-9 flex items-center justify-center text-[#555555] hover:text-black disabled:opacity-30 transition-colors"
+            >
+              <ChevronLeft className="w-6 h-6 stroke-[3]" />
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setCurrentPage(1)}
-            className={`w-9 h-9 rounded-[14px] text-sm font-black flex items-center justify-center transition-colors ${
-              currentPage === 1
-                ? "bg-[#dbebba] text-black"
-                : "bg-[#eaeaea] text-[#8e8e8e] hover:bg-gray-300"
-            }`}
-          >
-            1
-          </button>
+            {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => setCurrentPage(page)}
+                className={`w-9 h-9 rounded-[14px] text-sm font-black flex items-center justify-center transition-colors ${
+                  currentPage === page
+                    ? "bg-[#dbebba] text-black"
+                    : "bg-[#eaeaea] text-[#8e8e8e] hover:bg-gray-300"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
 
-          <button
-            type="button"
-            onClick={() => setCurrentPage(2)}
-            className={`w-9 h-9 rounded-[14px] text-sm font-bold flex items-center justify-center transition-colors ${
-              currentPage === 2
-                ? "bg-[#dbebba] text-black font-black"
-                : "bg-[#eaeaea] text-[#8e8e8e] hover:bg-gray-300"
-            }`}
-          >
-            2
-          </button>
-
-          <span className="text-sm text-[#8e8e8e] font-black px-1.5 tracking-widest">
-            ...
-          </span>
-
-          <button
-            type="button"
-            onClick={() => setCurrentPage(3)}
-            className={`w-9 h-9 rounded-[14px] text-sm font-bold flex items-center justify-center transition-colors ${
-              currentPage === 3
-                ? "bg-[#dbebba] text-black font-black"
-                : "bg-[#eaeaea] text-[#8e8e8e] hover:bg-gray-300"
-            }`}
-          >
-            3
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentPage((p) => Math.min(3, p + 1))}
-            className="w-9 h-9 flex items-center justify-center text-[#8e8e8e] hover:text-black transition-colors"
-          >
-            <ChevronRight className="w-6 h-6 stroke-[3]" />
-          </button>
-        </div>
+            <button
+              type="button"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="w-9 h-9 flex items-center justify-center text-[#8e8e8e] hover:text-black disabled:opacity-30 transition-colors"
+            >
+              <ChevronRight className="w-6 h-6 stroke-[3]" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

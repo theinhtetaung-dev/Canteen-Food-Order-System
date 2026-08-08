@@ -1,20 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Shield, CheckCircle2, LogOut, Pencil } from 'lucide-react';
-import { updateUserProfile } from "@furniture/api/auth.api";
 import { useAuth } from "@furniture/hooks/useAuth";
 
 export const AdminProfile: React.FC = () => {
-  const { logout } = useAuth();
+  const { logout, user, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   
   // Profile state
   const [profile, setProfile] = useState({
-    fullName: 'Ta sone Ta yout',
-    email: 'second@miit.edu.mm',
-    phone: '+95 9123456789',
-    staffId: 'CB-ADM-2024-001',
+    fullName: user?.name || 'Ta sone Ta yout',
+    email: user?.email || 'second@miit.edu.mm',
+    phone: user?.phone || '+95 9123456789',
+    staffId: user?.rollNumber || 'CB-ADM-2024-001',
     bio: 'Managing kitchen operations and menu planning for the Central Campus Dining Hall since 2021.'
   });
+
+  // Keep state updated if user changes (e.g. after async loading)
+  useEffect(() => {
+    if (user) {
+      setProfile(prev => ({
+        ...prev,
+        fullName: user.name || prev.fullName,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone,
+        staffId: user.rollNumber || prev.staffId,
+      }));
+    }
+  }, [user]);
 
   // Temporary state while editing
   const [formData, setFormData] = useState(profile);
@@ -30,7 +42,7 @@ export const AdminProfile: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      await updateUserProfile("me", {
+      await updateProfile({
         name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
@@ -40,7 +52,7 @@ export const AdminProfile: React.FC = () => {
       alert("Profile updated successfully!");
     } catch (err) {
       console.error("Failed to update profile", err);
-      alert("Failed to update profile on the backend.");
+      alert("Failed to update profile. Please try again.");
     }
   };
 

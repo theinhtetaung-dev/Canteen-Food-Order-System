@@ -40,7 +40,7 @@ export async function fetchKitchenAdmins(): Promise<KitchenAdmin[]> {
   const { data } = await api.get<any>("/api/users?size=1000");
   const users = data.content || data;
   return users
-    .filter((u: any) => u.roleName && u.roleName.toLowerCase() === "admin")
+    .filter((u: any) => u.roleName && u.roleName.toLowerCase() === "manager")
     .map((u: any) => ({
       id: u.userName,
       staffId: u.userName,
@@ -59,7 +59,7 @@ export async function createKitchenAdmin(payload: any): Promise<void> {
     email: payload.email,
     password: payload.password,
     phoneNumber: payload.phone,
-    roleName: "Admin",
+    roleName: "Manager",
   });
 }
 

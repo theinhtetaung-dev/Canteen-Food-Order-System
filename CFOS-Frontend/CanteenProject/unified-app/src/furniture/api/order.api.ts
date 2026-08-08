@@ -16,6 +16,7 @@ function mapBackendStatus(status: string): OrderStatus {
   const s = (status || "").toUpperCase();
   if (s === "COMPLETE" || s === "COMPLETED") return "completed";
   if (s === "CANCEL" || s === "CANCELLED") return "cancelled";
+  if (s === "PREPARING") return "preparing";
   return "pending";
 }
 
@@ -140,5 +141,6 @@ export async function fetchAllOrders(): Promise<Order[]> {
 
 export async function updateOrderStatus(orderId: string | number, status: string): Promise<void> {
   const numericId = typeof orderId === 'string' ? orderId.replace('ORD-', '') : orderId;
-  await api.put(`/api/orders/${numericId}`, { orderStatus: status });
+  const upperStatus = status.toUpperCase() === "COMPLETED" || status.toUpperCase() === "COMPLETE" ? "COMPLETE" : status.toUpperCase();
+  await api.patch(`/api/orders/${numericId}/status?status=${upperStatus}`);
 }

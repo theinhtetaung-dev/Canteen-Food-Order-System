@@ -4,6 +4,7 @@ USE CFOSDB;
 
 -- 2. Drop tables in reverse order of dependencies to avoid constraint issues
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS Tbl_Notification;
 DROP TABLE IF EXISTS Tbl_Payment;
 DROP TABLE IF EXISTS Tbl_OrderItem;
 DROP TABLE IF EXISTS Tbl_Order;
@@ -93,6 +94,18 @@ CREATE TABLE Tbl_Order (
     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt DATETIME ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (UserID) REFERENCES Tbl_User(UserID)
+);
+
+CREATE TABLE Tbl_Notification (
+    NotificationID INT PRIMARY KEY AUTO_INCREMENT,
+    UserID INT NOT NULL,
+    OrderID INT,
+    Title VARCHAR(100) NOT NULL,
+    Message VARCHAR(500) NOT NULL,
+    IsRead BOOLEAN DEFAULT FALSE,
+    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (UserID) REFERENCES Tbl_User(UserID),
+    FOREIGN KEY (OrderID) REFERENCES Tbl_Order(OrderID)
 );
 
 CREATE TABLE Tbl_OrderItem (

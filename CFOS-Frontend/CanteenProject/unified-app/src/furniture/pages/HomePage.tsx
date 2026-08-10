@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShoppingCart, Star, UtensilsCrossed, Search, ArrowRight } from "lucide-react";
+import { ShoppingCart, Star, UtensilsCrossed, Search } from "lucide-react";
 import { PageContainer } from "@furniture/components/layout/PageContainer";
 import { heroSlides } from "@furniture/data/heroItems";
 import { useAuth } from "@furniture/hooks/useAuth";
@@ -39,13 +39,6 @@ function LandingPage() {
               <Link
                 to="/furniture/menu"
                 className="flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 text-sm font-bold text-white shadow-md transition-transform hover:scale-105 active:scale-95"
-              >
-                Our Menu
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                to="/furniture/menu"
-                className="flex items-center gap-2 rounded-full border border-gray-200 bg-white px-6 py-3.5 text-sm font-bold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:shadow"
               >
                 <ShoppingCart className="h-4 w-4" />
                 Order Now

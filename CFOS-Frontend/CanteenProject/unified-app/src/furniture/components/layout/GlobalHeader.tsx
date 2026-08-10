@@ -13,13 +13,6 @@ export function GlobalHeader() {
   const debouncedSearch = useDebounce(searchQuery, 300);
   const { isAuthenticated, user } = useAuth();
 
-  const handleCustomSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/furniture/menu?search=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
   useEffect(() => {
     // Only trigger this automatic debounced search for the authenticated layout search bar.
     if (!isAuthenticated) return;
@@ -45,7 +38,7 @@ export function GlobalHeader() {
         <div className="flex items-center">
           <Link to="/furniture" className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm">
             <UtensilsCrossed className="h-5 w-5 text-brand" />
-            <span className="font-bold text-brand">MIT Canteen</span>
+            <span className="font-bold text-brand">MIIT Canteen</span>
           </Link>
         </div>
 
@@ -67,18 +60,6 @@ export function GlobalHeader() {
 
         {/* Right Actions */}
         <div className="flex items-center gap-6">
-          <form onSubmit={handleCustomSearch} className="hidden lg:block relative">
-            <input
-              type="text"
-              placeholder="Search food..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-48 rounded-full bg-white py-2 pl-4 pr-10 text-sm text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand"
-            />
-            <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-brand">
-              <Search className="h-4 w-4" />
-            </button>
-          </form>
 
           <Link to="/furniture/cart" className="text-gray-600 hover:text-brand transition-colors">
             <ShoppingCart className="h-5 w-5" />

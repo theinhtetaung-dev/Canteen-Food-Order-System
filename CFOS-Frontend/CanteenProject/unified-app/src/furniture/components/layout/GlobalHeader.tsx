@@ -61,10 +61,6 @@ export function GlobalHeader() {
         {/* Right Actions */}
         <div className="flex items-center gap-6">
 
-          <Link to="/furniture/cart" className="text-gray-600 hover:text-brand transition-colors">
-            <ShoppingCart className="h-5 w-5" />
-          </Link>
-
           {!user ? (
             <div className="flex items-center gap-4">
               <Link to="/furniture/login" className="text-sm font-bold text-gray-600 hover:text-brand transition-colors">

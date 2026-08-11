@@ -31,12 +31,12 @@ export default function MenuPage() {
               price: Number(item.price),
               rating: 4.8,
               image: item.imageUrl ? (item.imageUrl.startsWith("http") ? item.imageUrl : `${baseUrl}${item.imageUrl}`) : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000",
-              canteen: (item.foodId % 2 === 0) ? 2 : 1,
+              canteen: item.branchId || 1,
               category: item.categoryName || "Snacks",
               categoryId: item.categoryId,
               isAvailable: item.isAvailable !== false,
               description: item.description || "",
-              createdByName: item.createdByName || "General Shop",
+              createdByName: item.branchName || "General Shop",
             } as any;
           });
         setItems(availableItems);

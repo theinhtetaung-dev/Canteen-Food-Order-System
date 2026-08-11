@@ -5,6 +5,8 @@ import { KitchenAdmins } from '../pages/KitchenAdmins';
 import { Users } from '../pages/Users';
 import { AdminProfile } from '../pages/AdminProfile';
 import { Branches } from '../pages/Branches';
+import { Permissions } from '../pages/Permissions';
+import { UserReports } from '../pages/UserReports';
 
 export const router = createBrowserRouter([
   {
@@ -26,6 +28,14 @@ export const router = createBrowserRouter([
       {
         path: 'branches',
         element: <Branches />,
+      },
+      {
+        path: 'permissions',
+        element: <Permissions />,
+      },
+      {
+        path: 'user-reports',
+        element: <UserReports />,
       },
       {
         path: 'profile',

@@ -28,6 +28,38 @@ export async function fetchStudents(): Promise<StudentUser[]> {
     }));
 }
 
+export interface ReportUser {
+  userId: number;
+  userName: string;
+  fullName: string;
+  email: string | null;
+  phoneNumber: string | null;
+  roleName: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  deleteFlag: boolean;
+  createdAt: string;
+  canteenId: number | null;
+  canteenName: string | null;
+}
+
+export async function fetchAllUsers(): Promise<ReportUser[]> {
+  const { data } = await api.get<any>("/api/users?size=1000");
+  const users = data.content || data;
+  return users.map((u: any) => ({
+    userId: u.userId,
+    userName: u.userName,
+    fullName: u.fullName || u.userName,
+    email: u.email || null,
+    phoneNumber: u.phoneNumber || null,
+    roleName: u.roleName || "User",
+    status: u.status || "ACTIVE",
+    deleteFlag: !!u.deleteFlag,
+    createdAt: u.createdAt || new Date().toISOString(),
+    canteenId: u.canteenId || null,
+    canteenName: u.canteenName || null,
+  }));
+}
+
 export async function fetchKitchenAdmins(): Promise<any[]> {
   const { data } = await api.get<any>("/api/users?size=1000");
   const users = data.content || data;

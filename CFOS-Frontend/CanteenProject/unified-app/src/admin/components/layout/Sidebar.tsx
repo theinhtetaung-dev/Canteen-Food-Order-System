@@ -1,13 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Store, Users, UtensilsCrossed, MapPin } from 'lucide-react';
+import { LayoutDashboard, Store, Users, UtensilsCrossed, MapPin, ShieldCheck, BarChart3 } from 'lucide-react';
 import { useAuth } from "@furniture/hooks/useAuth";
 
 export const Sidebar: React.FC = () => {
   const { user } = useAuth();
 
   return (
-    <aside className="w-60 bg-[#F2F7E6] flex flex-col justify-between border-r border-gray-200/60 p-4 h-screen sticky top-0 shrink-0">
+    <aside className="w-60 bg-[#F2F7E6] flex flex-col justify-between border-r border-gray-200/60 p-4 h-screen sticky top-0 shrink-0 print:hidden">
       <div>
         {/* Brand Logo & Title */}
         <div className="flex items-center gap-3 px-2 py-4 mb-4">
@@ -75,6 +75,34 @@ export const Sidebar: React.FC = () => {
           >
             <MapPin className="w-4 h-4" />
             Canteens
+          </NavLink>
+
+          <NavLink
+            to="/permissions"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${
+                isActive
+                  ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
+                  : 'text-gray-600 hover:bg-black/5'
+              }`
+            }
+          >
+            <ShieldCheck className="w-4 h-4" />
+            Permissions
+          </NavLink>
+
+          <NavLink
+            to="/user-reports"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${
+                isActive
+                  ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
+                  : 'text-gray-600 hover:bg-black/5'
+              }`
+            }
+          >
+            <BarChart3 className="w-4 h-4" />
+            User Reports
           </NavLink>
         </nav>
       </div>

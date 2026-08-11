@@ -7,6 +7,8 @@ import {
   ChevronRight,
   SlidersHorizontal,
   Download,
+  List,
+  LayoutGrid,
 } from 'lucide-react';
 import { fetchStudents, deleteUser, resetUserPassword, type StudentUser } from "@furniture/api/user.api";
 import Swal from 'sweetalert2';
@@ -60,6 +62,9 @@ export const Users: React.FC = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState('All Categories');
   const filterRef = useRef<HTMLDivElement>(null);
+
+  // View Toggle State
+  const [viewType, setViewType] = useState<'table' | 'card'>('table');
 
   const loadData = async () => {
     try {
@@ -179,37 +184,32 @@ export const Users: React.FC = () => {
           {/* Action Dropdown and Buttons */}
           <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
             
-            {/* Batch Filter Dropdown */}
-            <div className="relative" ref={filterRef}>
+            {/* View Toggle */}
+            <div className="flex items-center border border-slate-200 rounded-xl p-0.5 bg-slate-50">
               <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className="flex items-center gap-1.5 px-4 py-2 bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-50 transition-all shadow-sm"
+                type="button"
+                onClick={() => setViewType('table')}
+                className={`p-1.5 rounded-lg transition-all ${
+                  viewType === 'table'
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+                title="Table View"
               >
-                <SlidersHorizontal className="w-3.5 h-3.5" />
-                <span>{selectedBatch}</span>
+                <List className="w-4 h-4" />
               </button>
-
-              {isFilterOpen && (
-                <div className="absolute right-0 mt-1.5 w-48 bg-white border border-gray-100 rounded-xl shadow-lg z-20 py-1">
-                  {batchCategories.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => {
-                        setSelectedBatch(cat);
-                        setIsFilterOpen(false);
-                        setCurrentPage(1);
-                      }}
-                      className={`w-full text-left px-4 py-2 text-xs font-semibold transition-colors ${
-                        selectedBatch === cat
-                          ? 'bg-[#E1EEB4] text-[#3B5B11]'
-                          : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              )}
+              <button
+                type="button"
+                onClick={() => setViewType('card')}
+                className={`p-1.5 rounded-lg transition-all ${
+                  viewType === 'card'
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-slate-400 hover:text-slate-600'
+                }`}
+                title="Card View"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
             </div>
 
             {/* Export XLS Button */}
@@ -237,56 +237,205 @@ export const Users: React.FC = () => {
           </div>
         </div>
 
-        {/* Users Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-[#B2C5A3] text-gray-800 text-[11px] font-extrabold uppercase tracking-wider">
-                <th className="py-3 px-4 rounded-l-md">NO</th>
-                <th className="py-3 px-4">USERNAME</th>
-                <th className="py-3 px-4">ROLL NUMBER</th>
-                <th className="py-3 px-4">EMAIL</th>
-                <th className="py-3 px-4">STATUS</th>
-                <th className="py-3 px-4">JOINED ON</th>
-                <th className="py-3 px-4 text-center rounded-r-md">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 text-xs font-medium text-gray-700">
-              {isLoading ? (
-                <tr>
-                  <td colSpan={7} className="py-8 text-center text-gray-500 font-bold">
-                    Loading registered student users...
-                  </td>
+        {/* Users Table / Card View */}
+        {viewType === 'table' ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#B2C5A3] text-gray-800 text-[11px] font-extrabold uppercase tracking-wider">
+                  <th className="py-3 px-4 rounded-l-md">NO</th>
+                  <th className="py-3 px-4">USERNAME</th>
+                  <th className="py-3 px-4">ROLL NUMBER</th>
+                  <th className="py-3 px-4">EMAIL</th>
+                  <th className="py-3 px-4">STATUS</th>
+                  <th className="py-3 px-4">JOINED ON</th>
+                  <th className="py-3 px-4 text-center rounded-r-md">ACTIONS</th>
                 </tr>
-              ) : currentUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-8 text-center text-gray-500 font-bold">
-                    No student users found.
-                  </td>
-                </tr>
-              ) : (
-                currentUsers.map((user, idx) => (
-                  <tr
-                    key={user.id}
-                    className={`transition-colors hover:bg-gray-50/80 ${
-                      idx % 2 === 1 ? 'bg-[#F9FAF4]' : 'bg-white'
-                    }`}
-                  >
-                    <td className="py-3 px-4 font-bold text-gray-500 font-mono text-[11px]">
-                      {startIndex + idx + 1}
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-xs font-medium text-gray-700">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-gray-500 font-bold">
+                      Loading registered student users...
                     </td>
-
-                    <td className="py-3 px-4 font-semibold text-gray-900">
-                      {user.userName}
+                  </tr>
+                ) : currentUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center text-gray-500 font-bold">
+                      No student users found.
                     </td>
+                  </tr>
+                ) : (
+                  currentUsers.map((user, idx) => (
+                    <tr
+                      key={user.id}
+                      className={`transition-colors hover:bg-gray-50/80 ${
+                        idx % 2 === 1 ? 'bg-[#F9FAF4]' : 'bg-white'
+                      }`}
+                    >
+                      <td className="py-3 px-4 font-bold text-gray-500 font-mono text-[11px]">
+                        {startIndex + idx + 1}
+                      </td>
 
-                    <td className="py-3 px-4 text-gray-800 font-semibold font-mono text-[11px]">
-                      {user.rollNo}
-                    </td>
+                      <td className="py-3 px-4 font-semibold text-gray-900">
+                        {user.userName}
+                      </td>
 
-                    <td className="py-3 px-4 text-gray-600">{user.email}</td>
+                      <td className="py-3 px-4 text-gray-800 font-semibold font-mono text-[11px]">
+                        {user.rollNo}
+                      </td>
 
-                    <td className="py-3 px-4">
+                      <td className="py-3 px-4 text-gray-600">{user.email}</td>
+
+                      <td className="py-3 px-4">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold ${
+                            user.status === 'Active'
+                              ? 'bg-[#E1EEB4] text-[#3B5B11]'
+                              : 'bg-gray-200 text-gray-600'
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              user.status === 'Active' ? 'bg-[#5B880A]' : 'bg-gray-500'
+                            }`}
+                          />
+                          {user.status}
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4 text-[11px] text-gray-500 leading-tight">
+                        {user.joinedOn}
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-center gap-3">
+                          {/* RESET PASSWORD BUTTON */}
+                          <button
+                            onClick={() => {
+                              Swal.fire({
+                                title: 'Reset Password?',
+                                text: `Are you sure you want to reset the password for student "${user.userName}" (Roll No: ${user.rollNo})?`,
+                                icon: 'question',
+                                showCancelButton: true,
+                                buttonsStyling: false,
+                                width: '360px',
+                                customClass: swalResetClass,
+                                confirmButtonText: 'Reset',
+                                cancelButtonText: 'Cancel'
+                              }).then(async (result) => {
+                                if (result.isConfirmed) {
+                                  try {
+                                    await resetUserPassword(user.id);
+                                    Swal.fire({
+                                      title: 'Success!',
+                                      text: `Password reset successfully for "${user.userName}"!`,
+                                      icon: 'success',
+                                      timer: 2000,
+                                      showConfirmButton: false,
+                                      buttonsStyling: false,
+                                      width: '360px',
+                                      customClass: swalSuccessClass
+                                    });
+                                  } catch (error) {
+                                    console.warn("Backend reset endpoint missing, mocking success.", error);
+                                    Swal.fire({
+                                      title: 'Success!',
+                                      text: `Password reset successfully for "${user.userName}"!`,
+                                      icon: 'success',
+                                      timer: 2000,
+                                      showConfirmButton: false,
+                                      buttonsStyling: false,
+                                      width: '360px',
+                                      customClass: swalSuccessClass
+                                    });
+                                  }
+                                }
+                              });
+                            }}
+                            title="Reset Credentials"
+                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                          >
+                            <RotateCw className="w-4 h-4 stroke-[2.5]" />
+                          </button>
+
+                          {/* DELETE USER BUTTON */}
+                          <button
+                            onClick={() => {
+                              Swal.fire({
+                                title: 'Delete User?',
+                                text: `Are you sure you want to delete student "${user.userName}" (Roll No: ${user.rollNo})? This action cannot be undone.`,
+                                icon: 'warning',
+                                showCancelButton: true,
+                                buttonsStyling: false,
+                                width: '360px',
+                                customClass: swalDeleteClass,
+                                confirmButtonText: 'Delete',
+                                cancelButtonText: 'Cancel'
+                              }).then(async (result) => {
+                                if (result.isConfirmed) {
+                                  try {
+                                    await deleteUser(user.id);
+                                    setUsers(prev => prev.filter((u) => u.id !== user.id));
+                                    Swal.fire({
+                                      title: 'Deleted!',
+                                      text: `User "${user.userName}" deleted successfully!`,
+                                      icon: 'success',
+                                      timer: 2000,
+                                      showConfirmButton: false,
+                                      buttonsStyling: false,
+                                      width: '360px',
+                                      customClass: swalSuccessClass
+                                    });
+                                  } catch (error) {
+                                    console.error("Failed to delete user", error);
+                                    Swal.fire({
+                                      title: 'Error',
+                                      text: `Failed to delete user "${user.userName}"`,
+                                      icon: 'error',
+                                      buttonsStyling: false,
+                                      width: '360px',
+                                      customClass: {
+                                        ...swalSuccessClass,
+                                        confirmButton: 'px-5 py-2 bg-gray-900 text-white text-xs font-bold rounded-xl'
+                                      }
+                                    });
+                                  }
+                                }
+                              });
+                            }}
+                            title="Delete User"
+                            className="text-red-500 hover:text-red-700 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4 stroke-[2.5]" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {isLoading ? (
+              <div className="col-span-full py-8 text-center text-gray-500 font-bold">
+                Loading registered student users...
+              </div>
+            ) : currentUsers.length === 0 ? (
+              <div className="col-span-full py-8 text-center text-gray-500 font-bold">
+                No student users found.
+              </div>
+            ) : (
+              currentUsers.map((user) => (
+                <div key={user.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
+                  <div>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-bold text-slate-900 text-sm">{user.userName}</h4>
+                        <p className="text-[11px] font-semibold text-slate-500 font-mono mt-0.5">{user.rollNo}</p>
+                      </div>
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold ${
                           user.status === 'Active'
@@ -301,121 +450,124 @@ export const Users: React.FC = () => {
                         />
                         {user.status}
                       </span>
-                    </td>
-
-                    <td className="py-3 px-4 text-[11px] text-gray-500 leading-tight">
-                      {user.joinedOn}
-                    </td>
-
-                    <td className="py-3 px-4">
-                      <div className="flex items-center justify-center gap-3">
-                        {/* RESET PASSWORD BUTTON */}
-                        <button
-                          onClick={() => {
-                            Swal.fire({
-                              title: 'Reset Password?',
-                              text: `Are you sure you want to reset the password for student "${user.userName}" (Roll No: ${user.rollNo})?`,
-                              icon: 'question',
-                              showCancelButton: true,
-                              buttonsStyling: false,
-                              width: '360px',
-                              customClass: swalResetClass,
-                              confirmButtonText: 'Reset',
-                              cancelButtonText: 'Cancel'
-                            }).then(async (result) => {
-                              if (result.isConfirmed) {
-                                try {
-                                  await resetUserPassword(user.id);
-                                  Swal.fire({
-                                    title: 'Success!',
-                                    text: `Password reset successfully for "${user.userName}"!`,
-                                    icon: 'success',
-                                    timer: 2000,
-                                    showConfirmButton: false,
-                                    buttonsStyling: false,
-                                    width: '360px',
-                                    customClass: swalSuccessClass
-                                  });
-                                } catch (error) {
-                                  console.warn("Backend reset endpoint missing, mocking success.", error);
-                                  Swal.fire({
-                                    title: 'Success!',
-                                    text: `Password reset successfully for "${user.userName}"!`,
-                                    icon: 'success',
-                                    timer: 2000,
-                                    showConfirmButton: false,
-                                    buttonsStyling: false,
-                                    width: '360px',
-                                    customClass: swalSuccessClass
-                                  });
-                                }
-                              }
-                            });
-                          }}
-                          title="Reset Credentials"
-                          className="text-blue-600 hover:text-blue-800 transition-colors"
-                        >
-                          <RotateCw className="w-4 h-4 stroke-[2.5]" />
-                        </button>
-
-                        {/* DELETE USER BUTTON */}
-                        <button
-                          onClick={() => {
-                            Swal.fire({
-                              title: 'Delete User?',
-                              text: `Are you sure you want to delete student "${user.userName}" (Roll No: ${user.rollNo})? This action cannot be undone.`,
-                              icon: 'warning',
-                              showCancelButton: true,
-                              buttonsStyling: false,
-                              width: '360px',
-                              customClass: swalDeleteClass,
-                              confirmButtonText: 'Delete',
-                              cancelButtonText: 'Cancel'
-                            }).then(async (result) => {
-                              if (result.isConfirmed) {
-                                try {
-                                  await deleteUser(user.id);
-                                  setUsers(prev => prev.filter((u) => u.id !== user.id));
-                                  Swal.fire({
-                                    title: 'Deleted!',
-                                    text: `User "${user.userName}" deleted successfully!`,
-                                    icon: 'success',
-                                    timer: 2000,
-                                    showConfirmButton: false,
-                                    buttonsStyling: false,
-                                    width: '360px',
-                                    customClass: swalSuccessClass
-                                  });
-                                } catch (error) {
-                                  console.error("Failed to delete user", error);
-                                  Swal.fire({
-                                    title: 'Error',
-                                    text: `Failed to delete user "${user.userName}"`,
-                                    icon: 'error',
-                                    buttonsStyling: false,
-                                    width: '360px',
-                                    customClass: {
-                                      ...swalSuccessClass,
-                                      confirmButton: 'px-5 py-2 bg-gray-900 text-white text-xs font-bold rounded-xl'
-                                    }
-                                  });
-                                }
-                              }
-                            });
-                          }}
-                          title="Delete User"
-                          className="text-red-500 hover:text-red-700 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4 stroke-[2.5]" />
-                        </button>
+                    </div>
+                    
+                    <div className="space-y-1.5 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-600">
+                      <div className="flex justify-between">
+                        <span className="font-medium text-slate-400">Email:</span>
+                        <span className="font-semibold text-slate-700 truncate max-w-[150px]">{user.email || '—'}</span>
                       </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                      <div className="flex justify-between">
+                        <span className="font-medium text-slate-400">Joined On:</span>
+                        <span className="font-semibold text-slate-700">{user.joinedOn}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
+                    <button
+                      onClick={() => {
+                        Swal.fire({
+                          title: 'Reset Password?',
+                          text: `Are you sure you want to reset the password for student "${user.userName}" (Roll No: ${user.rollNo})?`,
+                          icon: 'question',
+                          showCancelButton: true,
+                          buttonsStyling: false,
+                          width: '360px',
+                          customClass: swalResetClass,
+                          confirmButtonText: 'Reset',
+                          cancelButtonText: 'Cancel'
+                        }).then(async (result) => {
+                          if (result.isConfirmed) {
+                            try {
+                              await resetUserPassword(user.id);
+                              Swal.fire({
+                                title: 'Success!',
+                                text: `Password reset successfully for "${user.userName}"!`,
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false,
+                                buttonsStyling: false,
+                                width: '360px',
+                                customClass: swalSuccessClass
+                              });
+                            } catch (error) {
+                              console.warn("Backend reset endpoint missing, mocking success.", error);
+                              Swal.fire({
+                                title: 'Success!',
+                                text: `Password reset successfully for "${user.userName}"!`,
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false,
+                                buttonsStyling: false,
+                                width: '360px',
+                                customClass: swalSuccessClass
+                              });
+                            }
+                          }
+                        });
+                      }}
+                      title="Reset Credentials"
+                      className="text-blue-600 hover:text-blue-800 transition-colors p-1"
+                    >
+                      <RotateCw className="w-4 h-4 stroke-[2.5]" />
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        Swal.fire({
+                          title: 'Delete User?',
+                          text: `Are you sure you want to delete student "${user.userName}" (Roll No: ${user.rollNo})? This action cannot be undone.`,
+                          icon: 'warning',
+                          showCancelButton: true,
+                          buttonsStyling: false,
+                          width: '360px',
+                          customClass: swalDeleteClass,
+                          confirmButtonText: 'Delete',
+                          cancelButtonText: 'Cancel'
+                        }).then(async (result) => {
+                          if (result.isConfirmed) {
+                            try {
+                              await deleteUser(user.id);
+                              setUsers(prev => prev.filter((u) => u.id !== user.id));
+                              Swal.fire({
+                                title: 'Deleted!',
+                                text: `User "${user.userName}" deleted successfully!`,
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false,
+                                buttonsStyling: false,
+                                width: '360px',
+                                customClass: swalSuccessClass
+                              });
+                            } catch (error) {
+                              console.error("Failed to delete user", error);
+                              Swal.fire({
+                                title: 'Error',
+                                text: `Failed to delete user "${user.userName}"`,
+                                icon: 'error',
+                                buttonsStyling: false,
+                                width: '360px',
+                                customClass: {
+                                  ...swalSuccessClass,
+                                  confirmButton: 'px-5 py-2 bg-gray-900 text-white text-xs font-bold rounded-xl'
+                                }
+                              });
+                            }
+                          }
+                        });
+                      }}
+                      title="Delete User"
+                      className="text-red-500 hover:text-red-700 transition-colors p-1"
+                    >
+                      <Trash2 className="w-4 h-4 stroke-[2.5]" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
 
         {/* Pagination Logic */}
         {!isLoading && totalPages > 1 && (

@@ -62,207 +62,6 @@ export const UserReports: React.FC = () => {
     pageSize: 10,
   });
 
-  // Mock users data to append/merge for a comprehensive, functional reporting dashboard
-  const mockUsers = useMemo<ReportUser[]>(() => {
-    return [
-      {
-        userId: 101,
-        userName: 'student_alex',
-        fullName: 'Alex Carter',
-        email: 'alex.carter@campus.edu',
-        phoneNumber: '+959 798 123 456',
-        roleName: 'User',
-        status: 'ACTIVE',
-        deleteFlag: false,
-        createdAt: '2026-08-10T09:30:00Z',
-        canteenId: null,
-        canteenName: null
-      },
-      {
-        userId: 102,
-        userName: 'canteen_mgr1',
-        fullName: 'Daw Khin Hla',
-        email: 'khinhla.mgr@canteen.com',
-        phoneNumber: '+959 450 987 654',
-        roleName: 'Manager',
-        status: 'ACTIVE',
-        deleteFlag: false,
-        createdAt: '2026-08-01T10:15:00Z',
-        canteenId: 1,
-        canteenName: 'Main Canteen'
-      },
-      {
-        userId: 103,
-        userName: 'student_bella',
-        fullName: 'Bella Thorne',
-        email: 'bella.t@campus.edu',
-        phoneNumber: '+959 254 333 888',
-        roleName: 'User',
-        status: 'ACTIVE',
-        deleteFlag: true, // Suspended
-        createdAt: '2026-07-28T14:22:00Z',
-        canteenId: null,
-        canteenName: null
-      },
-      {
-        userId: 104,
-        userName: 'student_charlie',
-        fullName: 'Charlie Puth',
-        email: 'charlie.puth@campus.edu',
-        phoneNumber: '+959 977 444 111',
-        roleName: 'User',
-        status: 'INACTIVE',
-        deleteFlag: false,
-        createdAt: '2026-08-05T08:11:00Z',
-        canteenId: null,
-        canteenName: null
-      },
-      {
-        userId: 105,
-        userName: 'canteen_mgr2',
-        fullName: 'U Ba Maung',
-        email: 'bamaung.mgr@canteen.com',
-        phoneNumber: '+959 312 345 678',
-        roleName: 'Manager',
-        status: 'ACTIVE',
-        deleteFlag: false,
-        createdAt: '2026-08-02T11:45:00Z',
-        canteenId: 2,
-        canteenName: 'North Campus Food Hall'
-      },
-      {
-        userId: 106,
-        userName: 'student_david',
-        fullName: 'David Beckham',
-        email: 'david.b@campus.edu',
-        phoneNumber: '+959 421 888 999',
-        roleName: 'User',
-        status: 'ACTIVE',
-        deleteFlag: false,
-        createdAt: '2026-08-09T16:40:00Z',
-        canteenId: null,
-        canteenName: null
-      },
-      {
-        userId: 107,
-        userName: 'sys_admin_kyaw',
-        fullName: 'Ko Kyaw Swar',
-        email: 'kyawswar.admin@canteen.com',
-        phoneNumber: '+959 555 777 999',
-        roleName: 'Admin',
-        status: 'ACTIVE',
-        deleteFlag: false,
-        createdAt: '2026-06-15T09:00:00Z',
-        canteenId: null,
-        canteenName: null
-      },
-      {
-        userId: 108,
-        userName: 'student_emma',
-        fullName: 'Emma Watson',
-        email: 'emma.w@campus.edu',
-        phoneNumber: '+959 966 222 333',
-        roleName: 'User',
-        status: 'ACTIVE',
-        deleteFlag: true, // Suspended
-        createdAt: '2026-08-03T10:30:00Z',
-        canteenId: null,
-        canteenName: null
-      },
-      {
-        userId: 109,
-        userName: 'student_fiona',
-        fullName: 'Fiona Gallagher',
-        email: 'fiona.g@campus.edu',
-        phoneNumber: '+959 791 222 555',
-        roleName: 'User',
-        status: 'ACTIVE',
-        deleteFlag: false,
-        createdAt: '2026-08-11T09:12:00Z',
-        canteenId: null,
-        canteenName: null
-      },
-      {
-        userId: 110,
-        userName: 'student_george',
-        fullName: 'George Clooney',
-        email: 'george.c@campus.edu',
-        phoneNumber: '+959 400 111 222',
-        roleName: 'User',
-        status: 'ACTIVE',
-        deleteFlag: false,
-        createdAt: '2026-08-07T15:20:00Z',
-        canteenId: null,
-        canteenName: null
-      },
-      {
-        userId: 111,
-        userName: 'canteen_mgr3',
-        fullName: 'Daw Yee Yee',
-        email: 'yeeyee.mgr@canteen.com',
-        phoneNumber: '+959 444 888 000',
-        roleName: 'Manager',
-        status: 'INACTIVE',
-        deleteFlag: false,
-        createdAt: '2026-07-20T14:35:00Z',
-        canteenId: 3,
-        canteenName: 'East Gate Cafeteria'
-      },
-      {
-        userId: 112,
-        userName: 'student_hannah',
-        fullName: 'Hannah Baker',
-        email: 'hannah.b@campus.edu',
-        phoneNumber: '+959 777 555 444',
-        roleName: 'User',
-        status: 'ACTIVE',
-        deleteFlag: false,
-        createdAt: '2026-08-06T11:05:00Z',
-        canteenId: null,
-        canteenName: null
-      },
-      {
-        userId: 113,
-        userName: 'student_ian',
-        fullName: 'Ian Somerhalder',
-        email: 'ian.s@campus.edu',
-        phoneNumber: '+959 333 999 111',
-        roleName: 'User',
-        status: 'ACTIVE',
-        deleteFlag: false,
-        createdAt: '2026-08-08T13:45:00Z',
-        canteenId: null,
-        canteenName: null
-      },
-      {
-        userId: 114,
-        userName: 'student_julia',
-        fullName: 'Julia Roberts',
-        email: 'julia.r@campus.edu',
-        phoneNumber: '+959 888 111 222',
-        roleName: 'User',
-        status: 'ACTIVE',
-        deleteFlag: true, // Suspended
-        createdAt: '2026-07-15T10:10:00Z',
-        canteenId: null,
-        canteenName: null
-      },
-      {
-        userId: 115,
-        userName: 'student_kevin',
-        fullName: 'Kevin Spacey',
-        email: 'kevin.s@campus.edu',
-        phoneNumber: '+959 555 000 111',
-        roleName: 'User',
-        status: 'INACTIVE',
-        deleteFlag: false,
-        createdAt: '2026-07-10T09:00:00Z',
-        canteenId: null,
-        canteenName: null
-      }
-    ];
-  }, []);
-
   // Fetch Data on Load
   const loadData = async () => {
     try {
@@ -284,13 +83,6 @@ export const UserReports: React.FC = () => {
     loadData();
   }, []);
 
-  // Combine DB & Mock Users, filtering out duplicates
-  const allCombinedUsers = useMemo<ReportUser[]>(() => {
-    const dbUserIds = new Set(dbUsers.map(u => u.userId));
-    const uniqueMocks = mockUsers.filter(mu => !dbUserIds.has(mu.userId));
-    return [...dbUsers, ...uniqueMocks];
-  }, [dbUsers, mockUsers]);
-
   // Handle Generate Report action
   const handleGenerateReport = () => {
     setAppliedSearch(searchInput);
@@ -299,7 +91,7 @@ export const UserReports: React.FC = () => {
 
   // Perform client-side filtering based on panel inputs
   const filteredUsers = useMemo<ReportUser[]>(() => {
-    return allCombinedUsers.filter(u => {
+    return dbUsers.filter(u => {
       // 1. Live Search filter
       if (appliedSearch.trim() !== '') {
         const query = appliedSearch.toLowerCase();
@@ -371,7 +163,7 @@ export const UserReports: React.FC = () => {
 
       return true;
     });
-  }, [allCombinedUsers, appliedSearch, roleFilter, statusFilter, reportType, dateRangeFilter, startDate, endDate]);
+  }, [dbUsers, appliedSearch, roleFilter, statusFilter, reportType, dateRangeFilter, startDate, endDate]);
 
   // KPI Calculations
   const kpis = useMemo(() => {
@@ -400,11 +192,11 @@ export const UserReports: React.FC = () => {
       return;
     }
 
-    const headers = ['User ID', 'Username', 'Full Name', 'Role', 'Status', 'Canteen', 'Email', 'Phone', 'Joined Date'];
-    const rows = filteredUsers.map(u => {
+    const headers = ['No', 'Username', 'Full Name', 'Role', 'Status', 'Canteen', 'Email', 'Phone', 'Joined Date'];
+    const rows = filteredUsers.map((u, idx) => {
       const statusStr = u.deleteFlag ? 'Suspended' : u.status === 'ACTIVE' ? 'Active' : 'Inactive';
       return [
-        u.userId,
+        idx + 1,
         `@${u.userName}`,
         u.fullName,
         u.roleName === 'Manager' ? 'Canteen Admin' : u.roleName === 'Admin' ? 'Super Admin' : 'Student',
@@ -448,11 +240,11 @@ export const UserReports: React.FC = () => {
     }
 
     // Creating an Excel-compatible XML formatted workbook or simple TSV file to make sure it opens cleanly
-    const headers = ['User ID', 'Username', 'Full Name', 'Role', 'Status', 'Canteen', 'Email', 'Phone', 'Joined Date'];
-    const rows = filteredUsers.map(u => {
+    const headers = ['No', 'Username', 'Full Name', 'Role', 'Status', 'Canteen', 'Email', 'Phone', 'Joined Date'];
+    const rows = filteredUsers.map((u, idx) => {
       const statusStr = u.deleteFlag ? 'Suspended' : u.status === 'ACTIVE' ? 'Active' : 'Inactive';
       return [
-        u.userId,
+        idx + 1,
         `@${u.userName}`,
         u.fullName,
         u.roleName === 'Manager' ? 'Canteen Admin' : u.roleName === 'Admin' ? 'Super Admin' : 'Student',
@@ -490,19 +282,13 @@ export const UserReports: React.FC = () => {
   // React Table Columns setup
   const columns = useMemo<ColumnDef<ReportUser>[]>(() => [
     {
-      accessorKey: 'userId',
-      header: ({ column }) => (
-        <button
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-          className="flex items-center gap-1 hover:text-slate-900 transition-colors uppercase font-extrabold text-[11px]"
-        >
-          User ID
-          <ArrowUpDown className="w-3 h-3" />
-        </button>
-      ),
-      cell: ({ row }) => (
-        <span className="font-mono text-slate-500 font-semibold">{row.original.userId}</span>
-      ),
+      id: 'serialNo',
+      header: () => <span className="uppercase font-extrabold text-[11px]">No</span>,
+      cell: ({ row }) => {
+        const pageIndex = pagination.pageIndex;
+        const pageSize = pagination.pageSize;
+        return <span className="font-mono text-slate-500 font-semibold">{(pageIndex * pageSize) + row.index + 1}</span>;
+      },
     },
     {
       accessorKey: 'fullName',
@@ -621,7 +407,7 @@ export const UserReports: React.FC = () => {
         </span>
       ),
     },
-  ], []);
+  ], [pagination]);
 
   // React Table initialization
   const table = useReactTable({
@@ -1066,7 +852,7 @@ export const UserReports: React.FC = () => {
         <table className="w-full text-left border-collapse border border-slate-300 text-xs">
           <thead>
             <tr className="bg-slate-100 text-slate-800 font-bold border-b border-slate-300">
-              <th className="py-2.5 px-3 border-r border-slate-300">User ID</th>
+              <th className="py-2.5 px-3 border-r border-slate-300">No</th>
               <th className="py-2.5 px-3 border-r border-slate-300">Username</th>
               <th className="py-2.5 px-3 border-r border-slate-300">Full Name</th>
               <th className="py-2.5 px-3 border-r border-slate-300">Role</th>
@@ -1078,11 +864,11 @@ export const UserReports: React.FC = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200">
-            {filteredUsers.map(u => {
+            {filteredUsers.map((u, idx) => {
               const statusStr = u.deleteFlag ? 'Suspended' : u.status === 'ACTIVE' ? 'Active' : 'Inactive';
               return (
                 <tr key={u.userId} className="border-b border-slate-200">
-                  <td className="py-2 px-3 border-r border-slate-300 font-mono text-[10px]">{u.userId}</td>
+                  <td className="py-2 px-3 border-r border-slate-300 font-mono text-[10px]">{idx + 1}</td>
                   <td className="py-2 px-3 border-r border-slate-300">@{u.userName}</td>
                   <td className="py-2 px-3 border-r border-slate-300 font-semibold">{u.fullName}</td>
                   <td className="py-2 px-3 border-r border-slate-300">{u.roleName}</td>

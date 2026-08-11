@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchBranches, type Branch, createBranch, updateBranch, deleteBranch } from "@furniture/api/branch.api";
+import { fetchAllUsers } from "@furniture/api/user.api";
 import Swal from 'sweetalert2';
 import {
   Search,
@@ -448,6 +449,22 @@ export const Branches: React.FC = () => {
                               }).then(async (result) => {
                                 if (result.isConfirmed) {
                                   try {
+                                    const allUsers = await fetchAllUsers();
+                                    const hasConnectedUser = allUsers.some(u => u.canteenId === branch.branchId);
+                                    if (hasConnectedUser) {
+                                      Swal.fire({
+                                        title: 'Cannot Delete Canteen',
+                                        text: `There are users/admins assigned to "${branch.branchName}". Please reassign or delete them first.`,
+                                        icon: 'error',
+                                        buttonsStyling: false,
+                                        width: '360px',
+                                        customClass: {
+                                          ...swalSuccessClass,
+                                          confirmButton: 'px-5 py-2 bg-gray-900 text-white text-xs font-bold rounded-xl'
+                                        }
+                                      });
+                                      return;
+                                    }
                                     await deleteBranch(branch.branchId);
                                     setBranches(prev => prev.filter((b) => b.branchId !== branch.branchId));
                                     Swal.fire({
@@ -539,6 +556,22 @@ export const Branches: React.FC = () => {
                         }).then(async (result) => {
                           if (result.isConfirmed) {
                             try {
+                              const allUsers = await fetchAllUsers();
+                              const hasConnectedUser = allUsers.some(u => u.canteenId === branch.branchId);
+                              if (hasConnectedUser) {
+                                Swal.fire({
+                                  title: 'Cannot Delete Canteen',
+                                  text: `There are users/admins assigned to "${branch.branchName}". Please reassign or delete them first.`,
+                                  icon: 'error',
+                                  buttonsStyling: false,
+                                  width: '360px',
+                                  customClass: {
+                                    ...swalSuccessClass,
+                                    confirmButton: 'px-5 py-2 bg-gray-900 text-white text-xs font-bold rounded-xl'
+                                  }
+                                });
+                                return;
+                              }
                               await deleteBranch(branch.branchId);
                               setBranches(prev => prev.filter((b) => b.branchId !== branch.branchId));
                               Swal.fire({

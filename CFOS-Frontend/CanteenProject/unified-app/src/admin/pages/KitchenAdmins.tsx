@@ -159,18 +159,7 @@ export const KitchenAdmins: React.FC = () => {
         canteenId: parseInt(formData.canteenId, 10),
       });
 
-      const newAdmin: KitchenAdmin = {
-        id: formData.username,
-        adminId: formData.username,
-        avatar: formData.username.substring(0, 2).toUpperCase(),
-        isAvatarText: true,
-        restaurant: formData.canteenName,
-        phone: formData.phone ? `+95${formData.phone}` : '+959123456789',
-        status: 'Active',
-        joinedOn: 'Just now',
-      };
-
-      setAdmins([newAdmin, ...admins]);
+      await loadAdmins();
       setViewMode('list');
 
       setFormData({
@@ -306,18 +295,13 @@ export const KitchenAdmins: React.FC = () => {
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Phone Number
                 </label>
-                <div className="relative flex items-center">
-                  <span className="absolute left-4 text-sm font-semibold text-slate-500 border-r border-slate-200 pr-3">
-                    +95
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Enter admin phone number"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full pl-16 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-lime-500 focus:border-lime-500 outline-none transition-all text-sm bg-white"
-                  />
-                </div>
+                <input
+                  type="text"
+                  placeholder="Enter admin phone number"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-lime-500 focus:border-lime-500 outline-none transition-all text-sm bg-white"
+                />
               </div>
 
               {/* Row 4: Password (Left column) | Confirm Password (Right column) */}

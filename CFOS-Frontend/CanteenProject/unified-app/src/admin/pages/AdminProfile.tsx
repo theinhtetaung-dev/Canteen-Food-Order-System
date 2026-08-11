@@ -61,15 +61,8 @@ export const AdminProfile: React.FC = () => {
       {/* Header Profile Banner */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <div className="relative">
-            <img
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200"
-              alt="Profile"
-              className="w-16 h-16 rounded-full object-cover border-2 border-[#88C425]"
-            />
-            <button className="absolute bottom-0 right-0 p-1 bg-[#2D6A4F] text-white rounded-full hover:bg-[#1B4332] transition-colors shadow-sm">
-              <Pencil className="w-3 h-3" />
-            </button>
+          <div className="w-16 h-16 rounded-full bg-[#E1EEB4] flex items-center justify-center text-[#3B5B11] border-2 border-[#88C425] shrink-0">
+            <User className="w-8 h-8" />
           </div>
           <div>
             <h2 className="text-2xl font-black text-gray-900 leading-tight">

@@ -16,7 +16,7 @@ export async function fetchStudents(): Promise<StudentUser[]> {
   return users
     .filter((u: any) => u.roleName && u.roleName.toLowerCase() === "user")
     .map((u: any) => ({
-      id: u.userName,
+      id: String(u.userId),
       rollNo: u.userName,
       userName: u.fullName || u.userName,
       phone: u.phoneNumber || "+959 000 0000",
@@ -66,7 +66,7 @@ export async function fetchKitchenAdmins(): Promise<any[]> {
   return users
     .filter((u: any) => u.roleName && u.roleName.toLowerCase() === "manager")
     .map((u: any) => ({
-      id: u.userName,
+      id: String(u.userId),
       adminId: u.userName,
       avatar: (u.fullName || u.userName).substring(0, 2).toUpperCase(),
       isAvatarText: true,

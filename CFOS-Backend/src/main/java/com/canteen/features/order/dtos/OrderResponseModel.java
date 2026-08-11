@@ -13,6 +13,7 @@ public class OrderResponseModel {
     private BigDecimal totalAmount;
     private com.canteen.model.Status orderStatus;
     private List<OrderItemResponse> orderItems;
+    private Integer canteenId;
     private Boolean deleteFlag = false;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

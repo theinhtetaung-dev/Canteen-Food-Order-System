@@ -2,12 +2,24 @@ import React, { useState, useRef } from "react";
 import { User, ShieldCheck, PenTool, Edit2, LogOut, CheckCircle2 } from "lucide-react";
 import { updateUserProfile } from "@furniture/api/auth.api";
 import { useAuth } from "@furniture/hooks/useAuth";
+import { fetchAllUsers } from "@furniture/api/user.api";
 
 export const Profile: React.FC = () => {
-  const { logout } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
 
   const initialData = () => {
+    if (user) {
+      return {
+        fullName: user.name || user.rollNumber || "",
+        role: user.role === 'superadmin' ? 'Super Admin' : (user.role === 'admin' || user.role === 'manager' ? 'Canteen Manager' : 'Student'),
+        email: user.email || `${user.rollNumber || ''}@miit.edu.mm`,
+        phone: user.phone || "+95 9 123456789",
+        staffId: user.rollNumber || "",
+        bio: "Managing kitchen operations and menu planning for the Central Campus Dining Hall since 2021.",
+        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+      };
+    }
     const saved = localStorage.getItem("campus_bites_profile");
     if (saved) {
       try {
@@ -17,17 +29,46 @@ export const Profile: React.FC = () => {
       }
     }
     return {
-      fullName: "kaung thant",
-      role: "Super Admin",
-      email: "kaung.thant@campusbites.edu",
-      phone: "+1 (555) 234-5678",
-      staffId: "CB-ADM-2024-001",
+      fullName: "",
+      role: "Canteen Manager",
+      email: "",
+      phone: "+95 9 123456789",
+      staffId: "",
       bio: "Managing kitchen operations and menu planning for the Central Campus Dining Hall since 2021.",
       avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
     };
   };
 
   const [formData, setFormData] = useState(initialData);
+
+  React.useEffect(() => {
+    async function fetchUserData() {
+      if (!user) return;
+      try {
+        const allUsers = await fetchAllUsers();
+        const dbUser = allUsers.find(
+          (u) => u.userName.toLowerCase() === user.rollNumber.toLowerCase()
+        );
+        if (dbUser) {
+          setFormData({
+            fullName: dbUser.fullName || dbUser.userName,
+            role: dbUser.roleName.toLowerCase() === 'superadmin' 
+              ? 'Super Admin' 
+              : (dbUser.roleName.toLowerCase() === 'manager' ? 'Canteen Manager' : 'Student'),
+            email: dbUser.email || `${dbUser.userName}@miit.edu.mm`,
+            phone: dbUser.phoneNumber || "+95 9 123456789",
+            staffId: dbUser.userName,
+            bio: "Managing kitchen operations and menu planning for the Central Campus Dining Hall since 2021.",
+            avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch user from Tbl_User", err);
+      }
+    }
+    fetchUserData();
+  }, [user]);
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Sync state, localStorage, and sidebar instantly on every change
@@ -56,7 +97,7 @@ export const Profile: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      await updateUserProfile("me", {
+      await updateProfile({
         name: formData.fullName,
         email: formData.email,
         phone: formData.phone,

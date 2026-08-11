@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useAuth } from "@furniture/hooks/useAuth";
 import { useCart } from "@furniture/hooks/useCart";
 import { useOrders } from "@furniture/hooks/useOrders";
 import { formatPrice } from "@furniture/lib/utils";
-import { PICKUP_TIME_SLOTS } from "@furniture/types/order";
 
 interface CheckoutModalProps {
   open: boolean;
@@ -17,7 +16,6 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const { isAuthenticated } = useAuth();
   const { lines, totalPrice, clearCart, closeCart } = useCart();
   const { placeNewOrder } = useOrders();
-  const [pickupTime, setPickupTime] = useState(PICKUP_TIME_SLOTS[1]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,7 +34,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     try {
       const order = await placeNewOrder(
         lines.map((line) => ({ menuItem: line.item, quantity: line.quantity })),
-        pickupTime,
+        "As soon as possible",
       );
       clearCart();
       onClose();
@@ -86,24 +84,6 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
             <span className="font-semibold text-gray-800">Total</span>
             <span className="text-lg font-bold text-brand-dark">{formatPrice(totalPrice)}</span>
           </div>
-        </div>
-
-        <div className="mb-6">
-          <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700">
-            <Clock className="h-4 w-4 text-brand" />
-            Select Pickup Time
-          </label>
-          <select
-            value={pickupTime}
-            onChange={(e) => setPickupTime(e.target.value)}
-            className="w-full rounded-xl border border-brand/20 bg-brand-light/40 px-4 py-3 text-gray-800 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/30"
-          >
-            {PICKUP_TIME_SLOTS.map((slot) => (
-              <option key={slot} value={slot}>
-                {slot}
-              </option>
-            ))}
-          </select>
         </div>
 
         {error && (

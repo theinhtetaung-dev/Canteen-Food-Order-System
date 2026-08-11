@@ -105,7 +105,7 @@ export const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="max-w-5xl space-y-8 font-sans">
+    <div className="w-full space-y-8 font-sans">
       {/* 1. Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

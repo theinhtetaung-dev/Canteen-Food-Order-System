@@ -59,7 +59,6 @@ public class DatabaseSeeder implements CommandLineRunner {
         jdbcTemplate.execute("TRUNCATE TABLE tbl_role_permission");
         jdbcTemplate.execute("TRUNCATE TABLE tbl_permission");
         jdbcTemplate.execute("TRUNCATE TABLE tbl_role");
-        jdbcTemplate.execute("TRUNCATE TABLE tbl_branch");
         jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 
         // 2. Seed Roles
@@ -147,22 +146,6 @@ public class DatabaseSeeder implements CommandLineRunner {
         branchRepository.saveAll(List.of(mainCanteen, northCanteen));
         branchRepository.flush();
 
-        try {
-            jdbcTemplate.execute("INSERT INTO tbl_branch (branchid, branch_name, location, delete_flag) VALUES (1, 'Main Canteen', 'Building A, Ground Floor', 0)");
-            jdbcTemplate.execute("INSERT INTO tbl_branch (branchid, branch_name, location, delete_flag) VALUES (2, 'North Canteen', 'Building C, 1st Floor', 0)");
-        } catch (Exception e1) {
-            try {
-                jdbcTemplate.execute("INSERT INTO tbl_branch (BranchID, BranchName, Location, DeleteFlag) VALUES (1, 'Main Canteen', 'Building A, Ground Floor', 0)");
-                jdbcTemplate.execute("INSERT INTO tbl_branch (BranchID, BranchName, Location, DeleteFlag) VALUES (2, 'North Canteen', 'Building C, 1st Floor', 0)");
-            } catch (Exception e2) {
-                try {
-                    jdbcTemplate.execute("INSERT INTO tbl_branch (branchid, branchname, location, deleteflag) VALUES (1, 'Main Canteen', 'Building A, Ground Floor', 0)");
-                    jdbcTemplate.execute("INSERT INTO tbl_branch (branchid, branchname, location, deleteflag) VALUES (2, 'North Canteen', 'Building C, 1st Floor', 0)");
-                } catch (Exception e3) {
-                    log.warn("Failed legacy tbl_branch insert: " + e3.getMessage());
-                }
-            }
-        }
 
         // 6. Seed Food Categories
         log.info("Seeding Food Categories...");

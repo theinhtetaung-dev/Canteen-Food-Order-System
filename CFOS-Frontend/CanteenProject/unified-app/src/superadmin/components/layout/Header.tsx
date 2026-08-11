@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Calendar, ChevronDown } from "lucide-react";
+import { useAuth } from "@furniture/hooks/useAuth";
 
 export type DayFilterKey = "today" | "yesterday" | "last_7_days" | "last_30_days";
 
@@ -9,6 +10,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ selectedDayFilter, setSelectedDayFilter }) => {
+  const { user } = useAuth();
   const [isKitchenOpen, setIsKitchenOpen] = useState(() => {
     const saved = localStorage.getItem("campus_bites_kitchen_status");
     return saved !== null ? JSON.parse(saved) : true;
@@ -46,7 +48,7 @@ export const Header: React.FC<HeaderProps> = ({ selectedDayFilter, setSelectedDa
   return (
     <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 mb-8 border-b border-gray-100">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Kaung Thant</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{user?.name || user?.rollNumber || "Canteen Admin"}</h1>
         <p className="text-sm text-gray-500 mt-0.5">Tracking student meal requests in real-time.</p>
       </div>
 

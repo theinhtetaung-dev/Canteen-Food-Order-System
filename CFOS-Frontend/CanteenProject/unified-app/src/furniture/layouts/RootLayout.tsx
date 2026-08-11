@@ -21,22 +21,6 @@ export default function RootLayout() {
         <GlobalHeader />
         <main className="flex-1 relative">
           <Outlet />
-          
-          {isMenuPage && (
-            <button
-              type="button"
-              onClick={openCart}
-              className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-lg transition-transform hover:scale-110 hover:bg-brand-dark hover:shadow-xl active:scale-95"
-              aria-label="Open cart"
-            >
-              <ShoppingCart className="h-6 w-6" />
-              {totalItems > 0 && (
-                <span className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-red-500 text-xs font-bold text-white shadow-sm">
-                  {totalItems}
-                </span>
-              )}
-            </button>
-          )}
         </main>
         <Footer />
       </div>

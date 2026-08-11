@@ -121,7 +121,7 @@ export const Sidebar: React.FC = () => {
         </div>
         <div className="flex flex-col overflow-hidden">
           <span className="font-bold text-sm truncate text-gray-900 leading-tight">
-            {user?.name || 'Ta sone Ta yout'}
+            {user?.name || user?.rollNumber || 'Super Admin'}
           </span>
           <span className="text-[11px] text-gray-500 font-medium">Super Admin</span>
         </div>

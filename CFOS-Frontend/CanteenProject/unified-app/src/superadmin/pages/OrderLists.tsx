@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { fetchAllOrders, updateOrderStatus } from "@furniture/api/order.api";
 import { List, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { useAuth } from "@furniture/hooks/useAuth";
+import { fetchAllUsers } from "@furniture/api/user.api";
 
 type OrderStatus = "Pending" | "Preparing" | "Completed" | "Cancelled";
 
@@ -10,13 +12,32 @@ interface Order {
   items: string;
   pickupTime: string;
   status: OrderStatus;
+  canteenId?: number;
 }
 
 export function OrderLists() {
+  const { user } = useAuth();
+  const [userCanteenId, setUserCanteenId] = useState<number | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadDbUser() {
+      if (!user) return;
+      try {
+        const allUsers = await fetchAllUsers();
+        const found = allUsers.find(u => u.userName.toLowerCase() === user.rollNumber.toLowerCase());
+        if (found && found.canteenId) {
+          setUserCanteenId(found.canteenId);
+        }
+      } catch (err) {
+        console.error("Failed to load db user in order lists", err);
+      }
+    }
+    loadDbUser();
+  }, [user]);
 
   async function loadOrders() {
     try {
@@ -35,6 +56,7 @@ export function OrderLists() {
           items: d.items.map((i: any) => `${i.quantity}x ${i.name}`).join(", "),
           pickupTime: d.pickupTime || "12:00 PM",
           status: mappedStatus,
+          canteenId: d.canteenId,
         };
       });
       setOrders(mapped);
@@ -69,6 +91,7 @@ export function OrderLists() {
           items: d.items.map((i: any) => `${i.quantity}x ${i.name}`).join(", "),
           pickupTime: d.pickupTime || "12:00 PM",
           status: mappedStatus,
+          canteenId: d.canteenId,
         };
 
         setOrders((prev) => {
@@ -90,16 +113,21 @@ export function OrderLists() {
     };
   }, []);
 
+  const filteredOrders = React.useMemo(() => {
+    if (userCanteenId === null) return orders;
+    return orders.filter(o => o.canteenId === userCanteenId);
+  }, [orders, userCanteenId]);
+
   const ORDERS_PER_PAGE = 10;
-  const totalPages = Math.ceil(orders.length / ORDERS_PER_PAGE);
-  const visibleOrders = orders.length >= 10
-    ? orders.slice((currentPage - 1) * ORDERS_PER_PAGE, currentPage * ORDERS_PER_PAGE)
-    : orders;
+  const totalPages = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE);
+  const visibleOrders = filteredOrders.length >= 10
+    ? filteredOrders.slice((currentPage - 1) * ORDERS_PER_PAGE, currentPage * ORDERS_PER_PAGE)
+    : filteredOrders;
 
   // Stats Counters
-  const activeOrdersCount = orders.filter((o) => o.status !== "Completed" && o.status !== "Cancelled").length;
-  const readyCount = orders.filter((o) => o.status === "Preparing").length;
-  const completedTodayCount = orders.filter((o) => o.status === "Completed").length;
+  const activeOrdersCount = filteredOrders.filter((o) => o.status !== "Completed" && o.status !== "Cancelled").length;
+  const readyCount = filteredOrders.filter((o) => o.status === "Preparing").length;
+  const completedTodayCount = filteredOrders.filter((o) => o.status === "Completed").length;
 
   const handleNextStatus = async (id: string, targetBackendStatus: "PREPARING" | "COMPLETE" | "CANCEL") => {
     let nextStatus: OrderStatus = "Pending";
@@ -338,7 +366,7 @@ export function OrderLists() {
             </thead>
             <tbody className="divide-y divide-[#e2e7d8] text-xs font-semibold text-[#3d4235]">
               {visibleOrders.map((order, idx) => {
-                const globalIndex = orders.length >= 10
+                const globalIndex = filteredOrders.length >= 10
                   ? (currentPage - 1) * ORDERS_PER_PAGE + idx + 1
                   : idx + 1;
                 return (
@@ -372,7 +400,7 @@ export function OrderLists() {
         </div>
 
         {/* Pagination Footer */}
-        {orders.length >= 10 && (
+        {filteredOrders.length >= 10 && (
           <div className="p-5 px-7 flex items-center justify-end gap-2 bg-[#fcfdfa]">
             <button
               type="button"

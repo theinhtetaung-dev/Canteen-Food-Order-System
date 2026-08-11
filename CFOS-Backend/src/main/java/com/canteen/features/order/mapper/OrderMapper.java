@@ -27,6 +27,13 @@ public class OrderMapper {
             dto.setOrderItems(order.getOrderItems().stream()
                 .map(OrderMapper::toOrderItemDto)
                 .collect(Collectors.toList()));
+            
+            if (!order.getOrderItems().isEmpty()) {
+                com.canteen.model.OrderItem firstItem = order.getOrderItems().get(0);
+                if (firstItem.getFood() != null && firstItem.getFood().getBranch() != null) {
+                    dto.setCanteenId(firstItem.getFood().getBranch().getBranchId());
+                }
+            }
         }
         
         dto.setDeleteFlag(order.getDeleteFlag());

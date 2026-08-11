@@ -83,6 +83,7 @@ export async function fetchUserOrders(userId: string): Promise<Order[]> {
       status: mapBackendStatus(order.orderStatus),
       createdAt: order.createdAt || new Date().toISOString(),
       updatedAt: order.updatedAt || new Date().toISOString(),
+      canteenId: order.canteenId,
     }));
   } catch (err) {
     console.error("Error fetching orders:", err);
@@ -132,6 +133,7 @@ export async function fetchAllOrders(): Promise<Order[]> {
       status: mapBackendStatus(order.orderStatus),
       createdAt: order.createdAt || new Date().toISOString(),
       updatedAt: order.updatedAt || new Date().toISOString(),
+      canteenId: order.canteenId,
     }));
   } catch (err) {
     console.error("Error fetching all orders:", err);

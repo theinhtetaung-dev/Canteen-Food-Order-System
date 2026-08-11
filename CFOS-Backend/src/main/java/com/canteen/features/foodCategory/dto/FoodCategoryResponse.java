@@ -13,5 +13,7 @@ public class FoodCategoryResponse {
     private String description;
     private Integer createdBy;
     private String createdByName;
+    private Integer branchId;
+    private String branchName;
 
 }

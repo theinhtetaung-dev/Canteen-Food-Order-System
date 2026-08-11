@@ -16,9 +16,11 @@ import com.canteen.features.auth.dtos.UpdateUserResModel;
 import com.canteen.features.auth.dtos.UpdateProfileReqModel;
 import com.canteen.features.auth.dtos.UserResModel;
 import com.canteen.features.auth.mapper.UserMapper;
+import com.canteen.model.Branch;
 import com.canteen.model.Role;
 import com.canteen.model.User;
 import com.canteen.model.UserStatus;
+import com.canteen.repository.BranchRepository;
 import com.canteen.repository.RoleRepository;
 import com.canteen.repository.RolePermissionRepository;
 import com.canteen.repository.UserRepository;
@@ -36,6 +38,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final BranchRepository branchRepository;
     private final RolePermissionRepository rolePermissionRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -64,6 +67,13 @@ public class UserService {
         User user = UserMapper.toEntity(request);
         user.setRole(role);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+
+        // Link canteen if canteenId is provided (for Canteen Admin creation)
+        if (request.getCanteenId() != null) {
+            Branch canteen = branchRepository.findById(request.getCanteenId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Canteen not found: " + request.getCanteenId()));
+            user.setCanteen(canteen);
+        }
 
         userRepository.save(user);
 

@@ -39,6 +39,7 @@ public class OrderService {
     private final UserRepository userRepository;
     private final FoodRepository foodRepository;
     private final OrderStatusValidator orderStatusValidator;
+    private final OrderSseService orderSseService;
 
     @Transactional
     public OrderResponseModel createOrder(OrderRequestModel request, String username) {
@@ -97,7 +98,9 @@ public class OrderService {
 
         order.setTotalAmount(totalAmount);
 
-        return OrderMapper.toDto(orderRepository.save(order));
+        OrderResponseModel response = OrderMapper.toDto(orderRepository.save(order));
+        orderSseService.broadcast(response);
+        return response;
     }
 
     public OrderResponseModel getOrderById(Integer id) {

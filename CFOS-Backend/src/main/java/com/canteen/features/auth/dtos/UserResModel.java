@@ -16,4 +16,6 @@ public class UserResModel {
     private Boolean deleteFlag;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Integer canteenId;
+    private String canteenName;
 }

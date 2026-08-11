@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchKitchenAdmins, createKitchenAdmin, deleteUser, resetUserPassword } from "@furniture/api/user.api";
+import { fetchBranches, type Branch } from "@furniture/api/branch.api";
+import Swal from 'sweetalert2';
 import {
   Search,
   Plus,
@@ -7,12 +9,10 @@ import {
   Trash2,
   ChevronLeft,
   ChevronRight,
-  AlertTriangle,
-  Info,
   ArrowLeft,
   Eye,
   EyeOff,
-  CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface KitchenAdmin {
@@ -26,11 +26,17 @@ interface KitchenAdmin {
   joinedOn: string;
 }
 
-
+const swalSuccessClass = {
+  popup: 'rounded-2xl border border-gray-100 p-6 shadow-xl bg-white font-sans',
+  title: 'text-lg font-bold text-gray-900',
+  htmlContainer: 'text-xs text-gray-500 mt-2 font-medium leading-relaxed',
+};
 
 export const KitchenAdmins: React.FC = () => {
   const [admins, setAdmins] = useState<KitchenAdmin[]>([]);
+  const [canteens, setCanteens] = useState<Branch[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
@@ -38,16 +44,10 @@ export const KitchenAdmins: React.FC = () => {
   // Page Mode: 'list' | 'create'
   const [viewMode, setViewMode] = useState<'list' | 'create'>('list');
 
-  // Modal states
-  const [adminToDelete, setAdminToDelete] = useState<KitchenAdmin | null>(null);
-  const [adminToReset, setAdminToReset] = useState<KitchenAdmin | null>(null);
-
-  // Success Toast state
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
   // Form State
   const [formData, setFormData] = useState({
-    canteenName: '',
+    canteenId: '',      // stores the selected Branch's branchId as string
+    canteenName: '',    // display name (optional, for optimistic UI)
     username: '',
     email: '',
     phone: '',
@@ -57,31 +57,64 @@ export const KitchenAdmins: React.FC = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [adminToDelete, setAdminToDelete] = useState<KitchenAdmin | null>(null);
+  const [adminToReset, setAdminToReset] = useState<KitchenAdmin | null>(null);
+
+  const loadAdmins = async () => {
+    try {
+      setIsLoading(true);
+      const data = await fetchKitchenAdmins();
+      // fetchKitchenAdmins now returns the fully-mapped shape from user.api.ts
+      setAdmins(data);
+    } catch (err) {
+      console.error("Failed to fetch canteen admins", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function loadAdmins() {
+    async function loadCanteens() {
       try {
-        setIsLoading(true);
-        const data = await fetchKitchenAdmins();
-        const mapped = data.map((d: any) => ({
-          id: d.id,
-          adminId: d.staffId,
-          avatar: (d.name || d.adminId || 'K').substring(0, 2).toUpperCase(),
-          isAvatarText: true,
-          restaurant: d.assignedCanteen,
-          phone: d.phone,
-          status: d.status,
-          joinedOn: d.joinedOn
-        }));
-        setAdmins(mapped);
+        const data = await fetchBranches();
+        setCanteens(data);
       } catch (err) {
-        console.error("Failed to fetch kitchen admins", err);
-      } finally {
-        setIsLoading(false);
+        console.error("Failed to fetch canteens for dropdown", err);
       }
     }
+
     loadAdmins();
+    loadCanteens();
   }, []);
+
+  const handleSearch = async () => {
+    try {
+      setIsLoading(true);
+      const data = await fetchKitchenAdmins();
+      setAdmins(data);
+      setSearchTerm(searchInput);
+      setCurrentPage(1);
+    } catch (err) {
+      console.error("Failed to fetch canteen admins", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClear = async () => {
+    setSearchInput('');
+    setSearchTerm('');
+    try {
+      setIsLoading(true);
+      const data = await fetchKitchenAdmins();
+      setAdmins(data);
+      setCurrentPage(1);
+    } catch (err) {
+      console.error("Failed to fetch canteen admins", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredAdmins = admins.filter((admin) =>
     admin.adminId.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -92,48 +125,22 @@ export const KitchenAdmins: React.FC = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const currentAdmins = filteredAdmins.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-  const triggerToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 4000);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (adminToDelete) {
-      try {
-        await deleteUser(adminToDelete.id);
-        setAdmins(admins.filter((a) => a.id !== adminToDelete.id));
-        triggerToast('Kitchen Admin deleted successfully!');
-      } catch (err) {
-        console.error("Failed to delete kitchen admin", err);
-        triggerToast('Failed to delete Kitchen Admin');
-      } finally {
-        setAdminToDelete(null);
-      }
-    }
-  };
-
-  const handleResetPasswordConfirm = async () => {
-    if (adminToReset) {
-      try {
-        await resetUserPassword(adminToReset.id);
-        triggerToast(`Password reset successfully for ${adminToReset.restaurant}!`);
-      } catch (err) {
-        console.warn("Backend reset endpoint missing, mocking success.", err);
-        triggerToast(`Password reset successfully for ${adminToReset.restaurant}!`);
-      } finally {
-        setAdminToReset(null);
-      }
-    }
-  };
-
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.canteenName || !formData.username) return;
+    if (!formData.canteenId || !formData.username) return;
     if (formData.password !== formData.confirmPassword) {
-      triggerToast('Passwords do not match');
+      Swal.fire({
+        title: 'Error',
+        text: 'Passwords do not match',
+        icon: 'error',
+        buttonsStyling: false,
+        width: '360px',
+        customClass: {
+          ...swalSuccessClass,
+          confirmButton: 'px-5 py-2 bg-gray-900 text-white text-xs font-bold rounded-xl'
+        }
+      });
       return;
     }
 
@@ -143,13 +150,14 @@ export const KitchenAdmins: React.FC = () => {
         name: formData.canteenName,
         email: formData.email,
         password: formData.password,
-        phone: formData.phone
+        phone: formData.phone,
+        canteenId: parseInt(formData.canteenId, 10),
       });
 
       const newAdmin: KitchenAdmin = {
         id: formData.username,
-        adminId: `${formData.username}-Admin`,
-        avatar: formData.canteenName.substring(0, 2).toUpperCase(),
+        adminId: formData.username,
+        avatar: formData.username.substring(0, 2).toUpperCase(),
         isAvatarText: true,
         restaurant: formData.canteenName,
         phone: formData.phone ? `+95${formData.phone}` : '+959123456789',
@@ -161,6 +169,7 @@ export const KitchenAdmins: React.FC = () => {
       setViewMode('list');
 
       setFormData({
+        canteenId: '',
         canteenName: '',
         username: '',
         email: '',
@@ -169,14 +178,33 @@ export const KitchenAdmins: React.FC = () => {
         confirmPassword: '',
       });
 
-      triggerToast('New canteen created successfully!');
+      Swal.fire({
+        title: 'Success!',
+        text: 'New Canteen Admin created successfully!',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false,
+        buttonsStyling: false,
+        width: '360px',
+        customClass: swalSuccessClass
+      });
     } catch (err) {
       console.error("Failed to create admin", err);
-      triggerToast('Failed to create new canteen');
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to create Canteen Admin',
+        icon: 'error',
+        buttonsStyling: false,
+        width: '360px',
+        customClass: {
+          ...swalSuccessClass,
+          confirmButton: 'px-5 py-2 bg-gray-900 text-white text-xs font-bold rounded-xl'
+        }
+      });
     }
   };
 
-  // ---------------- VIEW 1: CREATE NEW CANTEEN FORM ----------------
+  // ---------------- VIEW 1: CREATE NEW CANTEEN ADMIN FORM ----------------
   if (viewMode === 'create') {
     return (
       <div className="max-w-4xl space-y-4">
@@ -184,7 +212,7 @@ export const KitchenAdmins: React.FC = () => {
         <div className="flex items-center gap-2 text-xs font-semibold text-gray-400">
           <span>Admins</span>
           <span>/</span>
-          <span className="text-gray-700">Create New Canteen</span>
+          <span className="text-gray-700">Create New Canteen Admin</span>
         </div>
 
         {/* Back Link & Header Title */}
@@ -196,7 +224,7 @@ export const KitchenAdmins: React.FC = () => {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-            Create New Canteen
+            Create New Canteen Admin
           </h2>
         </div>
 
@@ -210,19 +238,31 @@ export const KitchenAdmins: React.FC = () => {
           </div>
 
           <form onSubmit={handleCreateSubmit} className="space-y-4 max-w-2xl">
-            {/* Canteen Name */}
+            {/* Canteen Name (Select Box) */}
             <div>
               <label className="block text-xs font-bold text-gray-700 mb-1">
                 Canteen Name
               </label>
-              <input
-                type="text"
-                placeholder="Enter canteen name"
-                value={formData.canteenName}
-                onChange={(e) => setFormData({ ...formData, canteenName: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-xs font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-[#88C425] transition-all"
+              <select
+                value={formData.canteenId}
+                onChange={(e) => {
+                  const selected = canteens.find(c => c.branchId === parseInt(e.target.value, 10));
+                  setFormData({
+                    ...formData,
+                    canteenId: e.target.value,
+                    canteenName: selected?.branchName || '',
+                  });
+                }}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 text-xs font-medium text-gray-900 focus:outline-none focus:bg-white focus:border-[#88C425] transition-all"
                 required
-              />
+              >
+                <option value="">Select canteen name</option>
+                {canteens.map((c) => (
+                  <option key={c.branchId} value={c.branchId}>
+                    {c.branchName}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Username */}
@@ -336,16 +376,16 @@ export const KitchenAdmins: React.FC = () => {
     );
   }
 
-  // ---------------- VIEW 2: KITCHEN ADMINS LIST TABLE ----------------
+  // ---------------- VIEW 2: CANTEEN ADMINS LIST TABLE ----------------
   return (
     <div className="max-w-6xl space-y-6 relative">
       {/* Title & Subtitle */}
       <div>
         <h2 className="text-3xl font-black text-gray-900 tracking-tight">
-          Kitchen Admins
+          Canteen Admins
         </h2>
         <p className="text-sm font-medium text-gray-500 mt-1">
-          Manage and create new canteen's kitchen admins.
+          Manage and create new canteen admins.
         </p>
       </div>
 
@@ -353,15 +393,29 @@ export const KitchenAdmins: React.FC = () => {
       <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-sm space-y-4">
         {/* Top Controls Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="relative w-full sm:w-96">
-            <input
-              type="text"
-              placeholder="Search admin by username (id)"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-4 pr-10 py-2 rounded-xl border border-gray-300 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#88C425]"
-            />
-            <Search className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2" />
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="relative w-full sm:w-72">
+              <input
+                type="text"
+                placeholder="Search admin by username (id) or canteen"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full pl-4 pr-10 py-2 rounded-xl border border-gray-300 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#88C425]"
+              />
+              <Search className="w-4 h-4 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2" />
+            </div>
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2 bg-[#88C425] hover:bg-[#77AF1D] text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+            >
+              Search
+            </button>
+            <button
+              onClick={handleClear}
+              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition-all shadow-sm"
+            >
+              Clear
+            </button>
           </div>
 
           <button
@@ -369,7 +423,7 @@ export const KitchenAdmins: React.FC = () => {
             className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 bg-[#5B880A] hover:bg-[#4A7007] text-white text-xs font-bold rounded-xl transition-all shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            Create New Admin
+            Create New Canteen Admin
           </button>
         </div>
 
@@ -380,7 +434,7 @@ export const KitchenAdmins: React.FC = () => {
               <tr className="bg-[#B2C5A3] text-gray-800 text-[11px] font-extrabold uppercase tracking-wider">
                 <th className="py-3 px-4 rounded-l-md">NO</th>
                 <th className="py-3 px-4">ADMIN ID</th>
-                <th className="py-3 px-4">RESTAURANT</th>
+                <th className="py-3 px-4">CANTEEN</th>
                 <th className="py-3 px-4">PHONE</th>
                 <th className="py-3 px-4">STATUS</th>
                 <th className="py-3 px-4">JOINED ON</th>
@@ -451,7 +505,7 @@ export const KitchenAdmins: React.FC = () => {
                       {/* DELETE ADMIN BUTTON */}
                       <button
                         onClick={() => setAdminToDelete(admin)}
-                        title="Delete Admin"
+                        title="Delete Canteen Admin"
                         className="text-red-500 hover:text-red-700 transition-colors"
                       >
                         <Trash2 className="w-4 h-4 stroke-[2.5]" />
@@ -503,97 +557,163 @@ export const KitchenAdmins: React.FC = () => {
         )}
       </div>
 
-      {/* RESET PASSWORD MODAL */}
-      {adminToReset && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="p-6 text-center">
-              {/* Blue Alert Icon */}
-              <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                <AlertTriangle className="w-5 h-5" />
-              </div>
-
-              {/* Title */}
-              <h3 className="text-lg font-bold text-blue-600">Reset Password ?</h3>
-
-              {/* Message */}
-              <p className="text-xs text-gray-600 mt-2 font-medium leading-relaxed">
-                Are you sure you want to reset password for <br />
-                <span className="font-bold text-gray-900">"{adminToReset.restaurant}"</span>?
-              </p>
-
-              {/* Buttons */}
-              <div className="flex items-center justify-center gap-3 mt-6">
-                <button
-                  onClick={() => setAdminToReset(null)}
-                  className="px-5 py-2 border border-gray-300 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleResetPasswordConfirm}
-                  className="px-5 py-2 bg-[#4263EB] hover:bg-[#3651C9] text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
-                >
-                  Reset
-                </button>
-              </div>
-            </div>
-
-            {/* Bottom Warning Banner */}
-            <div className="bg-[#F3F4ED] py-2.5 px-4 flex items-center justify-center gap-1.5 text-[10px] font-extrabold uppercase text-gray-500 border-t border-gray-200/50">
-              <Info className="w-3.5 h-3.5" />
-              <span>THIS ACTION CAN'T BE UNDO</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* DELETE CONFIRMATION MODAL */}
+      {/* RENDER CUSTOM DELETE CONFIRMATION MODAL */}
       {adminToDelete && (
-        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="p-6 text-center">
-              <div className="w-10 h-10 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
-                <AlertTriangle className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-md mx-4 p-6 bg-white rounded-2xl shadow-xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-start gap-4">
+              <div className="bg-red-100 text-red-600 p-3 rounded-full w-12 h-12 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-6 h-6" />
               </div>
-
-              <h3 className="text-lg font-bold text-red-600">Delete User?</h3>
-
-              <p className="text-xs text-gray-600 mt-2 font-medium leading-relaxed">
-                Are you sure you want to delete <span className="font-bold text-gray-900">"{adminToDelete.restaurant}"</span>?
-                <br />
-                This action cannot be undone.
-              </p>
-
-              <div className="flex items-center justify-center gap-3 mt-6">
-                <button
-                  onClick={() => setAdminToDelete(null)}
-                  className="px-5 py-2 border border-gray-300 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteConfirm}
-                  className="px-5 py-2 bg-[#C5221F] hover:bg-[#A81B18] text-white text-xs font-bold rounded-xl transition-colors shadow-sm"
-                >
-                  Delete
-                </button>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-slate-900 leading-6">
+                  Delete Canteen Admin
+                </h3>
+                <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
+                  This action cannot be undone. All data associated with this admin will be permanently removed.
+                </p>
               </div>
             </div>
 
-            <div className="bg-[#F3F4ED] py-2.5 px-4 flex items-center justify-center gap-1.5 text-[10px] font-extrabold uppercase text-gray-500 border-t border-gray-200/50">
-              <Info className="w-3.5 h-3.5" />
-              <span>THIS ACTION CAN'T BE UNDO</span>
+            {/* Target Summary Box */}
+            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 my-4 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-medium">Username:</span>
+                <span className="text-slate-900 font-bold">{adminToDelete.adminId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-medium">Canteen:</span>
+                <span className="text-slate-900 font-bold">{adminToDelete.restaurant}</span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6">
+              <button
+                type="button"
+                onClick={() => setAdminToDelete(null)}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 font-medium text-sm transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await deleteUser(adminToDelete.id);
+                    setAdmins(prev => prev.filter((a) => a.id !== adminToDelete.id));
+                    setAdminToDelete(null);
+                    Swal.fire({
+                      title: 'Deleted!',
+                      text: 'Canteen Admin deleted successfully!',
+                      icon: 'success',
+                      timer: 2000,
+                      showConfirmButton: false,
+                      buttonsStyling: false,
+                      width: '360px',
+                      customClass: swalSuccessClass
+                    });
+                  } catch (err) {
+                    console.error("Failed to delete canteen admin", err);
+                    setAdminToDelete(null);
+                    Swal.fire({
+                      title: 'Error',
+                      text: 'Failed to delete canteen admin',
+                      icon: 'error',
+                      buttonsStyling: false,
+                      width: '360px',
+                      customClass: {
+                        ...swalSuccessClass,
+                        confirmButton: 'px-5 py-2 bg-gray-900 text-white text-xs font-bold rounded-xl'
+                      }
+                    });
+                  }
+                }}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-white bg-red-600 hover:bg-red-700 font-medium text-sm shadow-sm transition-all flex items-center justify-center gap-2"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* SUCCESS TOAST BANNER */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-white border border-gray-200 px-5 py-3 rounded-2xl shadow-lg flex items-center gap-2.5 animate-in slide-in-from-bottom-5 duration-200">
-          <span className="font-bold text-xs text-gray-900">{toastMessage}</span>
-          <CheckCircle2 className="w-4 h-4 text-[#88C425]" />
+      {/* RENDER CUSTOM RESET PASSWORD CONFIRMATION MODAL */}
+      {adminToReset && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-md mx-4 p-6 bg-white rounded-2xl shadow-xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-start gap-4">
+              <div className="bg-[#F8FBF2] text-[#88C425] p-3 rounded-full w-12 h-12 flex items-center justify-center shrink-0 border border-[#E1EEB4]">
+                <RotateCw className="w-6 h-6 animate-spin-slow" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-slate-900 leading-6">
+                  Reset Password
+                </h3>
+                <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
+                  Are you sure you want to reset the password for this admin? They will need to use their new password on next login.
+                </p>
+              </div>
+            </div>
+
+            {/* Target Summary Box */}
+            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 my-4 text-sm space-y-1">
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-medium">Username:</span>
+                <span className="text-slate-900 font-bold">{adminToReset.adminId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 font-medium">Canteen:</span>
+                <span className="text-slate-900 font-bold">{adminToReset.restaurant}</span>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6">
+              <button
+                type="button"
+                onClick={() => setAdminToReset(null)}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 font-medium text-sm transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    await resetUserPassword(adminToReset.id);
+                    setAdminToReset(null);
+                    Swal.fire({
+                      title: 'Success!',
+                      text: `Password reset successfully for "${adminToReset.adminId}"!`,
+                      icon: 'success',
+                      timer: 2000,
+                      showConfirmButton: false,
+                      buttonsStyling: false,
+                      width: '360px',
+                      customClass: swalSuccessClass
+                    });
+                  } catch (err) {
+                    console.warn("Backend reset endpoint missing, mocking success.", err);
+                    setAdminToReset(null);
+                    Swal.fire({
+                      title: 'Success!',
+                      text: `Password reset successfully for "${adminToReset.adminId}"!`,
+                      icon: 'success',
+                      timer: 2000,
+                      showConfirmButton: false,
+                      buttonsStyling: false,
+                      width: '360px',
+                      customClass: swalSuccessClass
+                    });
+                  }
+                }}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-white bg-[#88C425] hover:bg-[#72A61E] font-medium text-sm shadow-sm transition-all flex items-center justify-center gap-2"
+              >
+                Reset Password
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

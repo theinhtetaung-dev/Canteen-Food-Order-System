@@ -20,6 +20,9 @@ public class FoodResponse {
     private Integer createdBy;
     private String createdByName;
 
+    private Integer branchId;
+    private String branchName;
+
     private LocalDateTime createdAt;
 
     public void setUpdatedAt(LocalDateTime updatedAt) {

@@ -6,29 +6,21 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Tbl_FoodCategory")
+@Table(name = "Tbl_Canteen")
 @Data
 @NoArgsConstructor
-public class FoodCategory {
+public class Branch {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "CategoryID")
-    private Integer categoryId;
+    @Column(name = "BranchID")
+    private Integer branchId;
 
-    @Column(name = "CategoryName", nullable = false, length = 100)
-    private String categoryName;
+    @Column(name = "BranchName", nullable = false, length = 100)
+    private String branchName;
 
-    @Column(name = "Description")
-    private String description;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "CreatedBy", nullable = false)
-    private User createdBy;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "BranchID")
-    private Branch branch;
+    @Column(name = "Location", length = 255)
+    private String location;
 
     @Column(name = "DeleteFlag")
     private Boolean deleteFlag = false;

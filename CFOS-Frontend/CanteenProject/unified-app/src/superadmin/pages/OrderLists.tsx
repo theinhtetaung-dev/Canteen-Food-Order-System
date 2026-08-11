@@ -47,6 +47,47 @@ export function OrderLists() {
 
   useEffect(() => {
     loadOrders();
+
+    const token = localStorage.getItem("canteen_token");
+    if (!token) return;
+
+    const apiBaseUrl = import.meta.env.VITE_API_URL || "";
+    const eventSource = new EventSource(`${apiBaseUrl}/api/orders/stream?token=${token}`);
+
+    eventSource.addEventListener("new-order", (event) => {
+      try {
+        const d = JSON.parse(event.data);
+        
+        let mappedStatus: OrderStatus = "Pending";
+        if (d.status === "completed") mappedStatus = "Completed";
+        if (d.status === "cancelled") mappedStatus = "Cancelled";
+        if (d.status === "preparing") mappedStatus = "Preparing";
+
+        const newOrder: Order = {
+          id: String(d.id),
+          studentId: d.userId,
+          items: d.items.map((i: any) => `${i.quantity}x ${i.name}`).join(", "),
+          pickupTime: d.pickupTime || "12:00 PM",
+          status: mappedStatus,
+        };
+
+        setOrders((prev) => {
+          if (prev.some((o) => o.id === newOrder.id)) return prev;
+          return [newOrder, ...prev];
+        });
+      } catch (err) {
+        console.error("Failed to parse real-time order data", err);
+      }
+    });
+
+    eventSource.onerror = (e) => {
+      console.warn("SSE connection encountered an error, closing.", e);
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+    };
   }, []);
 
   const ORDERS_PER_PAGE = 10;

@@ -47,6 +47,10 @@ public class UserMapper {
         dto.setDeleteFlag(user.getDeleteFlag());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
+        if (user.getCanteen() != null) {
+            dto.setCanteenId(user.getCanteen().getBranchId());
+            dto.setCanteenName(user.getCanteen().getBranchName());
+        }
 
         return dto;
     }

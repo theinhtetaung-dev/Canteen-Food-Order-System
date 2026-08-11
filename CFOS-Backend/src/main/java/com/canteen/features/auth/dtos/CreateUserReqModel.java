@@ -23,4 +23,7 @@ public class CreateUserReqModel {
     private String password;
 
     private String phoneNumber;
+
+    // Optional: links the user to a canteen (used for Canteen Admin creation)
+    private Integer canteenId;
 }

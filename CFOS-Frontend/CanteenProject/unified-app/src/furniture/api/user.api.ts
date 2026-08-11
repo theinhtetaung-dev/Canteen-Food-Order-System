@@ -10,16 +10,6 @@ export interface StudentUser {
   batch: string;
 }
 
-export interface KitchenAdmin {
-  id: string;
-  staffId: string;
-  name: string;
-  phone: string;
-  status: 'Active' | 'Inactive';
-  assignedCanteen: 'Canteen 1 (Main)' | 'Canteen 2 (North)';
-  joinedOn: string;
-}
-
 export async function fetchStudents(): Promise<StudentUser[]> {
   const { data } = await api.get<any>("/api/users?size=1000");
   const users = data.content || data;
@@ -31,28 +21,41 @@ export async function fetchStudents(): Promise<StudentUser[]> {
       userName: u.fullName || u.userName,
       phone: u.phoneNumber || "+959 000 0000",
       status: 'Active',
-      joinedOn: new Date().toLocaleDateString(),
+      joinedOn: u.createdAt
+        ? new Date(u.createdAt).toLocaleDateString()
+        : new Date().toLocaleDateString(),
       batch: 'All Categories',
     }));
 }
 
-export async function fetchKitchenAdmins(): Promise<KitchenAdmin[]> {
+export async function fetchKitchenAdmins(): Promise<any[]> {
   const { data } = await api.get<any>("/api/users?size=1000");
   const users = data.content || data;
   return users
     .filter((u: any) => u.roleName && u.roleName.toLowerCase() === "manager")
     .map((u: any) => ({
       id: u.userName,
-      staffId: u.userName,
-      name: u.fullName || u.userName,
-      phone: u.phoneNumber || "+959 000 0000",
+      adminId: u.userName,
+      avatar: (u.fullName || u.userName).substring(0, 2).toUpperCase(),
+      isAvatarText: true,
+      restaurant: u.canteenName || '—',
+      canteenId: u.canteenId ?? null,
+      phone: u.phoneNumber || '+959 000 0000',
       status: 'Active',
-      assignedCanteen: 'Canteen 1 (Main)',
-      joinedOn: new Date().toLocaleDateString(),
+      joinedOn: u.createdAt
+        ? new Date(u.createdAt).toLocaleDateString()
+        : new Date().toLocaleDateString(),
     }));
 }
 
-export async function createKitchenAdmin(payload: any): Promise<void> {
+export async function createKitchenAdmin(payload: {
+  staffId: string;
+  name: string;
+  email: string;
+  password: string;
+  phone?: string;
+  canteenId: number;
+}): Promise<void> {
   await api.post("/api/users", {
     userName: payload.staffId,
     fullName: payload.name,
@@ -60,6 +63,7 @@ export async function createKitchenAdmin(payload: any): Promise<void> {
     password: payload.password,
     phoneNumber: payload.phone,
     roleName: "Manager",
+    canteenId: payload.canteenId,
   });
 }
 

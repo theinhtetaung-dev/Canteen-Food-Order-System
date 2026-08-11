@@ -59,6 +59,11 @@ public class FoodMapper {
             dto.setCreatedByName(user.getFullName());
         }
 
+        if (food.getBranch() != null) {
+            dto.setBranchId(food.getBranch().getBranchId());
+            dto.setBranchName(food.getBranch().getBranchName());
+        }
+
         dto.setCreatedAt(food.getCreatedAt());
         dto.setUpdatedAt(food.getUpdatedAt());
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Store, Users, UtensilsCrossed } from 'lucide-react';
+import { LayoutDashboard, Store, Users, UtensilsCrossed, MapPin } from 'lucide-react';
 import { useAuth } from "@furniture/hooks/useAuth";
 
 export const Sidebar: React.FC = () => {
@@ -46,7 +46,7 @@ export const Sidebar: React.FC = () => {
             }
           >
             <Store className="w-4 h-4" />
-            Kitchen Admin
+            Canteen Admin
           </NavLink>
 
           <NavLink
@@ -61,6 +61,20 @@ export const Sidebar: React.FC = () => {
           >
             <Users className="w-4 h-4" />
             Users
+          </NavLink>
+
+          <NavLink
+            to="/branches"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${
+                isActive
+                  ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
+                  : 'text-gray-600 hover:bg-black/5'
+              }`
+            }
+          >
+            <MapPin className="w-4 h-4" />
+            Canteens
           </NavLink>
         </nav>
       </div>

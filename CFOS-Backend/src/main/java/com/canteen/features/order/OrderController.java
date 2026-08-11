@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.canteen.features.order.dtos.OrderRequestModel;
 import com.canteen.features.order.dtos.OrderResponseModel;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderSseService orderSseService;
 
     @PostMapping
     public ResponseEntity<OrderResponseModel> createOrder(
@@ -67,9 +69,8 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
-    // @DeleteMapping("/{id}")
-    // public ResponseEntity<Void> deleteOrder(@PathVariable Integer id) {
-    // orderService.deleteOrder(id);
-    // return ResponseEntity.noContent().build();
-    // }
+    @GetMapping(value = "/stream", produces = org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamOrders() {
+        return orderSseService.registerClient();
+    }
 }

@@ -10,4 +10,6 @@ public class FoodCategoryRequest {
     private String categoryName;
 
     private String description;
+
+    private Integer branchId;
 }

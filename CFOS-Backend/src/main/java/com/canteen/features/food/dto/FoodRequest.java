@@ -23,4 +23,6 @@ public class FoodRequest {
     @NotNull(message = "Availability status is required")
     private Boolean isAvailable;
 
+    private Integer branchId;
+
 }

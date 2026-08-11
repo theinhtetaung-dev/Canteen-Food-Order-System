@@ -4,6 +4,7 @@ USE CFOSDB;
 
 -- 2. Drop tables in reverse order of dependencies to avoid constraint issues
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS Tbl_Branch;
 DROP TABLE IF EXISTS Tbl_Notification;
 DROP TABLE IF EXISTS Tbl_Payment;
 DROP TABLE IF EXISTS Tbl_OrderItem;
@@ -58,15 +59,26 @@ CREATE TABLE Tbl_RolePermission (
     FOREIGN KEY (PermissionID) REFERENCES Tbl_Permission(PermissionID)
 );
 
+CREATE TABLE Tbl_Canteen (
+    BranchID INT PRIMARY KEY AUTO_INCREMENT,
+    BranchName VARCHAR(100) NOT NULL,
+    Location VARCHAR(255),
+    DeleteFlag BOOLEAN DEFAULT FALSE,
+    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt DATETIME ON UPDATE CURRENT_TIMESTAMP
+);
+
 CREATE TABLE Tbl_FoodCategory (
     CategoryID INT PRIMARY KEY AUTO_INCREMENT,
     CategoryName VARCHAR(100) NOT NULL,
     Description VARCHAR(255),
     CreatedBy INT NOT NULL,
+    BranchID INT,
     DeleteFlag BOOLEAN DEFAULT FALSE,
     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt DATETIME ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (CreatedBy) REFERENCES Tbl_User(UserID)
+    FOREIGN KEY (CreatedBy) REFERENCES Tbl_User(UserID),
+    FOREIGN KEY (BranchID) REFERENCES Tbl_Canteen(BranchID)
 );
 
 CREATE TABLE Tbl_Food (
@@ -78,11 +90,13 @@ CREATE TABLE Tbl_Food (
     ImageURL VARCHAR(255),
     IsAvailable BOOLEAN DEFAULT TRUE,
     CreatedBy INT NOT NULL,
+    BranchID INT,
     DeleteFlag BOOLEAN DEFAULT FALSE,
     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt DATETIME ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (CategoryID) REFERENCES Tbl_FoodCategory(CategoryID),
-    FOREIGN KEY (CreatedBy) REFERENCES Tbl_User(UserID)
+    FOREIGN KEY (CreatedBy) REFERENCES Tbl_User(UserID),
+    FOREIGN KEY (BranchID) REFERENCES Tbl_Canteen(BranchID)
 );
 
 CREATE TABLE Tbl_Order (

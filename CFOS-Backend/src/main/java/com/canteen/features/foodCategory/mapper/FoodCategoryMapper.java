@@ -35,6 +35,11 @@ public class FoodCategoryMapper {
             dto.setCreatedByName(category.getCreatedBy().getUserName());
         }
 
+        if (category.getBranch() != null) {
+            dto.setBranchId(category.getBranch().getBranchId());
+            dto.setBranchName(category.getBranch().getBranchName());
+        }
+
         return dto;
     }
 

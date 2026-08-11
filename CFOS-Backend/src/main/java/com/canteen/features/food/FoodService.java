@@ -12,6 +12,8 @@ import com.canteen.features.food.mapper.FoodMapper;
 import com.canteen.repository.FoodRepository;
 import com.canteen.repository.FoodCategoryRepository;
 import com.canteen.repository.UserRepository;
+import com.canteen.repository.BranchRepository;
+import com.canteen.model.Branch;
 import com.canteen.utils.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,7 @@ public class FoodService {
     private final UserRepository userRepository;
     private final FoodMapper foodMapper;
     private final FileStorageService fileStorageService;
+    private final BranchRepository branchRepository;
 
     public FoodResponse createFood(FoodRequest dto, MultipartFile image, String username) throws IOException {
 
@@ -46,6 +49,12 @@ public class FoodService {
 
         food.setCategory(category);
         food.setCreatedBy(user);
+
+        if (dto.getBranchId() != null) {
+            Branch branch = branchRepository.findById(dto.getBranchId())
+                    .orElseThrow(() -> new com.canteen.utils.exceptions.ResourceNotFoundException("Branch not found: " + dto.getBranchId()));
+            food.setBranch(branch);
+        }
 
         // 3. Handle image upload (local folder)
         if (image != null && !image.isEmpty()) {
@@ -111,6 +120,12 @@ public class FoodService {
                     .orElseThrow(() -> new FoodCategoryNotFoundException(dto.getCategoryId()));
 
             food.setCategory(category);
+        }
+
+        if (dto.getBranchId() != null) {
+            Branch branch = branchRepository.findById(dto.getBranchId())
+                    .orElseThrow(() -> new com.canteen.utils.exceptions.ResourceNotFoundException("Branch not found: " + dto.getBranchId()));
+            food.setBranch(branch);
         }
 
         // update image if new one uploaded

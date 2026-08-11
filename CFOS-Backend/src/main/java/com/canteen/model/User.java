@@ -25,6 +25,10 @@ public class User {
     @JoinColumn(name = "RoleID", nullable = false)
     private Role role;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "CanteenID", nullable = true)
+    private Branch canteen;
+
     @Column(name = "UserName", nullable = false, unique = true, length = 30)
     private String userName;
 

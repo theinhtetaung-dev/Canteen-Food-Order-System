@@ -4,6 +4,7 @@ import { Dashboard } from '../pages/Dashboard';
 import { KitchenAdmins } from '../pages/KitchenAdmins';
 import { Users } from '../pages/Users';
 import { AdminProfile } from '../pages/AdminProfile';
+import { Branches } from '../pages/Branches';
 
 export const router = createBrowserRouter([
   {
@@ -21,6 +22,10 @@ export const router = createBrowserRouter([
       {
         path: 'users',
         element: <Users />,
+      },
+      {
+        path: 'branches',
+        element: <Branches />,
       },
       {
         path: 'profile',

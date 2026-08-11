@@ -10,6 +10,8 @@ import com.canteen.model.FoodCategory;
 import com.canteen.model.User;
 import com.canteen.repository.FoodCategoryRepository;
 import com.canteen.repository.UserRepository;
+import com.canteen.repository.BranchRepository;
+import com.canteen.model.Branch;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,7 @@ public class FoodCategoryService {
     private final FoodCategoryRepository foodCategoryRepository;
     private final UserRepository userRepository;
     private final FoodCategoryMapper foodCategoryMapper;
+    private final BranchRepository branchRepository;
 
     // CREATE
     public FoodCategoryResponse create(FoodCategoryRequest request, String username) {
@@ -42,6 +45,12 @@ public class FoodCategoryService {
         //  map DTO -> Entity
         FoodCategory category = foodCategoryMapper.toEntity(request, user);
 
+        if (request.getBranchId() != null) {
+            Branch branch = branchRepository.findById(request.getBranchId())
+                    .orElseThrow(() -> new com.canteen.utils.exceptions.ResourceNotFoundException("Branch not found: " + request.getBranchId()));
+            category.setBranch(branch);
+        }
+
         //  save
         category = foodCategoryRepository.save(category);
 
@@ -58,6 +67,12 @@ public class FoodCategoryService {
 
         // update fields only
         foodCategoryMapper.updateEntity(request, category);
+
+        if (request.getBranchId() != null) {
+            Branch branch = branchRepository.findById(request.getBranchId())
+                    .orElseThrow(() -> new com.canteen.utils.exceptions.ResourceNotFoundException("Branch not found: " + request.getBranchId()));
+            category.setBranch(branch);
+        }
 
         category = foodCategoryRepository.save(category);
 

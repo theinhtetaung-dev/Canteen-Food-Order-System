@@ -6,6 +6,7 @@ import { FoodGrid } from "@furniture/components/menu/FoodGrid";
 import { useCart } from "@furniture/hooks/useCart";
 import { useAuth } from "@furniture/hooks/useAuth";
 import { api } from "@furniture/api/axios";
+import { fetchBranches, type Branch } from "@furniture/api/branch.api";
 import { formatPrice } from "@furniture/lib/utils";
 import type { MenuItem } from "@furniture/types/menu";
 
@@ -13,7 +14,8 @@ export default function MenuPage() {
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [appliedQuery, setAppliedQuery] = useState(searchParams.get("search") || "");
-  const [selectedShop, setSelectedShop] = useState<string | null>(null);
+  const [canteens, setCanteens] = useState<Branch[]>([]);
+  const [selectedShop, setSelectedShop] = useState<number | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 8;
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | "all">("all");
@@ -26,6 +28,16 @@ export default function MenuPage() {
 
   useEffect(() => {
     const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8081";
+    // Fetch canteens from tbl_canteen
+    fetchBranches()
+      .then((branches) => {
+        setCanteens(branches);
+        if (branches.length > 0) {
+          setSelectedShop(branches[0].branchId);
+        }
+      })
+      .catch((err) => console.error("Error loading canteens:", err));
+    // Fetch food items
     api.get<any[]>("/api/foods")
       .then(({ data }) => {
         const availableItems = data
@@ -55,24 +67,12 @@ export default function MenuPage() {
       });
   }, []);
 
-  const shops = useMemo(() => {
-    const unique = new Set<string>();
-    items.forEach((item) => {
-      unique.add((item as any).createdByName || "General Shop");
-    });
-    return Array.from(unique);
-  }, [items]);
 
-  useEffect(() => {
-    if (shops.length > 0 && !selectedShop) {
-      setSelectedShop(shops[0]);
-    }
-  }, [shops, selectedShop]);
 
   const shopCategories = useMemo(() => {
     if (!selectedShop) return [];
     const shopItems = items.filter(
-      (item) => ((item as any).createdByName || "General Shop") === selectedShop
+      (item) => (item as any).canteen === selectedShop
     );
     const categoriesMap = new Map<number, string>();
     shopItems.forEach((item) => {
@@ -99,8 +99,7 @@ export default function MenuPage() {
     if (!selectedShop) return [];
     return items.filter((item) => {
       if (item.isAvailable === false) return false;
-      const itemShop = (item as any).createdByName || "General Shop";
-      if (itemShop !== selectedShop) return false;
+      if ((item as any).canteen !== selectedShop) return false;
       if (selectedCategoryId !== "all" && item.categoryId !== selectedCategoryId) return false;
       const query = appliedQuery.toLowerCase();
       return !query || item.name.toLowerCase().includes(query) || item.description.toLowerCase().includes(query);
@@ -126,17 +125,17 @@ export default function MenuPage() {
       {/* Consolidated Filter & Search Bar */}
       <div className="bg-white border-b border-gray-200/80 py-4 shadow-sm">
         <div className="mx-auto max-w-7xl px-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {/* Canteen Switcher (Dropdown for multiple canteens) */}
-          {shops.length > 0 && (
+          {/* Canteen Switcher (Dropdown - populated from tbl_canteen) */}
+          {canteens.length > 0 && (
             <div className="relative shrink-0 w-full md:w-auto">
               <select
-                value={selectedShop || ""}
-                onChange={(e) => setSelectedShop(e.target.value)}
+                value={selectedShop ?? ""}
+                onChange={(e) => setSelectedShop(Number(e.target.value))}
                 className="w-full md:w-56 appearance-none bg-gray-50 border border-gray-200 rounded-2xl pl-4 pr-10 py-2.5 text-xs font-bold text-gray-750 focus:outline-none focus:ring-2 focus:ring-[#5b7a42]/20 focus:border-[#5b7a42] cursor-pointer shadow-sm transition-all hover:bg-gray-100"
               >
-                {shops.map((shopName) => (
-                  <option key={shopName} value={shopName}>
-                    {shopName}
+                {canteens.map((c) => (
+                  <option key={c.branchId} value={c.branchId}>
+                    {c.branchName}
                   </option>
                 ))}
               </select>

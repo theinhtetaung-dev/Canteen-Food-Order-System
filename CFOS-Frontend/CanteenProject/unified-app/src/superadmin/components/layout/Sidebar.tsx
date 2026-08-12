@@ -8,7 +8,8 @@ import {
   MapPin,
   BarChart3,
   LogOut,
-  UtensilsCrossed
+  UtensilsCrossed,
+  User
 } from "lucide-react";
 import { useAuth } from "@furniture/hooks/useAuth";
 import { fetchAllUsers } from "@furniture/api/user.api";
@@ -89,10 +90,10 @@ export function Sidebar() {
 
   const navItems = [
     { label: "Dashboard", path: "/", icon: LayoutDashboard },
+    { label: "Walk-in POS", path: "/pos", icon: UtensilsCrossed },
     { label: "Orders Management", path: "/orders", icon: ShoppingBag },
     { label: "Menu Items", path: "/menu", icon: Utensils },
     { label: "Categories", path: "/categories", icon: Layers },
-    { label: "Canteen Branches", path: "/branches", icon: MapPin },
     { label: "Reports", path: "/reports", icon: BarChart3 },
   ];
 
@@ -156,11 +157,9 @@ export function Sidebar() {
             }`
           }
         >
-          <img
-            src={profile.avatar}
-            alt={displayName}
-            className="w-9 h-9 rounded-full object-cover border border-gray-300 shrink-0"
-          />
+          <div className="w-10 h-10 rounded-full bg-[#dbebba] border-2 border-white flex items-center justify-center shrink-0 shadow-sm">
+            <User className="w-5 h-5 text-[#3f5d13]" strokeWidth={2.5} />
+          </div>
           <div className="leading-tight overflow-hidden">
             <h4 className="text-xs font-black text-gray-900 truncate">
               {displayName}

@@ -24,18 +24,28 @@ public class ReportService {
 
     private final OrderRepository orderRepository;
 
+    private LocalDate parseDateStr(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty())
+            return null;
+        try {
+            return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("dd-M-yyyy"));
+        } catch (Exception e) {
+            return LocalDate.parse(dateStr); // fallback to yyyy-MM-dd
+        }
+    }
+
     @Transactional(readOnly = true)
     public ReportResponseModel getReport(String type, String startDateStr, String endDateStr) {
         String reportType = (type != null) ? type.toLowerCase() : "daily";
 
         // Determine default date ranges based on type
-        LocalDate endDate = (endDateStr != null && !endDateStr.isEmpty()) 
-                ? LocalDate.parse(endDateStr) 
+        LocalDate endDate = (endDateStr != null && !endDateStr.isEmpty())
+                ? parseDateStr(endDateStr)
                 : LocalDate.now();
 
         LocalDate startDate;
         if (startDateStr != null && !startDateStr.isEmpty()) {
-            startDate = LocalDate.parse(startDateStr);
+            startDate = parseDateStr(startDateStr);
         } else {
             if ("yearly".equals(reportType)) {
                 startDate = endDate.minusYears(4); // Show 5 years including current
@@ -53,7 +63,7 @@ public class ReportService {
         List<Order> orders = orderRepository.findByOrderStatusAndCreatedAtBetween(Status.COMPLETE, start, end);
 
         ReportResponseModel report = new ReportResponseModel();
-        
+
         // Compute Totals
         BigDecimal totalRevenue = BigDecimal.ZERO;
         long totalItemsSold = 0;
@@ -72,7 +82,7 @@ public class ReportService {
         for (Order order : orders) {
             for (OrderItem item : order.getOrderItems()) {
                 String foodName = item.getFood().getFoodName();
-                FoodSalesBreakdown breakdown = foodSalesMap.computeIfAbsent(foodName, 
+                FoodSalesBreakdown breakdown = foodSalesMap.computeIfAbsent(foodName,
                         k -> new FoodSalesBreakdown(k, 0L, BigDecimal.ZERO));
                 breakdown.setQuantitySold(breakdown.getQuantitySold() + item.getQuantity());
                 breakdown.setRevenue(breakdown.getRevenue().add(item.getSubTotal()));

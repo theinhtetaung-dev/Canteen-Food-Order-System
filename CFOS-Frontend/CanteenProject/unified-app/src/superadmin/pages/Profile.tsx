@@ -120,13 +120,6 @@ export const Profile: React.FC = () => {
     setIsEditing(false);
   };
 
-  const permissions = [
-    "Full Menu Management",
-    "Staff Payroll & Scheduling",
-    "Inventory Procurement",
-    "Global Settings Access",
-  ];
-
   return (
     <div className="p-8 space-y-8 bg-[#fdfefb] min-h-screen">
       <input
@@ -140,24 +133,10 @@ export const Profile: React.FC = () => {
       {/* 1. Page Header */}
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <div className="relative group">
-            <img
-              src={formData.avatar}
-              alt="Profile Avatar"
-              className="w-24 h-24 rounded-full object-cover border-4 border-[#e2f3be] shadow-sm"
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              type="button"
-              className="absolute bottom-0 right-0 bg-[#3f5d13] p-2 rounded-full border-2 border-white text-white hover:scale-110 transition-transform shadow-md"
-              title="Change Profile Picture"
-            >
-              <Edit2 className="w-3.5 h-3.5" />
-            </button>
+          <div className="w-24 h-24 rounded-full bg-[#e2f3be] flex items-center justify-center border-4 border-white shadow-sm shrink-0">
+            <User className="w-12 h-12 text-[#3f5d13]" />
           </div>
-
           <div>
-            {/* Connected directly to formData.fullName so it updates live */}
             <h1 className="text-3xl font-bold text-[#0f172a]">{formData.fullName}</h1>
             <span className="inline-block bg-[#e2f3be] text-[#3f5d13] font-extrabold text-[11px] px-2.5 py-1 rounded-md tracking-wider uppercase mt-1">
               {formData.role}
@@ -197,8 +176,8 @@ export const Profile: React.FC = () => {
       </header>
 
       {/* 2. Main Content Grid */}
-      <main className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
-        <div className="xl:col-span-2 bg-white rounded-3xl p-8 shadow-sm border border-emerald-100/60">
+      <main className="w-full items-start">
+        <div className="bg-white rounded-3xl p-8 shadow-sm border border-emerald-100/60">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
               <User className="w-5 h-5 text-emerald-800" />
@@ -299,31 +278,6 @@ export const Profile: React.FC = () => {
               />
             </div>
           </form>
-        </div>
-
-        {/* Role & Access Panel */}
-        <div className="bg-white rounded-3xl p-8 shadow-sm border border-emerald-100/60 flex flex-col">
-          <div className="flex items-center gap-3 mb-8">
-            <ShieldCheck className="w-5 h-5 text-emerald-800" />
-            <h2 className="text-xl font-bold text-gray-950">Role & Access</h2>
-          </div>
-
-          <div className="bg-[#f0f7e4] rounded-2xl p-5 mb-8 border border-[#e2f3be]">
-            <p className="text-[11px] font-bold text-[#577227] tracking-wider mb-1 uppercase">Primary Role</p>
-            <p className="text-lg font-extrabold text-[#2d4608]">{formData.role}</p>
-          </div>
-
-          <div className="space-y-4">
-            <p className="text-xs font-bold text-gray-700">Key Permissions:</p>
-            <ul className="space-y-3.5">
-              {permissions.map((permission) => (
-                <li key={permission} className="flex items-center gap-3 text-sm font-semibold text-gray-800">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
-                  <span>{permission}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
       </main>
 

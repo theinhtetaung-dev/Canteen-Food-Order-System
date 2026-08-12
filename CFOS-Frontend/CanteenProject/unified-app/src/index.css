@@ -39,11 +39,11 @@
     --color-card: var(--card);
     --color-foreground: var(--foreground);
     --color-background: var(--background);
-    --color-brand: #7cb342;
-    --color-brand-dark: #689f38;
-    --color-brand-light: #dcedc8;
-    --color-brand-muted: color-mix(in srgb, #7cb342 20%, transparent);
-    --color-bg-main: #f9fafb;
+    --color-brand: #5b7a42;
+    --color-brand-dark: #4a6335;
+    --color-brand-light: #dbebba;
+    --color-brand-muted: color-mix(in srgb, #5b7a42 20%, transparent);
+    --color-bg-main: #f6f8f2;
     --radius-sm: calc(var(--radius) * 0.6);
     --radius-md: calc(var(--radius) * 0.8);
     --radius-lg: var(--radius);
@@ -60,7 +60,7 @@
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: #7cb342;
+    --primary: #5b7a42;
     --primary-foreground: #ffffff;
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { fetchAllOrders, updateOrderStatus } from "@furniture/api/order.api";
-import { List, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { List, RefreshCw, ChevronLeft, ChevronRight, Eye, X } from "lucide-react";
 import { useAuth } from "@furniture/hooks/useAuth";
 import { fetchAllUsers } from "@furniture/api/user.api";
 
@@ -10,6 +10,8 @@ interface Order {
   id: string;
   studentId: string;
   items: string;
+  rawItems: any[];
+  totalAmount: number;
   pickupTime: string;
   status: OrderStatus;
   canteenId?: number;
@@ -21,7 +23,8 @@ export function OrderLists() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [filterBox, setFilterBox] = useState<"ALL" | "ACTIVE" | "PREPARING" | "COMPLETED">("ALL");
 
   useEffect(() => {
     async function loadDbUser() {
@@ -54,6 +57,8 @@ export function OrderLists() {
           id: String(d.id),
           studentId: d.userId,
           items: d.items.map((i: any) => `${i.quantity}x ${i.name}`).join(", "),
+          rawItems: d.items,
+          totalAmount: d.totalAmount || d.totalPrice || d.items.reduce((sum: number, i: any) => sum + ((i.price || 0) * (i.quantity || 1)), 0),
           pickupTime: d.pickupTime || "12:00 PM",
           status: mappedStatus,
           canteenId: d.canteenId,
@@ -80,22 +85,40 @@ export function OrderLists() {
       try {
         const d = JSON.parse(event.data);
         
+        const backendStatus = (d.orderStatus || d.status || "").toLowerCase();
         let mappedStatus: OrderStatus = "Pending";
-        if (d.status === "completed") mappedStatus = "Completed";
-        if (d.status === "cancelled") mappedStatus = "Cancelled";
-        if (d.status === "preparing") mappedStatus = "Preparing";
+        if (backendStatus === "completed" || backendStatus === "complete") mappedStatus = "Completed";
+        if (backendStatus === "cancelled" || backendStatus === "cancel") mappedStatus = "Cancelled";
+        if (backendStatus === "preparing") mappedStatus = "Preparing";
+
+        const rawItemsList = d.orderItems 
+          ? d.orderItems.map((i: any) => ({
+              menuItemId: i.orderItemId,
+              name: i.foodName,
+              price: Number(i.snapPrice),
+              quantity: i.quantity,
+              image: i.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000"
+            }))
+          : (d.items || []);
 
         const newOrder: Order = {
-          id: String(d.id),
-          studentId: d.userId,
-          items: d.items.map((i: any) => `${i.quantity}x ${i.name}`).join(", "),
+          id: String(d.orderId || d.id),
+          studentId: d.userName || d.userId,
+          items: rawItemsList.map((i: any) => `${i.quantity}x ${i.name}`).join(", "),
+          rawItems: rawItemsList,
+          totalAmount: d.totalAmount || d.totalPrice || rawItemsList.reduce((sum: number, i: any) => sum + ((i.price || 0) * (i.quantity || 1)), 0),
           pickupTime: d.pickupTime || "12:00 PM",
           status: mappedStatus,
           canteenId: d.canteenId,
         };
 
         setOrders((prev) => {
-          if (prev.some((o) => o.id === newOrder.id)) return prev;
+          const index = prev.findIndex((o) => o.id === newOrder.id);
+          if (index !== -1) {
+            const updated = [...prev];
+            updated[index] = newOrder;
+            return updated;
+          }
           return [newOrder, ...prev];
         });
       } catch (err) {
@@ -119,10 +142,18 @@ export function OrderLists() {
   }, [orders, userCanteenId]);
 
   const ORDERS_PER_PAGE = 10;
-  const totalPages = Math.ceil(filteredOrders.length / ORDERS_PER_PAGE);
-  const visibleOrders = filteredOrders.length >= 10
-    ? filteredOrders.slice((currentPage - 1) * ORDERS_PER_PAGE, currentPage * ORDERS_PER_PAGE)
-    : filteredOrders;
+  
+  const boxFilteredOrders = filteredOrders.filter((o) => {
+    if (filterBox === "ACTIVE") return o.status !== "Completed" && o.status !== "Cancelled";
+    if (filterBox === "PREPARING") return o.status === "Preparing";
+    if (filterBox === "COMPLETED") return o.status === "Completed";
+    return true;
+  });
+
+  const totalPages = Math.ceil(boxFilteredOrders.length / ORDERS_PER_PAGE);
+  const visibleOrders = boxFilteredOrders.length >= 10
+    ? boxFilteredOrders.slice((currentPage - 1) * ORDERS_PER_PAGE, currentPage * ORDERS_PER_PAGE)
+    : boxFilteredOrders;
 
   // Stats Counters
   const activeOrdersCount = filteredOrders.filter((o) => o.status !== "Completed" && o.status !== "Cancelled").length;
@@ -183,79 +214,41 @@ export function OrderLists() {
 
   // Action Buttons
   const renderActionButton = (order: Order) => {
-    if (order.status === "Completed" || order.status === "Cancelled") {
-      return <span className="text-xs text-gray-400 font-bold">Done</span>;
-    }
-
-    const isOpen = openDropdownId === order.id;
-
     return (
-      <div className="relative inline-block text-left">
-        <div>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenDropdownId(isOpen ? null : order.id);
-            }}
-            className="inline-flex justify-between items-center gap-1.5 w-28 px-3 py-1.5 bg-[#414b35] hover:bg-[#2d3424] text-white rounded-xl text-xs font-bold transition-all shadow-sm"
-          >
-            <span>Actions</span>
-            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-            </svg>
-          </button>
-        </div>
-
-        {isOpen && (
-          <>
-            <div
-              className="fixed inset-0 z-10"
-              onClick={() => setOpenDropdownId(null)}
-            />
-            <div className="absolute right-0 mt-1.5 w-36 rounded-xl bg-white border border-[#b8c5a4]/50 shadow-lg py-1 z-20 focus:outline-none">
+      <div className="flex items-center justify-center gap-2">
+        {order.status !== "Completed" && order.status !== "Cancelled" && (
+          <div className="relative inline-block text-left">
+            <select
+              value=""
+              onChange={(e) => {
+                const val = e.target.value as "PREPARING" | "COMPLETE" | "CANCEL";
+                if (val) handleNextStatus(order.id, val);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#e3f2fd] text-[#1976d2] focus:outline-none cursor-pointer shadow-sm appearance-none pr-8"
+              style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%231976d2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right .7em top 50%', backgroundSize: '.65em auto' }}
+            >
+              <option value="" disabled hidden>{order.status}</option>
               {order.status === "Pending" && (
                 <>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleNextStatus(order.id, "PREPARING");
-                      setOpenDropdownId(null);
-                    }}
-                    className="flex w-full items-center px-3 py-2 text-[11px] font-bold text-gray-700 hover:bg-[#f6f8f0] transition-colors"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-[#3b82f6] mr-2" />
-                    Start Prep
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleNextStatus(order.id, "CANCEL");
-                      setOpenDropdownId(null);
-                    }}
-                    className="flex w-full items-center px-3 py-2 text-[11px] font-bold text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-red-500 mr-2" />
-                    Cancel Order
-                  </button>
+                  <option value="PREPARING">Start Prep</option>
+                  <option value="CANCEL">Cancel</option>
                 </>
               )}
               {order.status === "Preparing" && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleNextStatus(order.id, "COMPLETE");
-                    setOpenDropdownId(null);
-                  }}
-                  className="flex w-full items-center px-3 py-2 text-[11px] font-bold text-green-700 hover:bg-green-50 transition-colors"
-                >
-                  <span className="w-2 h-2 rounded-full bg-[#4ade80] mr-2" />
-                  Complete
-                </button>
+                <option value="COMPLETE">Complete</option>
               )}
-            </div>
-          </>
+            </select>
+          </div>
         )}
+
+        <button 
+          onClick={() => setSelectedOrder(order)} 
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e2e7d8] hover:bg-[#d4dbc8] text-[#414b35] rounded-xl text-xs font-bold transition-all shadow-sm"
+          title="View Details"
+        >
+          <Eye className="w-3.5 h-3.5" strokeWidth={2.5} />
+          <span>Details</span>
+        </button>
       </div>
     );
   };
@@ -275,8 +268,11 @@ export function OrderLists() {
       {/* Top Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* ACTIVE ORDERS */}
-        <div className="bg-[#fcfdfa] rounded-[26px] p-6 border border-[#8ba168]/40 flex items-center gap-5 shadow-sm">
-          <div className="w-14 h-14 rounded-2xl bg-[#dbebba] flex items-center justify-center shrink-0">
+        <div 
+          onClick={() => setFilterBox(filterBox === "ACTIVE" ? "ALL" : "ACTIVE")}
+          className={`rounded-[26px] p-6 border flex items-center gap-5 shadow-sm cursor-pointer transition-all ${filterBox === "ACTIVE" ? "bg-[#dbebba] border-[#8ba168]" : "bg-[#fcfdfa] border-[#8ba168]/40 hover:bg-[#f6f8f2]"}`}
+        >
+          <div className="w-14 h-14 rounded-2xl bg-white/60 flex items-center justify-center shrink-0">
             <List className="w-7 h-7 text-[#1a1a1a] stroke-[2.5]" />
           </div>
           <div className="space-y-1">
@@ -290,8 +286,11 @@ export function OrderLists() {
         </div>
 
         {/* READY FOR PICKUP */}
-        <div className="bg-[#fcfdfa] rounded-[26px] p-6 border border-[#8ba168]/40 flex items-center gap-5 shadow-sm">
-          <div className="w-14 h-14 rounded-2xl bg-[#dbebba] flex items-center justify-center shrink-0">
+        <div 
+          onClick={() => setFilterBox(filterBox === "PREPARING" ? "ALL" : "PREPARING")}
+          className={`rounded-[26px] p-6 border flex items-center gap-5 shadow-sm cursor-pointer transition-all ${filterBox === "PREPARING" ? "bg-[#dbebba] border-[#8ba168]" : "bg-[#fcfdfa] border-[#8ba168]/40 hover:bg-[#f6f8f2]"}`}
+        >
+          <div className="w-14 h-14 rounded-2xl bg-white/60 flex items-center justify-center shrink-0">
             <svg
               className="w-7 h-7 text-[#1a1a1a]"
               viewBox="0 0 24 24"
@@ -319,8 +318,11 @@ export function OrderLists() {
         </div>
 
         {/* COMPLETED TODAY */}
-        <div className="bg-[#fcfdfa] rounded-[26px] p-6 border border-[#8ba168]/40 flex items-center gap-5 shadow-sm">
-          <div className="w-14 h-14 rounded-2xl bg-[#dbebba] flex items-center justify-center shrink-0">
+        <div 
+          onClick={() => setFilterBox(filterBox === "COMPLETED" ? "ALL" : "COMPLETED")}
+          className={`rounded-[26px] p-6 border flex items-center gap-5 shadow-sm cursor-pointer transition-all ${filterBox === "COMPLETED" ? "bg-[#dbebba] border-[#8ba168]" : "bg-[#fcfdfa] border-[#8ba168]/40 hover:bg-[#f6f8f2]"}`}
+        >
+          <div className="w-14 h-14 rounded-2xl bg-white/60 flex items-center justify-center shrink-0">
             <List className="w-7 h-7 text-[#1a1a1a] stroke-[2.5]" />
           </div>
           <div className="space-y-1">
@@ -335,7 +337,7 @@ export function OrderLists() {
       </div>
 
       {/* Active Queue Card */}
-      <div className="bg-[#fcfdfa] rounded-[22px] border border-[#b8c5a4] shadow-sm overflow-hidden">
+      <div className="bg-[#fcfdfa] rounded-[22px] border border-[#b8c5a4] shadow-sm overflow-visible">
         {/* Header Controls */}
         <div className="p-5 px-7 flex items-center justify-between">
           <h2 className="text-xl font-extrabold text-[#111111] tracking-tight">
@@ -352,14 +354,13 @@ export function OrderLists() {
         </div>
 
         {/* Table Container */}
-        <div className="overflow-x-auto">
+        <div className="overflow-visible">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#b9c2a8] text-[11px] font-extrabold text-[#2a2e23] uppercase tracking-wider">
                 <th className="py-3.5 px-7 w-16">NO</th>
                 <th className="py-3.5 px-7">STUDENT ID</th>
-                <th className="py-3.5 px-6">ITEMS</th>
-                <th className="py-3.5 px-6">PICKUP TIME</th>
+                <th className="py-3.5 px-6">TOTAL AMOUNT</th>
                 <th className="py-3.5 px-6 text-center">STATUS</th>
                 <th className="py-3.5 px-7 text-center">ACTIONS</th>
               </tr>
@@ -381,10 +382,7 @@ export function OrderLists() {
                       {order.studentId}
                     </td>
                     <td className="py-4 px-6 font-bold text-[#111111]">
-                      {order.items}
-                    </td>
-                    <td className="py-4 px-6 font-medium text-gray-700">
-                      {order.pickupTime}
+                      {order.totalAmount.toLocaleString()} MMK
                     </td>
                     <td className="py-4 px-6 text-center">
                       {renderStatusBadge(order.status)}
@@ -400,7 +398,7 @@ export function OrderLists() {
         </div>
 
         {/* Pagination Footer */}
-        {filteredOrders.length >= 10 && (
+        {boxFilteredOrders.length >= 10 && (
           <div className="p-5 px-7 flex items-center justify-end gap-2 bg-[#fcfdfa]">
             <button
               type="button"
@@ -437,6 +435,64 @@ export function OrderLists() {
           </div>
         )}
       </div>
+
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-[#fbfdf8]">
+              <div>
+                <h3 className="text-xl font-extrabold text-gray-900">Order Details</h3>
+                <p className="text-xs font-semibold text-gray-500 mt-1">ID: #{selectedOrder.id}</p>
+              </div>
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Student</span>
+                  <span className="font-semibold text-gray-800">{selectedOrder.studentId}</span>
+                </div>
+                <div>
+                  <span className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Pickup Time</span>
+                  <span className="font-semibold text-gray-800">{selectedOrder.pickupTime}</span>
+                </div>
+              </div>
+
+              <div>
+                <span className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Items Ordered</span>
+                <div className="space-y-3 bg-gray-50 rounded-2xl p-4 border border-gray-100/50">
+                  {selectedOrder.rawItems.map((item: any, i: number) => (
+                    <div key={i} className="flex justify-between items-center text-sm font-medium py-1">
+                      <div className="flex items-center gap-3">
+                        {item.image && (
+                          <img src={item.image} alt={item.name} className="w-10 h-10 object-cover rounded-lg shadow-sm border border-gray-200" />
+                        )}
+                        <div className="flex flex-col">
+                          <span className="text-gray-700 font-bold">{item.name}</span>
+                          <span className="text-gray-500 text-xs font-semibold">{item.quantity} x {item.price} MMK</span>
+                        </div>
+                      </div>
+                      <span className="text-gray-900 font-bold">{((item.price || 0) * (item.quantity || 1)).toLocaleString()} MMK</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="pt-4 border-t border-dashed border-gray-200 flex justify-between items-center">
+                <span className="font-extrabold text-gray-600 uppercase tracking-wider text-sm">Total</span>
+                <span className="text-2xl font-black text-[#2a3022]">{selectedOrder.totalAmount.toLocaleString()} MMK</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

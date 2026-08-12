@@ -307,7 +307,7 @@ export const Dashboard = () => {
   // Compute stats metrics dynamically
   const stats = useMemo(() => {
     const totalRevenue = filteredOrders
-      .filter(o => o.OrderStatus !== "CANCELLED")
+      .filter(o => o.OrderStatus === "COMPLETED")
       .reduce((sum, o) => sum + o.TotalAmount, 0);
 
     const totalOrdersCount = filteredOrders.length;
@@ -653,8 +653,7 @@ export const Dashboard = () => {
                 <th className="py-3 px-4">ITEMS SUMMARY</th>
                 <th className="py-3 px-4">TOTAL AMOUNT</th>
                 <th className="py-3 px-4">PAYMENT STATUS</th>
-                <th className="py-3 px-4">ORDER STATUS</th>
-                <th className="py-3 px-4 text-center rounded-r-lg">QUICK ACTION</th>
+                <th className="py-3 px-4 rounded-r-lg">ORDER STATUS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-600 font-medium">
@@ -686,39 +685,9 @@ export const Dashboard = () => {
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="relative inline-block text-left">
-                        <select
-                          value={order.OrderStatus}
-                          onChange={(e) => handleSelectStatus(order.OrderID, e.target.value as any)}
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold focus:outline-none cursor-pointer ${orderBadgeColor}`}
-                        >
-                          <option value="PENDING">PENDING</option>
-                          <option value="PREPARING">PREPARING</option>
-                          <option value="READY">READY</option>
-                          <option value="COMPLETED">COMPLETED</option>
-                          <option value="CANCELLED">CANCELLED</option>
-                        </select>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center justify-center">
-                        {order.OrderStatus !== 'COMPLETED' && order.OrderStatus !== 'CANCELLED' ? (
-                          <button
-                            type="button"
-                            onClick={() => transitionOrderStatus(order.OrderID, order.OrderStatus)}
-                            className="px-3.5 py-1.5 rounded-lg bg-[#5b7a42] hover:bg-[#4a6335] text-white text-[10px] font-bold transition-all cursor-pointer shadow-sm active:scale-95 flex items-center gap-1"
-                          >
-                            <span>
-                              {order.OrderStatus === 'PENDING' && 'Prepare'}
-                              {order.OrderStatus === 'PREPARING' && 'Set Ready'}
-                              {order.OrderStatus === 'READY' && 'Deliver'}
-                            </span>
-                            <ChevronDown className="w-3 h-3 rotate-270" />
-                          </button>
-                        ) : (
-                          <span className="text-[10px] text-slate-400 font-semibold uppercase">Archived</span>
-                        )}
-                      </div>
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold ${orderBadgeColor}`}>
+                        {order.OrderStatus}
+                      </span>
                     </td>
                   </tr>
                 );

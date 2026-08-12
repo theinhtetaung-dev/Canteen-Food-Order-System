@@ -64,7 +64,9 @@ public class OrderController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<OrderResponseModel> updateOrderStatus(
             @PathVariable Integer id,
-            @RequestParam com.canteen.model.Status status) {
+            @RequestParam("status") String statusStr) {
+        
+        com.canteen.model.Status status = com.canteen.model.Status.fromString(statusStr);
         OrderResponseModel response = orderService.updateStatus(id, status);
         return ResponseEntity.ok(response);
     }

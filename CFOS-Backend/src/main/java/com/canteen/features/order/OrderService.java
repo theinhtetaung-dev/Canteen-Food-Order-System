@@ -74,7 +74,7 @@ public class OrderService {
         if (request.getOrderItems() != null) {
             for (var itemRequest : request.getOrderItems()) {
 
-                Food food = foodMap.get(itemRequest.getFoodId());
+                Food food = foodMap.get(itemRequest.getFoodId());:ff
 
                 if (food == null) {
                     throw new ResourceNotFoundException("Food not found: " + itemRequest.getFoodId());
@@ -137,7 +137,9 @@ public class OrderService {
         orderStatusValidator.validateTransition(order.getOrderStatus(), targetStatus);
 
         order.setOrderStatus(targetStatus);
-        return OrderMapper.toDto(orderRepository.save(order));
+        OrderResponseModel response = OrderMapper.toDto(orderRepository.save(order));
+        orderSseService.broadcast(response);
+        return response;
     }
 
     // @Transactional

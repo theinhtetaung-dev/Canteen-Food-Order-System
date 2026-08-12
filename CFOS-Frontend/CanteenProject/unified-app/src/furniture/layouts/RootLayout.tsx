@@ -15,7 +15,7 @@ export default function RootLayout() {
   const isMenuPage = location.pathname.includes("/furniture/menu");
 
   return (
-    <div className="flex min-h-screen bg-gray-50 relative">
+    <div className="flex min-h-screen bg-bg-main relative">
       <Navbar />
       <div className="flex flex-1 flex-col overflow-hidden relative">
         <GlobalHeader />

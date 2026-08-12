@@ -121,7 +121,7 @@ export default function MenuPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col relative pb-24">
+    <div className="min-h-screen bg-bg-main flex flex-col relative pb-24">
       {/* Consolidated Filter & Search Bar */}
       <div className="bg-white border-b border-gray-200/80 py-4 shadow-sm">
         <div className="mx-auto max-w-7xl px-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -230,21 +230,6 @@ export default function MenuPage() {
         )}
       </main>
 
-      {totalItems > 0 && (
-        <div className="fixed bottom-6 right-6 z-45 flex items-center gap-4 rounded-2xl bg-white p-4 shadow-xl border border-gray-100 animate-fadeIn">
-          <div className="flex flex-col text-left">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Your Cart</span>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white animate-bounce">{totalItems}</span>
-              <span className="text-sm font-extrabold text-gray-900">{formatPrice(totalPrice)}</span>
-            </div>
-          </div>
-          <button type="button" onClick={openCart} className="flex items-center gap-1.5 rounded-xl bg-[#5b7a42] hover:bg-[#4a6335] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition-all duration-200 cursor-pointer active:scale-95">
-            <ShoppingCart className="h-4 w-4" />
-            <span>View Cart / Checkout</span>
-          </button>
-        </div>
-      )}
 
       <FoodDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} onAddToCart={addToCart} />
     </div>

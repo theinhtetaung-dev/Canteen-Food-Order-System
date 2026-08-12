@@ -1,0 +1,1 @@
+const http = require('http'); const req = http.request({hostname: 'localhost', port: 8081, path: '/api/orders/1/status?status=PREPARING', method: 'PATCH'}, (res) => { res.on('data', d => process.stdout.write(d)); console.log('\nStatus:', res.statusCode); }); req.end();

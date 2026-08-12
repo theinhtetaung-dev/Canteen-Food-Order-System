@@ -34,6 +34,7 @@ export async function createMenuItem(payload: {
   description?: string;
   isAvailable: boolean;
   imageFile?: File | null;
+  branchId?: number;
 }): Promise<any> {
   const formData = new FormData();
   
@@ -42,7 +43,8 @@ export async function createMenuItem(payload: {
     price: payload.price,
     categoryId: payload.categoryId,
     description: payload.description || "",
-    isAvailable: payload.isAvailable
+    isAvailable: payload.isAvailable,
+    branchId: payload.branchId
   })], { type: "application/json" });
   
   formData.append("data", jsonBlob);
@@ -68,6 +70,7 @@ export async function updateMenuItem(
     description?: string;
     isAvailable: boolean;
     imageFile?: File | null;
+    branchId?: number;
   }
 ): Promise<any> {
   const formData = new FormData();
@@ -77,7 +80,8 @@ export async function updateMenuItem(
     price: payload.price,
     categoryId: payload.categoryId,
     description: payload.description || "",
-    isAvailable: payload.isAvailable
+    isAvailable: payload.isAvailable,
+    branchId: payload.branchId
   })], { type: "application/json" });
   
   formData.append("data", jsonBlob);

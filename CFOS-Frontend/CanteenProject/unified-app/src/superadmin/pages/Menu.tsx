@@ -1,6 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { fetchMenuItems, createMenuItem, updateMenuItem, deleteMenuItem } from "@furniture/api/menu.api";
 import { fetchCategories, type Category } from "../../furniture/api/category.api";
+import { useAuth } from "@furniture/hooks/useAuth";
+import { fetchAllUsers } from "@furniture/api/user.api";
+import { fetchBranches } from "@furniture/api/branch.api";
 import {
   Search,
   Plus,
@@ -31,6 +34,7 @@ interface MenuItem {
   available: boolean;
   image: string;
   description?: string;
+  canteen?: number;
 }
 
 const SORT_OPTIONS = [
@@ -56,11 +60,17 @@ const getCategoryStyle = (catName: string) => {
 };
 
 export function Menu() {
+  const { user } = useAuth();
   const [items, setItems] = useState<MenuItem[]>([]);
   const [dbCategories, setDbCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [branches, setBranches] = useState<any[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<number | "all">("all");
 
+  // Search query in input
   const [searchQuery, setSearchQuery] = useState("");
+  // Search query applied to the filter
+  const [activeSearchQuery, setActiveSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [sortBy, setSortBy] = useState("default");
 
@@ -92,13 +102,16 @@ export function Menu() {
   const loadData = async () => {
     try {
       setIsLoading(true);
-      const [menuData, catData] = await Promise.all([
+      const [menuData, catData, usersData, branchData] = await Promise.all([
         fetchMenuItems(),
-        fetchCategories()
+        fetchCategories(),
+        fetchAllUsers(),
+        fetchBranches()
       ]);
       setDbCategories(catData);
+      setBranches(branchData);
       
-      const mapped = menuData.map((d: any) => ({
+      let mapped = menuData.map((d: any) => ({
         id: String(d.id),
         name: d.name,
         price: d.price,
@@ -106,8 +119,18 @@ export function Menu() {
         categoryId: d.categoryId,
         description: d.description,
         available: d.isAvailable !== false,
-        image: d.image
+        image: d.image,
+        canteen: d.canteen
       }));
+
+      if (user) {
+        const currentUser = usersData.find(u => u.userName.toLowerCase() === user.rollNumber.toLowerCase());
+        if (currentUser && currentUser.canteenId) {
+          mapped = mapped.filter((item: any) => item.canteen === currentUser.canteenId);
+          setSelectedBranch(currentUser.canteenId);
+        }
+      }
+
       setItems(mapped);
     } catch (error) {
       console.error("Failed to load data", error);
@@ -118,7 +141,7 @@ export function Menu() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (dbCategories.length > 0 && !newItemCategoryId) {
@@ -215,6 +238,7 @@ export function Menu() {
         description: newItemDescription,
         isAvailable: true,
         imageFile: newImageFile,
+        branchId: selectedBranch !== "all" ? Number(selectedBranch) : undefined,
       });
 
       const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8081";
@@ -227,6 +251,7 @@ export function Menu() {
         description: saved.description,
         available: saved.isAvailable !== false,
         image: saved.imageUrl ? (saved.imageUrl.startsWith("http") ? saved.imageUrl : `${baseUrl}${saved.imageUrl}`) : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=300",
+        canteen: saved.branchId || (selectedBranch !== "all" ? Number(selectedBranch) : undefined),
       };
 
       setItems((prev) => [newItem, ...prev]);
@@ -254,6 +279,7 @@ export function Menu() {
         description: editingItem.description,
         isAvailable: editingItem.available,
         imageFile: editImageFile,
+        branchId: selectedBranch !== "all" ? Number(selectedBranch) : undefined,
       });
 
       const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8081";
@@ -266,6 +292,7 @@ export function Menu() {
         description: saved.description,
         available: saved.isAvailable !== false,
         image: saved.imageUrl ? (saved.imageUrl.startsWith("http") ? saved.imageUrl : `${baseUrl}${saved.imageUrl}`) : editingItem.image,
+        canteen: saved.branchId || (selectedBranch !== "all" ? Number(selectedBranch) : undefined),
       };
 
       setItems((prev) =>
@@ -282,11 +309,14 @@ export function Menu() {
     let result = items.filter((item) => {
       const matchesSearch = item.name
         .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+        .includes(activeSearchQuery.toLowerCase());
       const matchesCategory =
         selectedCategory === "All Categories" ||
         item.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesBranch = 
+        selectedBranch === "all" ||
+        item.canteen === selectedBranch;
+      return matchesSearch && matchesCategory && matchesBranch;
     });
 
     if (sortBy === "name-asc") {
@@ -300,7 +330,7 @@ export function Menu() {
     }
 
     return result;
-  }, [items, searchQuery, selectedCategory, sortBy]);
+  }, [items, activeSearchQuery, selectedCategory, sortBy, selectedBranch]);
 
   const filterCategories = useMemo(() => {
     const uniqueCats = Array.from(new Set(items.map((item) => item.category)));
@@ -339,11 +369,30 @@ export function Menu() {
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                setStartIndex(0);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setActiveSearchQuery(searchQuery);
+                  setStartIndex(0);
+                }
               }}
               className="pl-10 pr-4 py-2 bg-[#f1f3ee] border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 w-64 transition-all"
             />
           </div>
+
+          <button
+            onClick={() => { setActiveSearchQuery(searchQuery); setStartIndex(0); }}
+            className="px-4 py-2 bg-[#414b35] text-white rounded-xl text-sm font-bold hover:bg-[#2d3424] transition-colors shadow-sm"
+          >
+            Search
+          </button>
+          
+          <button
+            onClick={() => { setSearchQuery(""); setActiveSearchQuery(""); setStartIndex(0); }}
+            className="px-4 py-2 bg-[#e2e7d8] text-[#414b35] rounded-xl text-sm font-bold hover:bg-[#d4dbc8] transition-colors shadow-sm"
+          >
+            Clear
+          </button>
 
           <div className="relative" ref={sortRef}>
             <button
@@ -387,8 +436,33 @@ export function Menu() {
       <div className="bg-white rounded-3xl border border-emerald-100/60 shadow-sm overflow-hidden">
         {/* Filter Bar */}
         <div className="p-5 flex items-center justify-between border-b border-gray-100 bg-[#fbfdf8]">
-          <div className="relative" ref={categoryRef}>
-            <button
+          <div className="flex items-center gap-3">
+            {user && user.role === 'superadmin' && branches.length > 0 && (
+              <div className="relative">
+                <select
+                  value={selectedBranch}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedBranch(val === "all" ? "all" : Number(val));
+                    setStartIndex(0);
+                  }}
+                  className="appearance-none bg-white border border-gray-200 rounded-xl pl-4 pr-10 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer h-10"
+                >
+                  <option value="all">All Canteens</option>
+                  {branches.map((b) => (
+                    <option key={b.branchId} value={b.branchId}>
+                      {b.branchName}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronDown className="w-4 h-4 text-gray-400" />
+                </div>
+              </div>
+            )}
+
+            <div className="relative" ref={categoryRef}>
+              <button
               type="button"
               onClick={() => setIsCategoryOpen(!isCategoryOpen)}
               className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
@@ -437,6 +511,7 @@ export function Menu() {
                 </div>
               </div>
             )}
+          </div>
           </div>
 
           <div className="flex items-center gap-2">

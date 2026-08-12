@@ -21,6 +21,7 @@ export const Categories: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeSearchTerm, setActiveSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -125,8 +126,8 @@ export const Categories: React.FC = () => {
 
   // Filtered categories
   const filteredCategories = categories.filter(c =>
-    c.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (c.description || '').toLowerCase().includes(searchTerm.toLowerCase())
+    c.categoryName.toLowerCase().includes(activeSearchTerm.toLowerCase()) ||
+    (c.description || '').toLowerCase().includes(activeSearchTerm.toLowerCase())
   );
 
   const CATEGORIES_PER_PAGE = 10;
@@ -157,15 +158,37 @@ export const Categories: React.FC = () => {
       {/* Main Table Card */}
       <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-sm space-y-4">
         {/* Search bar */}
-        <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search categories..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 bg-gray-50/50 text-xs font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-[#88C425] transition-all"
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search categories..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setActiveSearchTerm(searchTerm);
+                  setCurrentPage(1);
+                }
+              }}
+              className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 bg-gray-50/50 text-xs font-medium text-gray-800 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-[#88C425] transition-all"
+            />
+          </div>
+
+          <button
+            onClick={() => { setActiveSearchTerm(searchTerm); setCurrentPage(1); }}
+            className="px-4 py-2 bg-[#414b35] text-white rounded-xl text-xs font-bold hover:bg-[#2d3424] transition-colors shadow-sm"
+          >
+            Search
+          </button>
+          
+          <button
+            onClick={() => { setSearchTerm(""); setActiveSearchTerm(""); setCurrentPage(1); }}
+            className="px-4 py-2 bg-[#e2e7d8] text-[#414b35] rounded-xl text-xs font-bold hover:bg-[#d4dbc8] transition-colors shadow-sm"
+          >
+            Clear
+          </button>
         </div>
 
         {/* Categories Table */}

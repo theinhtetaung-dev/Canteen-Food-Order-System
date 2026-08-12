@@ -31,6 +31,7 @@ public class Order {
     private BigDecimal totalAmount;
 
     @Convert(converter = StatusConverter.class)
+    @Column(name = "OrderStatus", columnDefinition = "VARCHAR(30)")
     private Status orderStatus = Status.PENDING;
 
     @Column(name = "DeleteFlag")

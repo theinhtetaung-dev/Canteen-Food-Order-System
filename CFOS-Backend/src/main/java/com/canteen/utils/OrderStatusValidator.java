@@ -22,7 +22,7 @@ public class OrderStatusValidator {
             // Canceled order is final
             case CANCEL -> allow(target, Status.CANCEL);
 
-            default -> throw new RuntimeException("Invalid status change");
+            default -> throw new IllegalArgumentException("Invalid status change from " + current);
         }
     }
 
@@ -30,8 +30,8 @@ public class OrderStatusValidator {
         for (Status status : allowed) {
             if (status == target) return;
         }
-        throw new RuntimeException(
-            "Invalid status transition from " + target
+        throw new IllegalArgumentException(
+            "Invalid status transition to " + target
         );
     }
 }

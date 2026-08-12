@@ -102,7 +102,24 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
         rolePermissionRepository.saveAll(rolePermissions);
 
-        // 5. Seed Users
+        // 5. Seed Canteens/Branches
+        log.info("Seeding Canteens...");
+        Branch mainCanteen = new Branch();
+        mainCanteen.setBranchName("Main Canteen");
+        mainCanteen.setLocation("Building A, Ground Floor");
+
+        Branch northCanteen = new Branch();
+        northCanteen.setBranchName("North Canteen");
+        northCanteen.setLocation("Building C, 1st Floor");
+
+        Branch southCanteen = new Branch();
+        southCanteen.setBranchName("South Canteen");
+        southCanteen.setLocation("Building B, Basement");
+
+        branchRepository.saveAll(List.of(mainCanteen, northCanteen, southCanteen));
+        branchRepository.flush();
+
+        // 5.5 Seed Users
         log.info("Seeding Users...");
         User superAdminUser = new User();
         superAdminUser.setUserName("superadmin");
@@ -115,12 +132,33 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         User managerUser = new User();
         managerUser.setUserName("manager");
-        managerUser.setFullName("Kitchen Manager");
+        managerUser.setFullName("Central Canteen Manager");
         managerUser.setEmail("manager@canteen.com");
         managerUser.setPasswordHash(passwordEncoder.encode("manager123"));
         managerUser.setPhoneNumber("4445556666");
         managerUser.setStatus(UserStatus.ACTIVE);
         managerUser.setRole(managerRole);
+        managerUser.setCanteen(mainCanteen);
+
+        User managerUser2 = new User();
+        managerUser2.setUserName("manager2");
+        managerUser2.setFullName("Garden Bistro Manager");
+        managerUser2.setEmail("manager2@canteen.com");
+        managerUser2.setPasswordHash(passwordEncoder.encode("manager123"));
+        managerUser2.setPhoneNumber("4445557777");
+        managerUser2.setStatus(UserStatus.ACTIVE);
+        managerUser2.setRole(managerRole);
+        managerUser2.setCanteen(northCanteen);
+
+        User managerUser3 = new User();
+        managerUser3.setUserName("manager3");
+        managerUser3.setFullName("Skyline Cafeteria Manager");
+        managerUser3.setEmail("manager3@canteen.com");
+        managerUser3.setPasswordHash(passwordEncoder.encode("manager123"));
+        managerUser3.setPhoneNumber("4445558888");
+        managerUser3.setStatus(UserStatus.ACTIVE);
+        managerUser3.setRole(managerRole);
+        managerUser3.setCanteen(southCanteen);
         
         User normalUser = new User();
         normalUser.setUserName("user");
@@ -131,21 +169,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         normalUser.setStatus(UserStatus.ACTIVE);
         normalUser.setRole(userRole);
 
-        userRepository.saveAll(List.of(superAdminUser, managerUser, normalUser));
-
-        // 5.5 Seed Canteens/Branches
-        log.info("Seeding Canteens...");
-        Branch mainCanteen = new Branch();
-        mainCanteen.setBranchName("Main Canteen");
-        mainCanteen.setLocation("Building A, Ground Floor");
-
-        Branch northCanteen = new Branch();
-        northCanteen.setBranchName("North Canteen");
-        northCanteen.setLocation("Building C, 1st Floor");
-
-        branchRepository.saveAll(List.of(mainCanteen, northCanteen));
-        branchRepository.flush();
-
+        userRepository.saveAll(List.of(superAdminUser, managerUser, managerUser2, managerUser3, normalUser));
 
         // 6. Seed Food Categories
         log.info("Seeding Food Categories...");
@@ -159,29 +183,41 @@ public class DatabaseSeeder implements CommandLineRunner {
         log.info("Seeding Food Items...");
         List<Food> foods = new ArrayList<>();
 
-        // Main Canteen Foods
+        // Main Canteen Foods (10 items) - Using Online URLs (Unsplash)
         foods.add(createFood("Chicken Fried Rice", "Delicious chicken fried rice with fresh veggies", new BigDecimal("3500.00"), mainCourse, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1603133872878-684f208fb84b?q=80&w=600"));
         foods.add(createFood("Spicy Noodle Soup", "Hot and spicy noodle soup with chicken", new BigDecimal("2800.00"), mainCourse, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?q=80&w=600"));
         foods.add(createFood("Grilled Chicken Burger", "Juicy grilled chicken burger with cheese", new BigDecimal("4500.00"), mainCourse, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600"));
         foods.add(createFood("Classic Club Sandwich", "Double decker sandwich with chicken and egg", new BigDecimal("3200.00"), mainCourse, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?q=80&w=600"));
+        foods.add(createFood("Margherita Pizza", "Classic tomato sauce and mozzarella cheese", new BigDecimal("5000.00"), mainCourse, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?q=80&w=600"));
         foods.add(createFood("Chocolate Lava Cake", "Warm chocolate cake with molten center", new BigDecimal("2000.00"), dessert, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=600"));
         foods.add(createFood("Strawberry Waffle", "Fresh waffles topped with strawberry syrup", new BigDecimal("2500.00"), dessert, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?q=80&w=600"));
         foods.add(createFood("Mango Pudding", "Sweet mango pudding with fresh cream", new BigDecimal("1500.00"), dessert, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1541832676-9b763b0239ab?q=80&w=600"));
         foods.add(createFood("Iced Caffe Latte", "Chilled espresso with fresh milk", new BigDecimal("1800.00"), beverage, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1517701604599-bb29b565090c?q=80&w=600"));
         foods.add(createFood("Fresh Lemonade", "Squeezed lemons with ice and mint", new BigDecimal("1200.00"), beverage, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1534353436294-0dbd4bdac845?q=80&w=600"));
-        foods.add(createFood("Green Tea Matcha", "Authentic iced green tea matcha", new BigDecimal("2200.00"), beverage, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?q=80&w=600"));
 
-        // North Canteen Foods
-        foods.add(createFood("Beef Fried Rice", "Savory beef fried rice with garlic", new BigDecimal("4000.00"), mainCourse, superAdminUser, northCanteen, "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=600"));
-        foods.add(createFood("Tom Yum Noodle", "Sour and spicy Thai noodle soup", new BigDecimal("3000.00"), mainCourse, superAdminUser, northCanteen, "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600"));
-        foods.add(createFood("Cheese Pizza Slice", "Freshly baked pizza slice with mozzarella", new BigDecimal("2500.00"), mainCourse, superAdminUser, northCanteen, "https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=600"));
-        foods.add(createFood("Crispy Chicken Strips", "Golden fried chicken strips with dip", new BigDecimal("3500.00"), mainCourse, superAdminUser, northCanteen, "https://images.unsplash.com/photo-1562967914-608f82629710?q=80&w=600"));
-        foods.add(createFood("Vanilla Cheesecake", "Creamy cheesecake on graham crust", new BigDecimal("2800.00"), dessert, superAdminUser, northCanteen, "https://images.unsplash.com/photo-1524351199679-46cddf530c04?q=80&w=600"));
-        foods.add(createFood("Chocolate Brownie", "Fudgy chocolate brownie with walnuts", new BigDecimal("1800.00"), dessert, superAdminUser, northCanteen, "https://images.unsplash.com/photo-1564355808539-22fda35bed7e?q=80&w=600"));
-        foods.add(createFood("Fruit Salad Bowl", "Assorted seasonal fresh fruits", new BigDecimal("2200.00"), dessert, superAdminUser, northCanteen, "https://images.unsplash.com/photo-1519996521430-02b798c1d881?q=80&w=600"));
-        foods.add(createFood("Bubble Milk Tea", "Classic milk tea with tapioca pearls", new BigDecimal("2500.00"), beverage, superAdminUser, northCanteen, "https://images.unsplash.com/photo-1541658016709-82535e94bc69?q=80&w=600"));
-        foods.add(createFood("Iced Peach Tea", "Brewed black tea with sweet peach syrup", new BigDecimal("1500.00"), beverage, superAdminUser, northCanteen, "https://images.unsplash.com/photo-1497534446932-c925b458314e?q=80&w=600"));
-        foods.add(createFood("Mocha Frappe", "Blended coffee, chocolate, and milk", new BigDecimal("2800.00"), beverage, superAdminUser, northCanteen, "https://images.unsplash.com/photo-1572490122747-3968b75cc699?q=80&w=600"));
+        // North Canteen Foods (10 items) - Using local image paths
+        foods.add(createFood("Beef Fried Rice", "Savory beef fried rice with garlic", new BigDecimal("4000.00"), mainCourse, superAdminUser, northCanteen, "/food-images/beef_fried_rice.jpg"));
+        foods.add(createFood("Tom Yum Noodle", "Sour and spicy Thai noodle soup", new BigDecimal("3000.00"), mainCourse, superAdminUser, northCanteen, "/food-images/tom_yum_noodle.jpg"));
+        foods.add(createFood("Cheese Pizza Slice", "Freshly baked pizza slice with mozzarella", new BigDecimal("2500.00"), mainCourse, superAdminUser, northCanteen, "/food-images/cheese_pizza.jpg"));
+        foods.add(createFood("Crispy Chicken Strips", "Golden fried chicken strips with dip", new BigDecimal("3500.00"), mainCourse, superAdminUser, northCanteen, "/food-images/chicken_strips.jpg"));
+        foods.add(createFood("Beef Burger", "Juicy grilled beef patty with fresh lettuce and tomato", new BigDecimal("4800.00"), mainCourse, superAdminUser, northCanteen, "/food-images/beef_burger.jpg"));
+        foods.add(createFood("Vanilla Cheesecake", "Creamy cheesecake on graham crust", new BigDecimal("2800.00"), dessert, superAdminUser, northCanteen, "/food-images/cheesecake.jpg"));
+        foods.add(createFood("Chocolate Brownie", "Fudgy chocolate brownie with walnuts", new BigDecimal("1800.00"), dessert, superAdminUser, northCanteen, "/food-images/brownie.jpg"));
+        foods.add(createFood("Fruit Salad Bowl", "Assorted seasonal fresh fruits", new BigDecimal("2200.00"), dessert, superAdminUser, northCanteen, "/food-images/fruit_salad.jpg"));
+        foods.add(createFood("Bubble Milk Tea", "Classic milk tea with tapioca pearls", new BigDecimal("2500.00"), beverage, superAdminUser, northCanteen, "/food-images/bubble_tea.jpg"));
+        foods.add(createFood("Iced Peach Tea", "Brewed black tea with sweet peach syrup", new BigDecimal("1500.00"), beverage, superAdminUser, northCanteen, "/food-images/peach_tea.jpg"));
+
+        // South Canteen Foods (10 items) - Using local image paths
+        foods.add(createFood("Grilled Salmon Salad", "Fresh grilled salmon on top of mixed garden greens", new BigDecimal("6500.00"), mainCourse, superAdminUser, southCanteen, "/food-images/salmon_salad.jpg"));
+        foods.add(createFood("Pasta Carbonara", "Spaghetti in creamy white sauce with ham and cheese", new BigDecimal("4200.00"), mainCourse, superAdminUser, southCanteen, "/food-images/pasta_carbonara.jpg"));
+        foods.add(createFood("Vegetable Fried Rice", "Healthy fried rice loaded with seasonal vegetables", new BigDecimal("2800.00"), mainCourse, superAdminUser, southCanteen, "/food-images/veg_fried_rice.jpg"));
+        foods.add(createFood("Chicken Katsu Curry", "Crispy fried chicken cutlet served with thick curry sauce", new BigDecimal("5200.00"), mainCourse, superAdminUser, southCanteen, "/food-images/chicken_katsu.jpg"));
+        foods.add(createFood("BBQ Chicken Wings", "Crispy chicken wings glazed in sweet and smoky BBQ sauce", new BigDecimal("3800.00"), mainCourse, superAdminUser, southCanteen, "/food-images/chicken_wings.jpg"));
+        foods.add(createFood("Tiramisu Cup", "Classic Italian dessert with coffee-soaked ladyfingers", new BigDecimal("3000.00"), dessert, superAdminUser, southCanteen, "/food-images/tiramisu.jpg"));
+        foods.add(createFood("Ice Cream Sundae", "Three scoops of ice cream topped with chocolate syrup", new BigDecimal("2000.00"), dessert, superAdminUser, southCanteen, "/food-images/ice_cream.jpg"));
+        foods.add(createFood("Churros with Chocolate", "Crispy fried dough pastry served with warm dipping chocolate", new BigDecimal("2500.00"), dessert, superAdminUser, southCanteen, "/food-images/churros.jpg"));
+        foods.add(createFood("Iced Americano", "Double shot of espresso diluted with cold water and ice", new BigDecimal("1500.00"), beverage, superAdminUser, southCanteen, "/food-images/iced_americano.jpg"));
+        foods.add(createFood("Hot Green Tea", "Steeping hot organic green tea leaves", new BigDecimal("1000.00"), beverage, superAdminUser, southCanteen, "/food-images/hot_green_tea.jpg"));
 
         foodRepository.saveAll(foods);
 

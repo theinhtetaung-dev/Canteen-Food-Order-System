@@ -69,9 +69,6 @@ export function LoginForm({
         <div className="flex flex-col items-center gap-1 text-center">
           <div className="mb-1 text-3xl">🍏</div>
           <h1 className="text-3xl font-bold text-slate-800">Login</h1>
-          <p className="text-xs font-medium text-muted-foreground">
-            Hungry? We&apos;ve got you covered. 🍔
-          </p>
         </div>
 
         <Controller
@@ -85,7 +82,7 @@ export function LoginForm({
               <Input
                 {...field}
                 id="rollNumber"
-                placeholder="e.g. 2019-mit-cse-001"
+                placeholder="Username or Roll Number"
                 autoComplete="off"
                 className="h-11 border-none bg-brand-light text-slate-800 focus-visible:ring-1 focus-visible:ring-brand"
               />

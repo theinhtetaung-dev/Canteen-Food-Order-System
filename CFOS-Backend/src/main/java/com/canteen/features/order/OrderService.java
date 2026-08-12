@@ -74,7 +74,7 @@ public class OrderService {
         if (request.getOrderItems() != null) {
             for (var itemRequest : request.getOrderItems()) {
 
-                Food food = foodMap.get(itemRequest.getFoodId());:ff
+                Food food = foodMap.get(itemRequest.getFoodId());
 
                 if (food == null) {
                     throw new ResourceNotFoundException("Food not found: " + itemRequest.getFoodId());

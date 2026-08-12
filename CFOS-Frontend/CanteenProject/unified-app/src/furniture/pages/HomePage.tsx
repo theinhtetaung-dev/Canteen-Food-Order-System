@@ -4,12 +4,14 @@ import { ShoppingCart, Star, UtensilsCrossed, Search } from "lucide-react";
 import { PageContainer } from "@furniture/components/layout/PageContainer";
 import { heroSlides } from "@furniture/data/heroItems";
 import { useAuth } from "@furniture/hooks/useAuth";
+import { fetchMenuItems } from "@furniture/api/menu.api";
+import type { HeroSlide } from "@furniture/types/menu";
 
-function LandingPage() {
+function LandingPage({ slides }: { slides: HeroSlide[] }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
 
-  const slide = heroSlides[currentSlide];
+  const slide = slides[currentSlide] || slides[0];
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
@@ -95,7 +97,7 @@ function LandingPage() {
   );
 }
 
-function DashboardHome() {
+function DashboardHome({ slides }: { slides: HeroSlide[] }) {
   const { user } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -104,7 +106,7 @@ function DashboardHome() {
     const timer = setInterval(() => {
       setIsAnimating(true);
       setTimeout(() => {
-        setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
         setIsAnimating(false);
       }, 300);
     }, 4000);
@@ -119,7 +121,7 @@ function DashboardHome() {
     }, 300);
   };
 
-  const slide = heroSlides[currentSlide];
+  const slide = slides[currentSlide] || slides[0];
 
   return (
     <PageContainer className="flex items-center">
@@ -188,7 +190,7 @@ function DashboardHome() {
           </div>
 
           <div className="absolute bottom-0 left-1/2 flex -translate-x-1/2 gap-2">
-            {heroSlides.map((_, index) => (
+            {slides.map((_, index) => (
               <button
                 key={index}
                 type="button"
@@ -210,10 +212,32 @@ function DashboardHome() {
 
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
+  const [slides, setSlides] = useState<HeroSlide[]>(heroSlides);
+
+  useEffect(() => {
+    const loadMenu = async () => {
+      try {
+        const items = await fetchMenuItems();
+        if (items && items.length > 0) {
+          const topItems = items.filter(i => i.isAvailable && i.image).slice(0, 3);
+          if (topItems.length > 0) {
+            setSlides(topItems.map(i => ({
+               name: i.name,
+               rating: i.rating || 4.8,
+               image: i.image
+            })));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch menu items for landing page", error);
+      }
+    };
+    loadMenu();
+  }, []);
   
   if (isAuthenticated) {
-    return <DashboardHome />;
+    return <DashboardHome slides={slides} />;
   }
   
-  return <LandingPage />;
+  return <LandingPage slides={slides} />;
 }

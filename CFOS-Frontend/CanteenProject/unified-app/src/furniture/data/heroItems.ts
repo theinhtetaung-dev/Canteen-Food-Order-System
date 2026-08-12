@@ -1,11 +1,11 @@
 import type { HeroSlide } from "@furniture/types/menu";
+import heroImg from "../../assets/hero.png";
 
 export const heroSlides: HeroSlide[] = [
   {
-    name: "Bubble Tea",
+    name: "Special Meal",
     rating: 4.8,
-    image:
-      "https://images.unsplash.com/photo-1558857563-c0c4a0b1f3b0?w=500&h=500&fit=crop",
+    image: heroImg,
   },
   {
     name: "Fried Rice",

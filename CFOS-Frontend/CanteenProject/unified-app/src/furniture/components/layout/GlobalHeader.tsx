@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { Search, ShoppingCart, UtensilsCrossed } from "lucide-react";
+import { Search, ShoppingCart } from "lucide-react";
 import { NotificationBell } from "@furniture/components/layout/NotificationBell";
 import { useDebounce } from "@furniture/hooks/useDebounce";
 import { useAuth } from "@furniture/hooks/useAuth";
+import brandLogo from "../../../assets/logo.png";
 
 export function GlobalHeader() {
   const location = useLocation();
@@ -36,9 +37,11 @@ export function GlobalHeader() {
       <header className="flex h-20 w-full items-center justify-between bg-brand-light px-8 lg:px-12 shrink-0">
         {/* Logo */}
         <div className="flex items-center">
-          <Link to="/furniture" className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm">
-            <UtensilsCrossed className="h-5 w-5 text-brand" />
-            <span className="font-bold text-brand">MIIT Canteen</span>
+          <Link to="/furniture" className="flex items-center gap-2 rounded-full bg-white px-3 py-2 shadow-sm">
+            <div className="h-6 w-6 rounded-full overflow-hidden shrink-0 shadow-sm border border-gray-200">
+              <img src={brandLogo} alt="MIIT Canteen" className="h-full w-full object-cover" />
+            </div>
+            <span className="font-bold text-brand text-sm">MIIT Canteen</span>
           </Link>
         </div>
 

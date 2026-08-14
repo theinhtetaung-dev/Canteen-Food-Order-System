@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { LayoutDashboard, Store, Users, User, UtensilsCrossed, MapPin, ShieldCheck, BarChart3 } from 'lucide-react';
 import { useAuth } from "@user/hooks/useAuth";
+import brandLogo from "../../../assets/image.png";
 
 export const Sidebar: React.FC = () => {
   const { user } = useAuth();
@@ -11,7 +12,9 @@ export const Sidebar: React.FC = () => {
       <div>
         {/* Brand Logo & Title */}
         <div className="flex items-center gap-3 px-2 py-4 mb-4">
-          <UtensilsCrossed className="w-7 h-7 text-gray-900" />
+          <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 shadow-sm border border-gray-200">
+            <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
+          </div>
           <div>
             <h1 className="font-extrabold text-xl leading-none text-gray-900 tracking-tight">Campus</h1>
             <span className="font-extrabold text-xl leading-none text-gray-900 tracking-tight">Bites</span>
@@ -24,10 +27,9 @@ export const Sidebar: React.FC = () => {
             to="/"
             end
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                isActive
-                  ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
-                  : 'text-gray-600 hover:bg-black/5'
+              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${isActive
+                ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
+                : 'text-gray-600 hover:bg-black/5'
               }`
             }
           >
@@ -38,10 +40,9 @@ export const Sidebar: React.FC = () => {
           <NavLink
             to="/kitchen-admin"
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                isActive
-                  ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
-                  : 'text-gray-600 hover:bg-black/5'
+              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${isActive
+                ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
+                : 'text-gray-600 hover:bg-black/5'
               }`
             }
           >
@@ -52,10 +53,9 @@ export const Sidebar: React.FC = () => {
           <NavLink
             to="/users"
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                isActive
-                  ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
-                  : 'text-gray-600 hover:bg-black/5'
+              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${isActive
+                ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
+                : 'text-gray-600 hover:bg-black/5'
               }`
             }
           >
@@ -66,10 +66,9 @@ export const Sidebar: React.FC = () => {
           <NavLink
             to="/branches"
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                isActive
-                  ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
-                  : 'text-gray-600 hover:bg-black/5'
+              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${isActive
+                ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
+                : 'text-gray-600 hover:bg-black/5'
               }`
             }
           >
@@ -80,10 +79,9 @@ export const Sidebar: React.FC = () => {
           <NavLink
             to="/permissions"
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                isActive
-                  ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
-                  : 'text-gray-600 hover:bg-black/5'
+              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${isActive
+                ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
+                : 'text-gray-600 hover:bg-black/5'
               }`
             }
           >
@@ -94,10 +92,9 @@ export const Sidebar: React.FC = () => {
           <NavLink
             to="/user-reports"
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${
-                isActive
-                  ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
-                  : 'text-gray-600 hover:bg-black/5'
+              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${isActive
+                ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
+                : 'text-gray-600 hover:bg-black/5'
               }`
             }
           >
@@ -111,8 +108,7 @@ export const Sidebar: React.FC = () => {
       <NavLink
         to="/profile"
         className={({ isActive }) =>
-          `pt-4 border-t border-gray-200/60 flex items-center gap-3 px-1 transition-all rounded-xl hover:opacity-80 ${
-            isActive ? 'bg-black/5 p-2' : ''
+          `pt-4 border-t border-gray-200/60 flex items-center gap-3 px-1 transition-all rounded-xl hover:opacity-80 ${isActive ? 'bg-black/5 p-2' : ''
           }`
         }
       >

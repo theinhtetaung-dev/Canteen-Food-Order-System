@@ -13,8 +13,13 @@ import {
 import { fetchReport, type ReportResponseModel } from "../../user/api/report.api";
 import { fetchAllOrders } from "../../user/api/order.api";
 import type { Order } from "../../user/types/order";
+import { useAuth } from "../../user/hooks/useAuth";
+import { fetchAllUsers } from "../../user/api/user.api";
 
 export function Report() {
+  const { user } = useAuth();
+  const [userCanteenId, setUserCanteenId] = useState<number | null>(null);
+
   const [orderStatus, setOrderStatus] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -38,14 +43,19 @@ export function Report() {
 
   const loadData = async () => {
     setIsGenerating(true);
-      let reportData = null;
-      try {
-        reportData = await fetchReport("", startDate, endDate);
-        if (reportData) {
-          setStats(reportData);
+      
+      let currentCanteenId = userCanteenId;
+      if (!currentCanteenId && user) {
+        try {
+          const allUsers = await fetchAllUsers();
+          const found = allUsers.find((u: any) => u.userName.toLowerCase() === user.rollNumber.toLowerCase());
+          if (found && found.canteenId) {
+            currentCanteenId = found.canteenId;
+            setUserCanteenId(currentCanteenId);
+          }
+        } catch(e) { 
+          console.error("Failed to load db user in report", e);
         }
-      } catch (reportErr) {
-        console.error("Failed to fetch report stats", reportErr);
       }
 
       let allOrders: Order[] = [];
@@ -56,6 +66,10 @@ export function Report() {
       }
       
       let filteredDateOrders = allOrders;
+      if (currentCanteenId) {
+        filteredDateOrders = filteredDateOrders.filter(o => o.canteenId === currentCanteenId);
+      }
+
       if (startDate) {
         const startD = new Date(startDate);
         if (!isNaN(startD.getTime())) {
@@ -70,6 +84,22 @@ export function Report() {
         }
       }
       
+      const totalOrdersCount = filteredDateOrders.filter(o => o.status.toLowerCase() === "completed").length;
+      const totalRevenueCount = filteredDateOrders
+        .filter(o => o.status.toLowerCase() === "completed")
+        .reduce((sum, o) => sum + o.totalPrice, 0);
+      const totalItemsSoldCount = filteredDateOrders
+        .filter(o => o.status.toLowerCase() === "completed")
+        .reduce((sum, o) => sum + (o.items ? o.items.reduce((s, i) => s + (i.quantity || 1), 0) : 0), 0);
+
+      setStats({
+        totalOrders: totalOrdersCount,
+        totalRevenue: totalRevenueCount,
+        totalItemsSold: totalItemsSoldCount,
+        foodSales: [],
+        periodBreakdown: []
+      });
+
       setOrders(filteredDateOrders);
       setIsGenerating(false);
   };
@@ -102,8 +132,10 @@ export function Report() {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (user) {
+      loadData();
+    }
+  }, [user]);
 
   const handleGenerateReport = () => {
     loadData();

@@ -14,7 +14,7 @@ import {
 import { useAuth } from "@user/hooks/useAuth";
 import { fetchAllUsers } from "@user/api/user.api";
 
-import vegetarianLogo from "../../assets/vegetarian-food.svg";
+import brandLogo from "../../../assets/logo.png";
 
 export function Sidebar() {
   const navigate = useNavigate();
@@ -109,8 +109,8 @@ export function Sidebar() {
       <div className="space-y-8">
         {/* Brand Logo & Title */}
         <div className="flex items-center gap-3 px-2">
-          <div className="p-2.5 bg-[#e2f0c2] text-[#284208] rounded-xl shadow-sm">
-            <UtensilsCrossed className="w-6 h-6 stroke-[2.2]" />
+          <div className="p-1 bg-[#e2f0c2] rounded-xl shadow-sm overflow-hidden flex items-center justify-center w-11 h-11">
+            <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
           </div>
           <div className="leading-tight">
             <h1 className="text-lg font-black text-[#1c2e0a] tracking-tight">

@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, ChevronLeft, ChevronRight, ShoppingCart, ChevronDown, Plus, Minus, CheckCircle } from "lucide-react";
 import { FoodDetailModal } from "../../user/components/menu/FoodDetailModal";
 import { FoodGrid } from "../../user/components/menu/FoodGrid";
@@ -28,6 +28,7 @@ export default function Pos() {
   const { lines, addToCart, removeFromCart, deleteFromCart, clearCart, totalItems, totalPrice } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [confirmedOrder, setConfirmedOrder] = useState<any>(null);
 
   const baseUrl = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8081";
 
@@ -121,10 +122,9 @@ export default function Pos() {
       const payload = {
         orderItems: lines.map(c => ({ foodId: c.item.id, quantity: c.quantity }))
       };
-      await api.post("/api/orders", payload);
+      const res = await api.post("/api/orders", payload);
+      setConfirmedOrder({ ...res.data, lines: [...lines], total: totalPrice });
       clearCart();
-      setSuccessMessage("Walk-in order created successfully!");
-      setTimeout(() => setSuccessMessage(""), 4000);
     } catch (err) {
       console.error("Failed to place order:", err);
       alert("Failed to place walk-in order.");
@@ -309,10 +309,44 @@ export default function Pos() {
         setTimeout(() => setSuccessMessage(""), 3000);
       }} />
 
-      {successMessage && (
+      {successMessage && !confirmedOrder && (
         <div className="fixed top-6 right-6 z-50 bg-[#e8f5e9] border border-[#c8e6c9] text-[#2e7d32] px-4 py-3 rounded-xl shadow-lg flex items-center gap-2">
           <CheckCircle className="w-5 h-5" />
           <span className="text-sm font-bold">{successMessage}</span>
+        </div>
+      )}
+
+      {confirmedOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 bg-[#e8f5e9] rounded-full flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-[#2e7d32]" />
+              </div>
+            </div>
+            <h3 className="text-2xl font-black text-center text-gray-900 mb-2">Order Confirmed!</h3>
+            <p className="text-center text-gray-500 mb-6 font-semibold">Order ID: ORD-{confirmedOrder.orderId}</p>
+            
+            <div className="bg-gray-50 rounded-xl p-4 mb-6 space-y-3 max-h-60 overflow-y-auto border border-gray-100">
+              {confirmedOrder.lines.map((line: any) => (
+                <div key={line.item.id} className="flex justify-between text-sm">
+                  <span className="font-medium text-gray-700">{line.quantity}x {line.item.name}</span>
+                  <span className="font-bold text-gray-900">{formatPrice(line.item.price * line.quantity)}</span>
+                </div>
+              ))}
+              <div className="border-t border-gray-200 pt-3 flex justify-between mt-3 sticky bottom-0 bg-gray-50 pb-1">
+                <span className="font-bold text-gray-900 uppercase tracking-wider text-xs">Total Amount</span>
+                <span className="font-black text-[#5b7a42] text-lg leading-none">{formatPrice(confirmedOrder.total)}</span>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setConfirmedOrder(null)}
+              className="w-full bg-[#5b7a42] text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-[#4a6335] active:scale-[0.98] transition-all"
+            >
+              Start New Order
+            </button>
+          </div>
         </div>
       )}
     </div>

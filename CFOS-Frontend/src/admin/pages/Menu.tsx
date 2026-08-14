@@ -241,7 +241,7 @@ export function Menu() {
         branchId: selectedBranch !== "all" ? Number(selectedBranch) : undefined,
       });
 
-      const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8081";
+      const baseUrl = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8081";
       const newItem: MenuItem = {
         id: String(saved.foodId),
         name: saved.foodName,
@@ -282,7 +282,7 @@ export function Menu() {
         branchId: selectedBranch !== "all" ? Number(selectedBranch) : undefined,
       });
 
-      const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8081";
+      const baseUrl = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8081";
       const updatedItem: MenuItem = {
         id: String(saved.foodId),
         name: saved.foodName,

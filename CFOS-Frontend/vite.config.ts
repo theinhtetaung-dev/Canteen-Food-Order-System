@@ -14,15 +14,15 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@user": path.resolve(__dirname, "./src/user"),
-      "@admin": path.resolve(__dirname, "./src/admin"),
-      "@superadmin": path.resolve(__dirname, "./src/superadmin"),
+      "@user": path.resolve(import.meta.dirname, "./src/user"),
+      "@admin": path.resolve(import.meta.dirname, "./src/admin"),
+      "@superadmin": path.resolve(import.meta.dirname, "./src/superadmin"),
     },
   },
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:8081",
+        target: "http://127.0.0.1:8081",
         changeOrigin: true,
       },
     },

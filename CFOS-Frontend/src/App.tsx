@@ -1,9 +1,9 @@
 import { RouterProvider, createBrowserRouter, Navigate } from "react-router-dom";
 import { getSessionUser, clearSession } from "@user/api/auth.api";
 
-// user
-import { AppProviders as userProviders } from "@user/app/providers";
-import { userRoutes } from "@user/app/router";
+// User
+import { AppProviders as UserProviders } from "@user/app/providers";
+import { userRoutes as UserRoutes } from "@user/app/router";
 
 // Admin
 import { router as AdminRouter } from "@admin/route/router";
@@ -43,9 +43,9 @@ const rootRouter = createBrowserRouter([
   {
     path: "/user/*",
     element: (
-      <userProviders>
-        <userRoutes />
-      </userProviders>
+      <UserProviders>
+        <UserRoutes />
+      </UserProviders>
     ),
   },
 ]);
@@ -113,18 +113,18 @@ export function App() {
   // Admin panel - separate router with basename '/admin'
   if (path.startsWith("/admin")) {
     return (
-      <userProviders>
+      <UserProviders>
         <RouterProvider router={AdminRouter} />
-      </userProviders>
+      </UserProviders>
     );
   }
 
   // SuperAdmin panel - separate router with basename '/superadmin'
   if (path.startsWith("/superadmin")) {
     return (
-      <userProviders>
+      <UserProviders>
         <RouterProvider router={SuperAdminRouter} />
-      </userProviders>
+      </UserProviders>
     );
   }
 

@@ -1,7 +1,7 @@
 import { api } from "@user/api/axios";
 import type { MenuItem } from "@user/types/menu";
 
-const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8081";
+const baseUrl = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8081";
 
 export async function fetchMenuItems(): Promise<MenuItem[]> {
   const { data } = await api.get<any[]>("/api/foods");

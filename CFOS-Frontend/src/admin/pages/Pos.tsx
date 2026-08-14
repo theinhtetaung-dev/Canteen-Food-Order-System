@@ -29,7 +29,7 @@ export default function Pos() {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
 
-  const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8081";
+  const baseUrl = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8081";
 
   useEffect(() => {
     let userCanteenId: number | null = null;

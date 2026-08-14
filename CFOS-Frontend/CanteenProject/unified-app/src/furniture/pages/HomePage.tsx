@@ -6,6 +6,7 @@ import { heroSlides } from "@furniture/data/heroItems";
 import { useAuth } from "@furniture/hooks/useAuth";
 import { fetchMenuItems } from "@furniture/api/menu.api";
 import type { HeroSlide } from "@furniture/types/menu";
+import heroImage from "../assets/images/hero/heropage.png";
 
 function LandingPage({ slides }: { slides: HeroSlide[] }) {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -18,7 +19,7 @@ function LandingPage({ slides }: { slides: HeroSlide[] }) {
       {/* Main Content */}
       <main className="flex-1 px-8 lg:px-12 py-12 lg:py-20 flex items-center justify-center">
         <div className="grid w-full max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
-          
+
           {/* Left Column */}
           <div className="animate-fadeIn space-y-8">
             <div className="inline-flex items-center rounded-full bg-brand-light/50 px-4 py-2">
@@ -64,11 +65,11 @@ function LandingPage({ slides }: { slides: HeroSlide[] }) {
             {/* Background decorative circles */}
             <div className="absolute h-[340px] w-[340px] rounded-full bg-brand-light/30 sm:h-[450px] sm:w-[450px] lg:h-[550px] lg:w-[550px]" />
             <div className="absolute h-[300px] w-[300px] rounded-full bg-white shadow-xl sm:h-[400px] sm:w-[400px] lg:h-[480px] lg:w-[480px]" />
-            
+
             {/* Main Image */}
             <div className="relative z-10 animate-fadeIn">
               <img
-                src={slide?.image || "https://images.unsplash.com/photo-1603133872878-684f208fb84b?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"}
+                src={slide?.image || heroImage}
                 alt={slide?.name || "Fried Rice"}
                 className="h-[280px] w-[280px] rounded-full object-cover shadow-2xl sm:h-[380px] sm:w-[380px] lg:h-[440px] lg:w-[440px]"
               />
@@ -196,11 +197,10 @@ function DashboardHome({ slides }: { slides: HeroSlide[] }) {
                 type="button"
                 onClick={() => goToSlide(index)}
                 aria-label={`Go to slide ${index + 1}`}
-                className={`h-2.5 rounded-full transition-all duration-300 ${
-                  index === currentSlide
+                className={`h-2.5 rounded-full transition-all duration-300 ${index === currentSlide
                     ? "w-8 bg-brand"
                     : "w-2.5 bg-brand/40 hover:bg-brand"
-                }`}
+                  }`}
               />
             ))}
           </div>
@@ -222,9 +222,9 @@ export default function HomePage() {
           const topItems = items.filter(i => i.isAvailable && i.image).slice(0, 3);
           if (topItems.length > 0) {
             setSlides(topItems.map(i => ({
-               name: i.name,
-               rating: i.rating || 4.8,
-               image: i.image
+              name: i.name,
+              rating: i.rating || 4.8,
+              image: i.image
             })));
           }
         }
@@ -234,10 +234,10 @@ export default function HomePage() {
     };
     loadMenu();
   }, []);
-  
+
   if (isAuthenticated) {
     return <DashboardHome slides={slides} />;
   }
-  
+
   return <LandingPage slides={slides} />;
 }

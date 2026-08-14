@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LogOut, Menu as MenuIcon, Package, Star, Phone, Utensils, User, UtensilsCrossed, X } from "lucide-react";
+import brandLogo from "../../../assets/logo.png";
 import { NotificationBell } from "@furniture/components/layout/NotificationBell";
 import { useAuth } from "@furniture/hooks/useAuth";
 import { cn } from "@furniture/lib/utils";
@@ -37,7 +38,9 @@ export function Navbar() {
           <div className="flex h-16 items-center justify-between">
             <Link to="/furniture" className="flex items-center gap-2">
               <div className="flex items-center gap-2 rounded-xl bg-brand/10 px-3 py-2">
-                <UtensilsCrossed className="h-5 w-5 text-brand" />
+                <div className="h-6 w-6 rounded-full overflow-hidden shrink-0 shadow-sm border border-brand/20 bg-white">
+                  <img src={brandLogo} alt="Logo" className="h-full w-full object-cover" />
+                </div>
                 <span className="text-sm font-bold text-gray-900">
                   MIIT Canteen
                 </span>
@@ -153,7 +156,9 @@ export function Navbar() {
           <div className="mb-8 shrink-0">
             <Link to="/furniture" className="flex items-center justify-center gap-2">
               <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#e2f0c2] text-[#284208] shadow-sm px-4 py-3">
-                <UtensilsCrossed className="h-5 w-5 stroke-[2.2]" />
+                <div className="h-7 w-7 rounded-full overflow-hidden shrink-0 shadow-sm border border-white">
+                  <img src={brandLogo} alt="Logo" className="h-full w-full object-cover" />
+                </div>
                 <span className="text-base font-bold text-[#1c2e0a]">
                   MIIT Canteen
                 </span>

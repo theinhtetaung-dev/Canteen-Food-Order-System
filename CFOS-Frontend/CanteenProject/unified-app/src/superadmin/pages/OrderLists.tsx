@@ -15,6 +15,7 @@ interface Order {
   pickupTime: string;
   status: OrderStatus;
   canteenId?: number;
+  createdAt?: string;
 }
 
 export function OrderLists() {
@@ -62,6 +63,7 @@ export function OrderLists() {
           pickupTime: d.pickupTime || "12:00 PM",
           status: mappedStatus,
           canteenId: d.canteenId,
+          createdAt: d.createdAt,
         };
       });
       setOrders(mapped);
@@ -101,8 +103,9 @@ export function OrderLists() {
             }))
           : (d.items || []);
 
+        const rawId = String(d.orderId || d.id);
         const newOrder: Order = {
-          id: String(d.orderId || d.id),
+          id: rawId.startsWith("ORD-") ? rawId : `ORD-${rawId}`,
           studentId: d.userName || d.userId,
           items: rawItemsList.map((i: any) => `${i.quantity}x ${i.name}`).join(", "),
           rawItems: rawItemsList,
@@ -110,6 +113,7 @@ export function OrderLists() {
           pickupTime: d.pickupTime || "12:00 PM",
           status: mappedStatus,
           canteenId: d.canteenId,
+          createdAt: d.createdAt,
         };
 
         setOrders((prev) => {
@@ -137,8 +141,18 @@ export function OrderLists() {
   }, []);
 
   const filteredOrders = React.useMemo(() => {
-    if (userCanteenId === null) return orders;
-    return orders.filter(o => o.canteenId === userCanteenId);
+    const baseOrders = userCanteenId === null ? orders : orders.filter(o => o.canteenId === userCanteenId);
+    return [...baseOrders].sort((a, b) => {
+      // Push Completed/Cancelled to the bottom
+      const aDone = a.status === "Completed" || a.status === "Cancelled" ? 1 : 0;
+      const bDone = b.status === "Completed" || b.status === "Cancelled" ? 1 : 0;
+      if (aDone !== bDone) return aDone - bDone;
+      
+      // FIFO: Oldest orders first
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : parseInt(a.id.replace(/\\D/g, '')) || 0;
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : parseInt(b.id.replace(/\\D/g, '')) || 0;
+      return timeA - timeB;
+    });
   }, [orders, userCanteenId]);
 
   const ORDERS_PER_PAGE = 10;

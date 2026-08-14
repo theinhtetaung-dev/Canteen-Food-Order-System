@@ -221,6 +221,7 @@ export const Dashboard = () => {
   const [orders, setOrders] = useState<Tbl_Order[]>([]);
   const [rawApiOrders, setRawApiOrders] = useState<any[]>([]);
   const [foodItems, setFoodItems] = useState<any[]>([]);
+  const [backendTopFoods, setBackendTopFoods] = useState<any[]>([]);
 
   // Map backend Order to Tbl_Order
   const mapToTblOrder = (apiOrder: any): Tbl_Order => {
@@ -249,6 +250,11 @@ export const Dashboard = () => {
       const apiOrders = await fetchAllOrders();
       setRawApiOrders(apiOrders);
       setOrders(apiOrders.map(mapToTblOrder));
+
+      const reportRes = await api.get("/api/reports");
+      if (reportRes.data && reportRes.data.foodSales) {
+        setBackendTopFoods(reportRes.data.foodSales);
+      }
     } catch (err) {
       console.error("Failed to load orders in dashboard", err);
     }
@@ -403,28 +409,11 @@ export const Dashboard = () => {
 
   // Compute top selling food items dynamically from real order items
   const currentTopFoods = useMemo(() => {
-    const foodAggregates: Record<string, { quantity: number; revenue: number }> = {};
-
-    filteredOrders.forEach(o => {
-      if (o.OrderStatus === "CANCELLED") return;
-
-      const apiOrder = rawApiOrders.find(ao => `ORD-${ao.orderId}` === o.OrderID);
-      if (apiOrder && apiOrder.items) {
-        apiOrder.items.forEach((item: any) => {
-          if (!foodAggregates[item.name]) {
-            foodAggregates[item.name] = { quantity: 0, revenue: 0 };
-          }
-          foodAggregates[item.name].quantity += item.quantity;
-          foodAggregates[item.name].revenue += item.quantity * item.price;
-        });
-      }
-    });
-
-    const itemsArray = Object.entries(foodAggregates)
-      .map(([name, data]) => ({
-        name,
-        quantity: data.quantity,
-        revenue: data.revenue
+    const itemsArray = backendTopFoods
+      .map((item: any) => ({
+        name: item.foodName || "Unknown Food",
+        quantity: item.quantitySold || 0,
+        revenue: item.revenue || 0
       }))
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 5);
@@ -437,7 +426,7 @@ export const Dashboard = () => {
     }
 
     return itemsArray;
-  }, [filteredOrders, rawApiOrders]);
+  }, [backendTopFoods]);
 
   return (
     <div className="w-full space-y-6 font-sans text-gray-800">

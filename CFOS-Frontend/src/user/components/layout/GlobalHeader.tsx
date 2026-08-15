@@ -1,0 +1,113 @@
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Search, ShoppingCart } from "lucide-react";
+import { NotificationBell } from "@user/components/layout/NotificationBell";
+import { useDebounce } from "@user/hooks/useDebounce";
+import { useAuth } from "@user/hooks/useAuth";
+import brandLogo from "../../../assets/logo.png";
+
+export function GlobalHeader() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
+  const debouncedSearch = useDebounce(searchQuery, 300);
+  const { isAuthenticated, user } = useAuth();
+
+  useEffect(() => {
+    // Only trigger this automatic debounced search for the authenticated layout search bar.
+    if (!isAuthenticated) return;
+
+    if (debouncedSearch.trim()) {
+      const newSearch = `?search=${encodeURIComponent(debouncedSearch.trim())}`;
+      if (location.pathname !== "/user/menu" || location.search !== newSearch) {
+        navigate(`/user/menu${newSearch}`, { replace: true });
+      }
+    } else if (location.pathname === "/user/menu" && location.search) {
+      // Only navigate to clear the search params if there ARE search params to clear
+      navigate(`/user/menu`, { replace: true });
+    }
+  }, [debouncedSearch, navigate, location.pathname, location.search, isAuthenticated]);
+
+  const isHomePage = location.pathname === "/user" || location.pathname === "/user/";
+  const isMenuPage = location.pathname === "/user/menu" || location.pathname === "/user/menu/";
+
+  if (!isAuthenticated) {
+    return (
+      <header className="flex h-20 w-full items-center justify-between bg-brand-light px-8 lg:px-12 shrink-0">
+        {/* Logo */}
+        <div className="flex items-center">
+          <Link to="/user" className="flex items-center gap-2 rounded-full bg-white px-3 py-2 shadow-sm">
+            <div className="h-6 w-6 rounded-full overflow-hidden shrink-0 shadow-sm border border-gray-200">
+              <img src={brandLogo} alt="MIIT Canteen" className="h-full w-full object-cover" />
+            </div>
+            <span className="font-bold text-brand text-sm">MIIT Canteen</span>
+          </Link>
+        </div>
+
+        {/* Center Nav */}
+        <nav className="hidden items-center gap-8 md:flex">
+          <Link to="/user" className={`text-sm font-bold ${isHomePage ? 'text-brand underline decoration-brand decoration-2 underline-offset-8' : 'text-gray-600 hover:text-brand transition-colors'}`}>
+            Home
+          </Link>
+          <Link to="/user/menu" className={`text-sm font-bold ${location.pathname.includes('/menu') ? 'text-brand underline decoration-brand decoration-2 underline-offset-8' : 'text-gray-600 hover:text-brand transition-colors'}`}>
+            Menu
+          </Link>
+          <Link to="/user/reviews" className={`text-sm font-bold ${location.pathname.includes('/reviews') ? 'text-brand underline decoration-brand decoration-2 underline-offset-8' : 'text-gray-600 hover:text-brand transition-colors'}`}>
+            Reviews
+          </Link>
+          <Link to="/user/contact" className={`text-sm font-bold ${location.pathname.includes('/contact') ? 'text-brand underline decoration-brand decoration-2 underline-offset-8' : 'text-gray-600 hover:text-brand transition-colors'}`}>
+            Contact
+          </Link>
+        </nav>
+
+        {/* Right Actions */}
+        <div className="flex items-center gap-6">
+
+          {!user ? (
+            <div className="flex items-center gap-4">
+              <Link to="/user/login" className="text-sm font-bold text-gray-600 hover:text-brand transition-colors">
+                Log In
+              </Link>
+              <Link to="/user/register" className="rounded-full bg-white px-5 py-2 text-sm font-bold text-brand shadow-sm hover:bg-gray-50 transition-colors">
+                Register
+              </Link>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+               <Link to="/user/profile" className="text-sm font-bold text-gray-600 hover:text-brand transition-colors">
+                Profile
+              </Link>
+            </div>
+          )}
+        </div>
+      </header>
+    );
+  }
+
+  // Authenticated users logic
+  if (isHomePage) return null;
+
+  return (
+    <header className="sticky top-0 z-30 hidden w-full items-center justify-between border-b border-gray-200 bg-white px-8 py-4 shadow-[0_2px_10px_rgba(0,0,0,0.02)] md:flex shrink-0">
+      <div className="flex w-full max-w-xl items-center">
+        {isMenuPage && (
+          <div className="relative w-full">
+            <input
+              type="text"
+              placeholder="Search for food..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full rounded-full border border-gray-200 bg-gray-50 px-4 py-2.5 pl-11 text-sm text-gray-700 transition-all focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20"
+            />
+            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          </div>
+        )}
+      </div>
+
+      <div className="flex items-center gap-5 pl-4">
+        <NotificationBell className="text-gray-500 hover:text-brand" />
+      </div>
+    </header>
+  );
+}

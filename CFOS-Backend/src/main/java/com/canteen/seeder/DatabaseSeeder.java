@@ -63,11 +63,12 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // 2. Seed Roles
         log.info("Seeding Roles...");
+        Role superAdminRole = createRole("SuperAdmin");
         Role adminRole = createRole("Admin");
         Role managerRole = createRole("Manager");
         Role userRole = createRole("User");
         
-        roleRepository.saveAll(List.of(adminRole, managerRole, userRole));
+        roleRepository.saveAll(List.of(superAdminRole, adminRole, managerRole, userRole));
 
         // 3. Seed Permissions
         log.info("Seeding Permissions...");
@@ -77,8 +78,13 @@ public class DatabaseSeeder implements CommandLineRunner {
         log.info("Seeding Role Permissions...");
         List<RolePermission> rolePermissions = new ArrayList<>();
         
-        // Admin and Manager get all permissions
+        // SuperAdmin, Admin and Manager get all permissions
         for (Permission p : permissions) {
+            RolePermission rpSuperAdmin = new RolePermission();
+            rpSuperAdmin.setRole(superAdminRole);
+            rpSuperAdmin.setPermission(p);
+            rolePermissions.add(rpSuperAdmin);
+
             RolePermission rpAdmin = new RolePermission();
             rpAdmin.setRole(adminRole);
             rpAdmin.setPermission(p);
@@ -128,7 +134,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         superAdminUser.setPasswordHash(passwordEncoder.encode("superadmin123"));
         superAdminUser.setPhoneNumber("1112223333");
         superAdminUser.setStatus(UserStatus.ACTIVE);
-        superAdminUser.setRole(adminRole);
+        superAdminUser.setRole(superAdminRole);
 
         User managerUser = new User();
         managerUser.setUserName("manager");

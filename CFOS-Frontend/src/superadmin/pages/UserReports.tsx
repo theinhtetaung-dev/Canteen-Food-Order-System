@@ -103,13 +103,16 @@ export const UserReports: React.FC = () => {
         if (!matchesSearch) return false;
       }
 
-      // 2. Role Filter mapping: Canteen Admin -> Manager, Student -> User, Super Admin -> Admin
+      // 2. Role Filter mapping: Canteen Admin -> Manager, Student -> User, Super Admin -> SuperAdmin/Admin
       if (roleFilter !== 'ALL') {
-        const mappedRole =
-          roleFilter === 'CANTEEN_ADMIN' ? 'Manager' :
-          roleFilter === 'STUDENT' ? 'User' :
-          roleFilter === 'SUPER_ADMIN' ? 'Admin' : '';
-        if (u.roleName.toLowerCase() !== mappedRole.toLowerCase()) return false;
+        const roleLower = u.roleName.toLowerCase();
+        if (roleFilter === 'CANTEEN_ADMIN') {
+          if (roleLower !== 'manager') return false;
+        } else if (roleFilter === 'STUDENT') {
+          if (roleLower !== 'user') return false;
+        } else if (roleFilter === 'SUPER_ADMIN') {
+          if (roleLower !== 'superadmin' && roleLower !== 'admin') return false;
+        }
       }
 
       // 3. Status Filter: mapping Active, Suspended, Inactive
@@ -125,8 +128,8 @@ export const UserReports: React.FC = () => {
 
       // 4. Report Type Specific Filters
       if (reportType === '2') {
-        // Canteen Admin Allocation Report (Managers/Admins assigned to canteens)
-        if (u.roleName.toLowerCase() !== 'manager' && u.roleName.toLowerCase() !== 'admin') return false;
+        // Canteen Admin Allocation Report (Managers assigned to canteens)
+        if (u.roleName.toLowerCase() !== 'manager') return false;
       } else if (reportType === '4') {
         // Account Status & Security Audit Report (Active, Suspended, Inactive Accounts)
         // No hard filtration, but layout will highlight status metrics
@@ -199,7 +202,7 @@ export const UserReports: React.FC = () => {
         idx + 1,
         `@${u.userName}`,
         u.fullName,
-        u.roleName === 'Manager' ? 'Canteen Admin' : u.roleName === 'Admin' ? 'Super Admin' : 'Student',
+        u.roleName.toLowerCase() === 'manager' ? 'Canteen Admin' : (u.roleName.toLowerCase() === 'superadmin' || u.roleName.toLowerCase() === 'admin') ? 'Super Admin' : 'Student',
         statusStr,
         u.canteenName || '—',
         u.email || '—',
@@ -247,7 +250,7 @@ export const UserReports: React.FC = () => {
         idx + 1,
         `@${u.userName}`,
         u.fullName,
-        u.roleName === 'Manager' ? 'Canteen Admin' : u.roleName === 'Admin' ? 'Super Admin' : 'Student',
+        u.roleName.toLowerCase() === 'manager' ? 'Canteen Admin' : (u.roleName.toLowerCase() === 'superadmin' || u.roleName.toLowerCase() === 'admin') ? 'Super Admin' : 'Student',
         statusStr,
         u.canteenName || '—',
         u.email || '—',
@@ -312,14 +315,14 @@ export const UserReports: React.FC = () => {
       accessorKey: 'roleName',
       header: () => <span className="uppercase font-extrabold text-[11px]">Role</span>,
       cell: ({ row }) => {
-        const role = row.original.roleName;
-        if (role === 'Admin') {
+        const role = row.original.roleName.toLowerCase();
+        if (role === 'superadmin' || role === 'admin') {
           return (
             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 shadow-sm">
               Super Admin
             </span>
           );
-        } else if (role === 'Manager') {
+        } else if (role === 'manager') {
           return (
             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#F2F7E6] text-[#3B5B11] border border-[#E1EEB4] shadow-sm">
               Canteen Admin

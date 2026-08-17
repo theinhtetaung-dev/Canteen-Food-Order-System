@@ -77,7 +77,7 @@ export function Sidebar() {
         const found = allUsers.find(u => u.userName.toLowerCase() === user.rollNumber.toLowerCase());
         if (found) {
           setDbName(found.fullName || found.userName);
-          setDbRole(found.roleName.toLowerCase() === 'superadmin' 
+          setDbRole(found.roleName.toLowerCase() === 'superadmin' || found.roleName.toLowerCase() === 'admin'
             ? 'Super Admin' 
             : (found.roleName.toLowerCase() === 'manager' ? 'Canteen Manager' : 'Student'));
         }

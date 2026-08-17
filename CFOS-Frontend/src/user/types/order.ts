@@ -8,6 +8,7 @@ export interface OrderItem {
   price: number;
   quantity: number;
   image: string;
+  comment?: string;
 }
 
 export interface Order {
@@ -23,7 +24,7 @@ export interface Order {
 }
 
 export interface PlaceOrderPayload {
-  items: { menuItem: MenuItem; quantity: number }[];
+  items: { menuItem: MenuItem; quantity: number; comment?: string }[];
   pickupTime: string;
   userId: string;
 }

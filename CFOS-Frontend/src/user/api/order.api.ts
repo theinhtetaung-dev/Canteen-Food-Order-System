@@ -25,6 +25,7 @@ export async function placeOrder(payload: PlaceOrderPayload): Promise<Order> {
     orderItems: payload.items.map((item) => ({
       foodId: item.menuItem.id,
       quantity: item.quantity,
+      comment: item.comment,
     })),
   });
 
@@ -37,6 +38,7 @@ export async function placeOrder(payload: PlaceOrderPayload): Promise<Order> {
       price: Number(item.snapPrice),
       quantity: item.quantity,
       image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000",
+      comment: item.comment,
     })),
     totalPrice: Number(data.totalAmount),
     pickupTime: payload.pickupTime,
@@ -77,6 +79,7 @@ export async function fetchUserOrders(userId: string): Promise<Order[]> {
         price: Number(item.snapPrice),
         quantity: item.quantity,
         image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000",
+        comment: item.comment,
       })),
       totalPrice: Number(order.totalAmount),
       pickupTime: "12:00 PM",
@@ -127,6 +130,7 @@ export async function fetchAllOrders(): Promise<Order[]> {
         price: Number(item.snapPrice),
         quantity: item.quantity,
         image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000",
+        comment: item.comment,
       })),
       totalPrice: Number(order.totalAmount),
       pickupTime: "12:00 PM",

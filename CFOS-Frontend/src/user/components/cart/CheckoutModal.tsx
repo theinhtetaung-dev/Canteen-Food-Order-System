@@ -14,7 +14,7 @@ interface CheckoutModalProps {
 export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const { lines, totalPrice, clearCart, closeCart } = useCart();
+  const { lines, totalPrice, clearCart, closeCart, updateComment } = useCart();
   const { placeNewOrder } = useOrders();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,14 +32,38 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     setLoading(true);
     setError(null);
     try {
-      const order = await placeNewOrder(
-        lines.map((line) => ({ menuItem: line.item, quantity: line.quantity })),
-        "As soon as possible",
+      // Group cart items by canteen branch
+      const groups: { [key: number]: typeof lines } = {};
+      for (const line of lines) {
+        const canteenId = line.item.canteen || 1;
+        if (!groups[canteenId]) {
+          groups[canteenId] = [];
+        }
+        groups[canteenId].push(line);
+      }
+
+      const groupEntries = Object.entries(groups);
+      const orders = await Promise.all(
+        groupEntries.map(([_, groupLines]) =>
+          placeNewOrder(
+            groupLines.map((line) => ({
+              menuItem: line.item,
+              quantity: line.quantity,
+              comment: line.comment || "",
+            })),
+            "As soon as possible",
+          )
+        )
       );
+
       clearCart();
       onClose();
       closeCart();
-      navigate("/orders", { state: { newOrderId: order.id } });
+      if (orders.length > 0) {
+        navigate("/orders", { state: { newOrderId: orders[0].id } });
+      } else {
+        navigate("/orders");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to place order");
     } finally {
@@ -63,20 +87,29 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
           </button>
         </div>
 
-        <div className="mb-4 max-h-48 overflow-y-auto rounded-xl border border-gray-100 bg-gray-50 p-4">
+        <div className="mb-4 max-h-64 overflow-y-auto rounded-xl border border-gray-100 bg-gray-50 p-4">
           <h3 className="mb-3 text-sm font-semibold text-gray-700">Order Summary</h3>
-          <ul className="space-y-3">
+          <ul className="space-y-4">
             {lines.map((line) => (
-              <li key={line.item.id} className="flex justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-800">{line.item.name}</span>
-                  <span className="rounded-md bg-white px-2 py-0.5 text-xs font-semibold text-gray-500 shadow-sm">
-                    x{line.quantity}
+              <li key={line.item.id} className="border-b border-gray-250/10 pb-3 last:border-b-0 last:pb-0">
+                <div className="flex justify-between text-sm mb-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-gray-800">{line.item.name}</span>
+                    <span className="rounded-md bg-white px-2 py-0.5 text-xs font-bold text-gray-500 shadow-sm border border-gray-100">
+                      x{line.quantity}
+                    </span>
+                  </div>
+                  <span className="font-bold text-gray-700">
+                    {formatPrice(line.item.price * line.quantity)}
                   </span>
                 </div>
-                <span className="font-semibold text-gray-700">
-                  {formatPrice(line.item.price * line.quantity)}
-                </span>
+                <input
+                  type="text"
+                  placeholder="Note (e.g. no spicy, extra sauce)"
+                  value={line.comment || ""}
+                  onChange={(e) => updateComment(line.item.id, e.target.value)}
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-750 placeholder-gray-400 focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/20 transition-all"
+                />
               </li>
             ))}
           </ul>

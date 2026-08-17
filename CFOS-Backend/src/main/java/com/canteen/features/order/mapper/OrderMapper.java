@@ -55,6 +55,7 @@ public class OrderMapper {
         dto.setQuantity(item.getQuantity());
         dto.setSnapPrice(item.getSnapPrice());
         dto.setSubTotal(item.getSubTotal());
+        dto.setComment(item.getComment());
         return dto;
     }
 }

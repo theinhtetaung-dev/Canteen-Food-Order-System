@@ -38,6 +38,12 @@ public class UserController {
         });
     }
 
+    @PostMapping("/{id}/reset-password")
+    public ResponseEntity<Void> resetPassword(@PathVariable Integer id) {
+        userService.resetPassword(id);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResModel> getUserById(@PathVariable Integer id) {
         UserResModel response = userService.getUserById(id);
@@ -83,5 +89,14 @@ public class UserController {
         String username = (String) httpRequest.getAttribute("username");
         UpdateUserResModel response = userService.updateUserProfile(username, request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            @Valid @RequestBody com.canteen.features.auth.dtos.ChangePasswordReqModel request,
+            HttpServletRequest httpRequest) {
+        String username = (String) httpRequest.getAttribute("username");
+        userService.changePassword(username, request);
+        return ResponseEntity.ok().build();
     }
 }

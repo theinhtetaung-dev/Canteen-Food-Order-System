@@ -99,6 +99,23 @@ export async function createKitchenAdmin(payload: {
   });
 }
 
+export async function createProfessor(payload: {
+  username: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+}): Promise<void> {
+  await api.post("/api/users", {
+    userName: payload.username,
+    fullName: payload.fullName,
+    email: payload.email,
+    password: "1234567890a",
+    phoneNumber: payload.phone,
+    roleName: "User",
+  });
+}
+
+
 export async function resetUserPassword(userId: string): Promise<void> {
   // Typical endpoint for password reset by admin
   await api.post(`/api/users/${userId}/reset-password`);

@@ -85,6 +85,7 @@ public class OrderService {
                 orderItem.setFood(food);
                 orderItem.setQuantity(itemRequest.getQuantity());
                 orderItem.setSnapPrice(food.getPrice());
+                orderItem.setComment(itemRequest.getComment());
 
                 // Calculate subtotal
                 BigDecimal subTotal = orderItem.getSnapPrice().multiply(new BigDecimal(orderItem.getQuantity()));

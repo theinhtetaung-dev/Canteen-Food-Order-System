@@ -17,6 +17,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case "ADD": {
       const quantity = (state.quantities[action.id] ?? 0) + 1;
       return {
+        ...state,
         quantities: { ...state.quantities, [action.id]: quantity },
         isOpen: true,
       };
@@ -24,9 +25,11 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case "REMOVE": {
       const current = state.quantities[action.id] ?? 0;
       if (current <= 1) {
-        const next = { ...state.quantities };
-        delete next[action.id];
-        return { ...state, quantities: next };
+        const nextQuantities = { ...state.quantities };
+        delete nextQuantities[action.id];
+        const nextComments = { ...state.comments };
+        delete nextComments[action.id];
+        return { ...state, quantities: nextQuantities, comments: nextComments };
       }
       return {
         ...state,
@@ -34,12 +37,20 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       };
     }
     case "DELETE": {
-      const next = { ...state.quantities };
-      delete next[action.id];
-      return { ...state, quantities: next };
+      const nextQuantities = { ...state.quantities };
+      delete nextQuantities[action.id];
+      const nextComments = { ...state.comments };
+      delete nextComments[action.id];
+      return { ...state, quantities: nextQuantities, comments: nextComments };
+    }
+    case "UPDATE_COMMENT": {
+      return {
+        ...state,
+        comments: { ...state.comments, [action.id]: action.comment },
+      };
     }
     case "CLEAR":
-      return { quantities: {}, isOpen: false };
+      return { quantities: {}, comments: {}, isOpen: false };
     case "SET_OPEN":
       return { ...state, isOpen: action.open };
     default:
@@ -54,6 +65,7 @@ interface CartContextValue {
   addToCart: (id: number) => void;
   removeFromCart: (id: number) => void;
   deleteFromCart: (id: number) => void;
+  updateComment: (id: number, comment: string) => void;
   clearCart: () => void;
   isOpen: boolean;
   openCart: () => void;
@@ -65,6 +77,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, {
     quantities: {},
+    comments: {},
     isOpen: false,
   });
 
@@ -88,10 +101,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return Object.entries(state.quantities)
       .map(([id, quantity]) => {
         const item = menuById.get(Number(id));
-        return item ? { item, quantity } : null;
+        const comment = state.comments?.[Number(id)] || "";
+        return item ? { item, quantity, comment } : null;
       })
       .filter((line): line is CartLine => line !== null);
-  }, [state.quantities, menuById]);
+  }, [state.quantities, state.comments, menuById]);
 
   const totalItems = useMemo(
     () => lines.reduce((sum, line) => sum + line.quantity, 0),
@@ -127,6 +141,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "SET_OPEN", open: false });
   }, []);
 
+  const updateComment = useCallback((id: number, comment: string) => {
+    dispatch({ type: "UPDATE_COMMENT", id, comment });
+  }, []);
+
   const value = useMemo<CartContextValue>(
     () => ({
       lines,
@@ -135,6 +153,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       addToCart,
       removeFromCart,
       deleteFromCart,
+      updateComment,
       clearCart,
       isOpen: state.isOpen,
       openCart,
@@ -147,6 +166,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       addToCart,
       removeFromCart,
       deleteFromCart,
+      updateComment,
       clearCart,
       state.isOpen,
       openCart,

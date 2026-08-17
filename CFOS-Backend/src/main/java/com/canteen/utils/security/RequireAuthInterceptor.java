@@ -29,6 +29,11 @@ public class RequireAuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        // Allow guest to view reviews (GET /api/reviews)
+        if (request.getRequestURI().startsWith("/api/reviews") && "GET".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
         Object isAuthenticated = request.getAttribute("isAuthenticated");
         if (isAuthenticated != null && (Boolean) isAuthenticated) {
             return true;

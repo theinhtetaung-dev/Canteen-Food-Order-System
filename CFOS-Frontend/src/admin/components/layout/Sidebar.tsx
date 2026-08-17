@@ -13,12 +13,15 @@ import {
 } from "lucide-react";
 import { useAuth } from "@user/hooks/useAuth";
 import { fetchAllUsers } from "@user/api/user.api";
+import { fetchAllOrders } from "@user/api/order.api";
 
 import brandLogo from "../../../assets/logo.png";
 
 export function Sidebar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [userCanteenId, setUserCanteenId] = useState<number | null>(null);
+  const [newOrdersCount, setNewOrdersCount] = useState(0);
   const [profile, setProfile] = useState(() => {
     const saved = localStorage.getItem("campus_bites_profile");
     if (saved) {
@@ -80,6 +83,9 @@ export function Sidebar() {
           setDbRole(found.roleName.toLowerCase() === 'superadmin' || found.roleName.toLowerCase() === 'admin'
             ? 'Super Admin' 
             : (found.roleName.toLowerCase() === 'manager' ? 'Canteen Manager' : 'Student'));
+          if (found.canteenId) {
+            setUserCanteenId(found.canteenId);
+          }
         }
       } catch (err) {
         console.error(err);
@@ -87,6 +93,59 @@ export function Sidebar() {
     }
     loadDbUser();
   }, [user]);
+
+  async function loadPendingOrdersCount(canteenId: number | null) {
+    try {
+      const data = await fetchAllOrders();
+      const saved = localStorage.getItem("campus_bites_watched_orders");
+      let watchedIds: string[] = [];
+      if (saved) {
+        try {
+          watchedIds = JSON.parse(saved);
+        } catch (e) {}
+      }
+
+      const pending = data.filter((o) => {
+        const isPending = o.status === "pending";
+        const matchesCanteen = canteenId === null || o.canteenId === canteenId;
+        
+        const stringId = String(o.id);
+        const prefixedId = stringId.startsWith("ORD-") ? stringId : `ORD-${stringId}`;
+        const isNotWatched = !watchedIds.includes(stringId) && !watchedIds.includes(prefixedId);
+
+        return isPending && matchesCanteen && isNotWatched;
+      });
+      setNewOrdersCount(pending.length);
+    } catch (error) {
+      console.error("Failed to load pending orders count:", error);
+    }
+  }
+
+  useEffect(() => {
+    loadPendingOrdersCount(userCanteenId);
+
+    const token = localStorage.getItem("canteen_token");
+    if (!token) return;
+
+    const apiBaseUrl = import.meta.env.VITE_API_URL || "";
+    const eventSource = new EventSource(`${apiBaseUrl}/api/orders/stream?token=${token}`);
+
+    const handleNewOrder = () => {
+      loadPendingOrdersCount(userCanteenId);
+    };
+
+    eventSource.addEventListener("new-order", handleNewOrder);
+    window.addEventListener("canteen-orders-updated", handleNewOrder);
+
+    eventSource.onerror = () => {
+      eventSource.close();
+    };
+
+    return () => {
+      eventSource.close();
+      window.removeEventListener("canteen-orders-updated", handleNewOrder);
+    };
+  }, [userCanteenId]);
 
   const navItems = [
     { label: "Dashboard", path: "/", icon: LayoutDashboard },
@@ -103,6 +162,18 @@ export function Sidebar() {
 
   const displayName = dbName || user?.name || user?.rollNumber || profile.fullName || "Canteen Manager";
   const displayRole = dbRole || (user?.role === 'superadmin' ? 'Super Admin' : (user?.role === 'admin' || user?.role === 'manager' ? 'Canteen Manager' : 'Student'));
+
+  function getInitials(name?: string, fallback = "U"): string {
+    if (!name) return fallback;
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  }
+
+  const initials = getInitials(displayName, user?.rollNumber?.slice(0, 2).toUpperCase() ?? "U");
 
   return (
     <aside className="w-64 bg-[#f4f7ec] border-r border-[#e2e8d5] flex flex-col justify-between p-6 shrink-0 h-screen sticky top-0 font-sans">
@@ -132,35 +203,42 @@ export function Sidebar() {
                 to={item.path}
                 end={item.path === "/"}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${
+                  `flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all ${
                     isActive
                       ? "bg-[#e2f0c2] text-[#284208] shadow-sm"
                       : "text-gray-600 hover:bg-[#ebf3d8] hover:text-gray-900"
                   }`
                 }
               >
-                <Icon className="w-4 h-4 stroke-[2.2]" />
-                <span>{item.label}</span>
+                <div className="flex items-center gap-3">
+                  <Icon className="w-4 h-4 stroke-[2.2]" />
+                  <span>{item.label}</span>
+                </div>
+                {item.label === "Orders Management" && newOrdersCount > 0 && (
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-black text-white">
+                    {newOrdersCount}
+                  </span>
+                )}
               </NavLink>
             );
           })}
         </nav>
       </div>
 
-      {/* Admin Profile Footer */}
-      <div className="pt-4 border-t border-[#dce5c7] flex flex-col gap-3">
+      {/* Unified Profile Footer */}
+      <div className="pt-4 border-t border-[#dce5c7] flex flex-col gap-3 w-full shrink-0">
         <NavLink
           to="/profile"
           className={({ isActive }) =>
             `flex items-center gap-3 rounded-xl p-2 transition-colors ${
-              isActive ? "bg-[#e2f0c2]/60" : "hover:bg-[#ebf3d8]/60"
+              isActive ? "bg-[#e2f0c2]" : "hover:bg-[#ebf3d8]/60"
             }`
           }
         >
-          <div className="w-10 h-10 rounded-full bg-[#dbebba] border-2 border-white flex items-center justify-center shrink-0 shadow-sm">
-            <User className="w-5 h-5 text-[#3f5d13]" strokeWidth={2.5} />
+          <div className="w-10 h-10 rounded-full bg-[#E1EEB4] flex items-center justify-center text-[#3B5B11] border-2 border-[#88C425] shrink-0 text-xs font-black select-none shadow-sm">
+            {initials}
           </div>
-          <div className="leading-tight overflow-hidden">
+          <div className="leading-tight overflow-hidden flex-1">
             <h4 className="text-xs font-black text-gray-900 truncate">
               {displayName}
             </h4>

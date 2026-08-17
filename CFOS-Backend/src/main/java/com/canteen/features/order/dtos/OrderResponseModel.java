@@ -25,5 +25,6 @@ public class OrderResponseModel {
         private Integer quantity;
         private BigDecimal snapPrice;
         private BigDecimal subTotal;
+        private String comment;
     }
 }

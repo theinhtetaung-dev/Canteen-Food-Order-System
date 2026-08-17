@@ -53,9 +53,6 @@ export function FoodCard({
           >
             {item.name}
           </button>
-          <span className="shrink-0 rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-bold text-amber-700 border border-amber-100">
-            ★ {item.rating}
-          </span>
         </div>
 
         <p className="mt-2 line-clamp-2 text-xs text-gray-500 min-h-[2rem] leading-relaxed">

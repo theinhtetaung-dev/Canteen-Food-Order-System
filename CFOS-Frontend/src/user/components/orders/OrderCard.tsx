@@ -33,6 +33,11 @@ export function OrderCard({ order }: OrderCardProps) {
               <p className="text-gray-500">
                 {item.quantity} × {formatPrice(item.price)}
               </p>
+              {item.comment && (
+                <p className="text-xs text-brand italic mt-0.5">
+                  Comment: {item.comment}
+                </p>
+              )}
             </div>
           </div>
         ))}

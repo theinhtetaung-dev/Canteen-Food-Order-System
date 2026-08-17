@@ -83,3 +83,15 @@ export async function updateUserProfile(
   writeStorage(SESSION_KEY, updated);
   return updated;
 }
+
+export async function changePassword(payload: any): Promise<void> {
+  const sessionUser = getSessionUser();
+  if (!sessionUser) {
+    throw new Error("User not logged in");
+  }
+
+  await api.post("/api/users/change-password", {
+    currentPassword: payload.currentPassword,
+    newPassword: payload.newPassword,
+  });
+}

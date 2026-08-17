@@ -120,7 +120,7 @@ export default function Pos() {
     setIsCheckingOut(true);
     try {
       const payload = {
-        orderItems: lines.map(c => ({ foodId: c.item.id, quantity: c.quantity }))
+        orderItems: lines.map(c => ({ foodId: c.item.id, quantity: c.quantity, comment: "" }))
       };
       const res = await api.post("/api/orders", payload);
       setConfirmedOrder({ ...res.data, lines: [...lines], total: totalPrice });

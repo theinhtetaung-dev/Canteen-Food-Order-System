@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { fetchAllOrders, updateOrderStatus } from "@user/api/order.api";
-import { List, RefreshCw, ChevronLeft, ChevronRight, Eye, X } from "lucide-react";
+import { List, RefreshCw, ChevronLeft, ChevronRight, Eye, X, LayoutGrid } from "lucide-react";
 import { useAuth } from "@user/hooks/useAuth";
 import { fetchAllUsers } from "@user/api/user.api";
 
@@ -26,6 +26,11 @@ export function OrderLists() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filterBox, setFilterBox] = useState<"ALL" | "ACTIVE" | "PREPARING" | "COMPLETED">("ALL");
+  const [viewStyle, setViewStyle] = useState<"card" | "table">("table");
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterBox]);
 
   useEffect(() => {
     async function loadDbUser() {
@@ -42,6 +47,25 @@ export function OrderLists() {
     }
     loadDbUser();
   }, [user]);
+
+  useEffect(() => {
+    const userCanteenPendingIds = orders
+      .filter((o) => o.status === "Pending" && (userCanteenId === null || o.canteenId === userCanteenId))
+      .map((o) => o.id);
+
+    if (userCanteenPendingIds.length > 0) {
+      const saved = localStorage.getItem("campus_bites_watched_orders");
+      let watchedList: string[] = [];
+      if (saved) {
+        try {
+          watchedList = JSON.parse(saved);
+        } catch (e) {}
+      }
+      const updated = Array.from(new Set([...watchedList, ...userCanteenPendingIds]));
+      localStorage.setItem("campus_bites_watched_orders", JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent("canteen-orders-updated"));
+    }
+  }, [orders, userCanteenId]);
 
   async function loadOrders() {
     try {
@@ -99,6 +123,7 @@ export function OrderLists() {
               name: i.foodName,
               price: Number(i.snapPrice),
               quantity: i.quantity,
+              comment: i.comment,
               image: i.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000"
             }))
           : (d.items || []);
@@ -353,63 +378,189 @@ export function OrderLists() {
       {/* Active Queue Card */}
       <div className="bg-[#fcfdfa] rounded-[22px] border border-[#b8c5a4] shadow-sm overflow-visible">
         {/* Header Controls */}
-        <div className="p-5 px-7 flex items-center justify-between">
+        <div className="p-5 px-7 flex items-center justify-between border-b border-[#e2e7d8]/60">
           <h2 className="text-xl font-extrabold text-[#111111] tracking-tight">
             Active Queue
           </h2>
-          <button
-            type="button"
-            onClick={loadOrders}
-            className="flex items-center gap-2 px-5 py-2 bg-black text-white rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors shadow-sm"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Refresh</span>
-          </button>
+          <div className="flex items-center gap-3">
+            {/* View Toggle */}
+            <div className="flex bg-[#eaeaea]/60 rounded-xl p-1 border border-gray-200">
+              <button
+                type="button"
+                onClick={() => setViewStyle("table")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  viewStyle === "table" ? "bg-white text-black shadow-sm" : "text-gray-500 hover:text-gray-800"
+                }`}
+              >
+                <List className="h-3.5 w-3.5" /> Table
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewStyle("card")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  viewStyle === "card" ? "bg-white text-black shadow-sm" : "text-gray-500 hover:text-gray-800"
+                }`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" /> Card
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={loadOrders}
+              className="flex items-center gap-2 px-5 py-2 bg-black text-white rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors shadow-sm cursor-pointer"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Refresh</span>
+            </button>
+          </div>
         </div>
 
-        {/* Table Container */}
-        <div className="overflow-visible">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-[#b9c2a8] text-[11px] font-extrabold text-[#2a2e23] uppercase tracking-wider">
-                <th className="py-3.5 px-7 w-16">NO</th>
-                <th className="py-3.5 px-7">STUDENT ID</th>
-                <th className="py-3.5 px-6">TOTAL AMOUNT</th>
-                <th className="py-3.5 px-6 text-center">STATUS</th>
-                <th className="py-3.5 px-7 text-center">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#e2e7d8] text-xs font-semibold text-[#3d4235]">
-              {visibleOrders.map((order, idx) => {
-                const globalIndex = filteredOrders.length >= 10
-                  ? (currentPage - 1) * ORDERS_PER_PAGE + idx + 1
-                  : idx + 1;
-                return (
-                  <tr
-                    key={order.id}
-                    className="hover:bg-[#f6f8f0] transition-colors"
-                  >
-                    <td className="py-4 px-7 font-bold text-gray-500 font-mono text-[11px]">
-                      {globalIndex}
-                    </td>
-                    <td className="py-4 px-7 font-medium text-gray-700">
-                      {order.studentId}
-                    </td>
-                    <td className="py-4 px-6 font-bold text-[#111111]">
-                      {order.totalAmount.toLocaleString()} MMK
-                    </td>
-                    <td className="py-4 px-6 text-center">
-                      {renderStatusBadge(order.status)}
-                    </td>
-                    <td className="py-4 px-7 text-center">
-                      {renderActionButton(order)}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        {/* Conditional Rendering of Views */}
+        {viewStyle === "table" ? (
+          /* Table Container */
+          <div className="overflow-visible">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#b9c2a8] text-[11px] font-extrabold text-[#2a2e23] uppercase tracking-wider">
+                  <th className="py-3.5 px-7 w-16">NO</th>
+                  <th className="py-3.5 px-7">STUDENT ID</th>
+                  <th className="py-3.5 px-6">TOTAL AMOUNT</th>
+                  <th className="py-3.5 px-6 text-center">STATUS</th>
+                  <th className="py-3.5 px-7 text-center">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#e2e7d8] text-xs font-semibold text-[#3d4235]">
+                {visibleOrders.map((order, idx) => {
+                  const globalIndex = filteredOrders.length >= 10
+                    ? (currentPage - 1) * ORDERS_PER_PAGE + idx + 1
+                    : idx + 1;
+                  return (
+                    <tr
+                      key={order.id}
+                      className="hover:bg-[#f6f8f0] transition-colors"
+                    >
+                      <td className="py-4 px-7 font-bold text-gray-500 font-mono text-[11px]">
+                        {globalIndex}
+                      </td>
+                      <td className="py-4 px-7 font-medium text-gray-700">
+                        <div>
+                          <span>{order.studentId}</span>
+                          {order.status === "Preparing" && (
+                            <div className="mt-2.5 rounded-xl border border-blue-200 bg-blue-50/40 p-3 space-y-1.5 max-w-xs text-left">
+                              <span className="text-[9px] font-black tracking-wider text-blue-700 uppercase block">
+                                🍳 Kitchen Prep Details
+                              </span>
+                              <div className="space-y-1.5">
+                                {order.rawItems.map((item: any, i: number) => (
+                                  <div key={i} className="flex flex-col text-[11px] font-semibold text-gray-800">
+                                    <span>{item.quantity}x {item.name}</span>
+                                    {item.comment && (
+                                      <span className="text-red-650 text-[9px] font-extrabold bg-red-50 border border-red-100/50 px-1 py-0.5 rounded w-fit mt-0.5">
+                                        {item.comment}
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 font-bold text-[#111111]">
+                        {order.totalAmount.toLocaleString()} MMK
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        {renderStatusBadge(order.status)}
+                      </td>
+                      <td className="py-4 px-7 text-center">
+                        {renderActionButton(order)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          /* Card Grid Container */
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-7">
+            {visibleOrders.map((order, idx) => {
+              const globalIndex = filteredOrders.length >= 10
+                ? (currentPage - 1) * ORDERS_PER_PAGE + idx + 1
+                : idx + 1;
+              return (
+                <div
+                  key={order.id}
+                  className={`rounded-2xl border p-6 bg-white shadow-sm flex flex-col justify-between transition-all hover:shadow-md ${
+                    order.status === "Preparing"
+                      ? "border-blue-200 bg-blue-50/10"
+                      : "border-gray-200"
+                  }`}
+                >
+                  <div className="space-y-4">
+                    {/* Card Header */}
+                    <div className="flex items-start justify-between border-b border-gray-100 pb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-400 font-mono">#{globalIndex}</span>
+                          <span className="text-sm font-black text-gray-800">{order.studentId}</span>
+                        </div>
+                        <span className="text-[10px] font-semibold text-gray-400 mt-0.5 block">
+                          Pickup: {order.pickupTime}
+                        </span>
+                      </div>
+                      <div className="flex flex-col items-end gap-1.5">
+                        {renderStatusBadge(order.status)}
+                        <span className="text-sm font-black text-gray-900">
+                          {order.totalAmount.toLocaleString()} MMK
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Order Items List (Simple representation for non-preparing) */}
+                    {order.status !== "Preparing" && (
+                      <div className="text-xs text-gray-500 font-medium leading-relaxed">
+                        <span className="font-bold text-gray-400 block mb-1">Items:</span>
+                        {order.items}
+                      </div>
+                    )}
+
+                    {/* Preparing detail box: what is need to cook */}
+                    {order.status === "Preparing" && (
+                      <div className="rounded-xl border border-blue-200 bg-blue-50/35 p-4 space-y-2.5">
+                        <span className="text-[10px] font-extrabold tracking-wider text-blue-700 uppercase block text-left">
+                          🍳 KITCHEN COOK LIST
+                        </span>
+                        <div className="space-y-2 text-left">
+                          {order.rawItems.map((item: any, i: number) => (
+                            <div key={i} className="flex justify-between items-start text-xs font-semibold">
+                              <div className="flex flex-col">
+                                <span className="text-gray-800 font-bold">
+                                  {item.quantity}x {item.name}
+                                </span>
+                                {item.comment && (
+                                  <span className="text-red-655 text-[10px] font-extrabold mt-0.5 bg-red-50 px-1.5 py-0.5 rounded border border-red-100/50 w-fit">
+                                    Note: {item.comment}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions footer */}
+                  <div className="flex items-center justify-end gap-3 mt-5 pt-3 border-t border-gray-100">
+                    {renderActionButton(order)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Pagination Footer */}
         {boxFilteredOrders.length >= 10 && (
@@ -491,6 +642,9 @@ export function OrderLists() {
                         <div className="flex flex-col">
                           <span className="text-gray-700 font-bold">{item.name}</span>
                           <span className="text-gray-500 text-xs font-semibold">{item.quantity} x {item.price} MMK</span>
+                          {item.comment && (
+                            <span className="text-red-600 text-[11px] font-bold mt-0.5">Comment: {item.comment}</span>
+                          )}
                         </div>
                       </div>
                       <span className="text-gray-900 font-bold">{((item.price || 0) * (item.quantity || 1)).toLocaleString()} MMK</span>

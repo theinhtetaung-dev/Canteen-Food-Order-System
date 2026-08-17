@@ -14,14 +14,21 @@ export default function OrdersPage() {
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [viewStyle, setViewStyle] = useState<"card" | "table">("table");
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
+  const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
 
-  const handleCancelOrder = async (orderId: string) => {
-    if (!window.confirm("Are you sure you want to cancel this order?")) return;
+  const handleCancelOrder = (orderId: string) => {
+    setCancelConfirmId(orderId);
+  };
+
+  const confirmCancelOrder = async () => {
+    if (!cancelConfirmId) return;
     try {
-      await cancelUserOrder(orderId);
+      await cancelUserOrder(cancelConfirmId);
       setDetailOrder(null);
     } catch (error) {
       console.error("Failed to cancel order:", error);
+    } finally {
+      setCancelConfirmId(null);
     }
   };
 
@@ -99,7 +106,6 @@ export default function OrdersPage() {
               <thead className="bg-gray-50 text-xs uppercase text-gray-700">
                 <tr>
                   <th scope="col" className="px-6 py-4 font-medium">No</th>
-                  <th scope="col" className="px-6 py-4 font-medium">Order ID</th>
                   <th scope="col" className="px-6 py-4 font-medium">Date</th>
                   <th scope="col" className="px-6 py-4 font-medium">Total Price</th>
                   <th scope="col" className="px-6 py-4 font-medium">Status</th>
@@ -110,7 +116,6 @@ export default function OrdersPage() {
                 {orders.map((order, index) => (
                   <tr key={order.id} className={`hover:bg-gray-50 transition-colors ${highlightId === order.id ? 'bg-brand-light/20' : ''}`}>
                     <td className="px-6 py-4 font-medium text-gray-900">{index + 1}</td>
-                    <td className="px-6 py-4 font-medium text-gray-900">{order.id}</td>
                     <td className="px-6 py-4">{formatDateTime(order.createdAt)}</td>
                     <td className="px-6 py-4 font-semibold text-brand-dark">{formatPrice(order.totalPrice)}</td>
                     <td className="px-6 py-4">
@@ -176,6 +181,11 @@ export default function OrdersPage() {
                     <p className="text-gray-500">
                       {item.quantity} × {formatPrice(item.price)}
                     </p>
+                    {item.comment && (
+                      <p className="text-xs text-brand italic mt-0.5">
+                        Comment: {item.comment}
+                      </p>
+                    )}
                   </div>
                   <div className="text-sm font-semibold text-gray-800">
                     {formatPrice(item.price * item.quantity)}
@@ -199,6 +209,47 @@ export default function OrdersPage() {
                 </Button>
               </div>
             )}
+          </div>
+        </>
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      {cancelConfirmId !== null && (
+        <>
+          <button
+            type="button"
+            className="fixed inset-0 z-[60] bg-gray-900/50 backdrop-blur-sm"
+            onClick={() => setCancelConfirmId(null)}
+            aria-label="Close cancel confirmation overlay"
+          />
+          <div className="fixed left-1/2 top-1/2 z-[60] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-2xl space-y-6">
+            <div className="flex items-center gap-2 text-gray-900 font-extrabold pb-3 border-b border-gray-100">
+              <X className="w-5 h-5 text-red-500" />
+              <h2 className="text-lg">Cancel Order</h2>
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-600 font-medium leading-relaxed">
+                Are you sure you want to cancel this order? This action cannot be undone.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setCancelConfirmId(null)}
+                className="bg-white border border-gray-200 text-gray-700 px-5 py-2 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors shadow-sm cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmCancelOrder}
+                className="bg-[#C5221F] text-white px-5 py-2 rounded-xl font-bold text-sm hover:bg-[#A81B18] transition-colors shadow-sm cursor-pointer"
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </>
       )}

@@ -200,10 +200,31 @@ public class UserService {
     }
 
     @Transactional
+    public void resetPassword(Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
+        user.setPasswordHash(passwordEncoder.encode("1234567890a"));
+        userRepository.save(user);
+    }
+
+    @Transactional
     public void deleteUser(Integer id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
         user.setDeleteFlag(true);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void changePassword(String username, com.canteen.features.auth.dtos.ChangePasswordReqModel request) {
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new IllegalArgumentException("Incorrect current password");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }
 }

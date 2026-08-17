@@ -6,7 +6,6 @@ const footerLinks = [
   { name: "Home", path: "/" },
   { name: "Menu", path: "/menu" },
   { name: "Reviews", path: "/reviews" },
-  { name: "Contact", path: "/contact" },
 ];
 
 export function Footer() {

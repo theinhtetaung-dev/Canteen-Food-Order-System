@@ -3,6 +3,7 @@ import { Layout } from '../components/layout/Layout';
 import { Dashboard } from '../pages/Dashboard';
 import { KitchenAdmins } from '../pages/KitchenAdmins';
 import { Users } from '../pages/Users';
+import { Professors } from '../pages/Professors';
 import { AdminProfile } from '../pages/AdminProfile';
 import { Branches } from '../pages/Branches';
 import { Permissions } from '../pages/Permissions';
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
       {
         path: 'users',
         element: <Users />,
+      },
+      {
+        path: 'professors',
+        element: <Professors />,
       },
       {
         path: 'branches',

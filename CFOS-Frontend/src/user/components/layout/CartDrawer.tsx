@@ -16,6 +16,7 @@ export function CartDrawer() {
     removeFromCart,
     addToCart,
     deleteFromCart,
+    updateComment,
     isOpen,
     closeCart,
     clearCart,
@@ -40,7 +41,7 @@ export function CartDrawer() {
         className={cn(
           "flex flex-col bg-white shadow-2xl transition-all duration-300",
           isMobile
-            ? "fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] rounded-t-3xl border-t border-gray-100"
+	    ? "fixed bottom-0 left-0 right-0 z-50 max-h-[85vh] rounded-t-3xl border-t border-gray-100"
             : "sticky top-0 z-40 h-screen shrink-0 border-l border-gray-100",
           isMobile
             ? (isOpen && isMenuPage)
@@ -91,6 +92,7 @@ export function CartDrawer() {
                     onAdd={addToCart}
                     onRemove={removeFromCart}
                     onDelete={deleteFromCart}
+                    onUpdateComment={updateComment}
                   />
                 ))}
               </ul>

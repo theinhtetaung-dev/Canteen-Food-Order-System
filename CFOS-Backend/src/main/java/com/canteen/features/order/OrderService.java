@@ -20,10 +20,16 @@ import com.canteen.repository.OrderRepository;
 import com.canteen.repository.UserRepository;
 import com.canteen.utils.OrderStatusValidator;
 import com.canteen.utils.PaginationValidator;
+import com.canteen.utils.exceptions.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Service
@@ -33,48 +39,79 @@ public class OrderService {
     private final UserRepository userRepository;
     private final FoodRepository foodRepository;
     private final OrderStatusValidator orderStatusValidator;
+    private final OrderSseService orderSseService;
 
     @Transactional
-    public OrderResponseModel createOrder(OrderRequestModel request) {
+    public OrderResponseModel createOrder(OrderRequestModel request, String username) {
+
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+
+        Set<Integer> foodIds = new HashSet<>();
+        if (request.getOrderItems() != null) {
+            for (var itemRequest : request.getOrderItems()) {
+                foodIds.add(itemRequest.getFoodId());
+            }
+        }
+
+        List<Food> fetchedFoods = foodRepository.findAllById(foodIds);
+
+        Map<Integer, Food> foodMap = new HashMap<>();
+        if (fetchedFoods != null) {
+            for (Food food : fetchedFoods) {
+                foodMap.put(food.getFoodId(), food);
+            }
+        }
+
         Order order = new Order();
         order.setOrderStatus(Status.PENDING);
-
-        User user = userRepository.findByUserName(request.getUserName())
-                .orElseThrow(() -> new RuntimeException("User not found: " + request.getUserName()));
         order.setUser(user);
+        order.setOrderItems(new ArrayList<>());
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        for (var itemRequest : request.getOrderItems()) {
-            Food food = foodRepository.findById(itemRequest.getFoodId())
-                    .orElseThrow(() -> new RuntimeException("Food not found: " + itemRequest.getFoodId()));
+        // Process order items in-memory without hitting the database again
+        if (request.getOrderItems() != null) {
+            for (var itemRequest : request.getOrderItems()) {
 
+                Food food = foodMap.get(itemRequest.getFoodId());
 
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setFood(food);
-            orderItem.setQuantity(itemRequest.getQuantity());
-            orderItem.setSnapPrice(food.getPrice());
+                if (food == null) {
+                    throw new ResourceNotFoundException("Food not found: " + itemRequest.getFoodId());
+                }
 
-            BigDecimal subTotal = orderItem.getSnapPrice().multiply(BigDecimal.valueOf(itemRequest.getQuantity()));
-            orderItem.setSubTotal(subTotal);
-            totalAmount = totalAmount.add(subTotal);
+                OrderItem orderItem = new OrderItem();
+                orderItem.setOrder(order);
+                orderItem.setFood(food);
+                orderItem.setQuantity(itemRequest.getQuantity());
+                orderItem.setSnapPrice(food.getPrice());
+                orderItem.setComment(itemRequest.getComment());
 
-            order.getOrderItems().add(orderItem);
+                // Calculate subtotal
+                BigDecimal subTotal = orderItem.getSnapPrice().multiply(new BigDecimal(orderItem.getQuantity()));
+                orderItem.setSubTotal(subTotal);
+
+                totalAmount = totalAmount.add(subTotal);
+
+                order.getOrderItems().add(orderItem);
+            }
         }
 
         order.setTotalAmount(totalAmount);
-        return OrderMapper.toDto(orderRepository.save(order));
+
+        OrderResponseModel response = OrderMapper.toDto(orderRepository.save(order));
+        orderSseService.broadcast(response);
+        return response;
     }
 
     public OrderResponseModel getOrderById(Integer id) {
         return orderRepository.findById(id)
                 .map(OrderMapper::toDto)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + id));
     }
 
     public Page<OrderResponseModel> getAllOrders(int page, int size, String sortBy, String direction) {
-        PaginationValidator.validate(page, size, sortBy, direction, 
+        PaginationValidator.validate(page, size, sortBy, direction,
                 Set.of("orderId", "totalAmount", "createdAt", "updatedAt", "orderStatus"));
 
         Sort sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -83,23 +120,34 @@ public class OrderService {
         return orderRepository.findAll(pageable).map(OrderMapper::toDto);
     }
 
-    @Transactional
-    public OrderResponseModel updateStatus(Integer id, String status) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + id));
-                
-        Status targetStatus = Status.valueOf(status.toUpperCase());
-        orderStatusValidator.validateTransition(order.getOrderStatus(), targetStatus);
-        
-        order.setOrderStatus(targetStatus);
-        return OrderMapper.toDto(orderRepository.save(order));
+    public Page<OrderResponseModel> getMyOrders(String username, int page, int size, String sortBy, String direction) {
+        PaginationValidator.validate(page, size, sortBy, direction,
+                Set.of("orderId", "totalAmount", "createdAt", "updatedAt", "orderStatus"));
+
+        Sort sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return orderRepository.findByUser_UserName(username, pageable).map(OrderMapper::toDto);
     }
 
     @Transactional
-    public void deleteOrder(Integer id) {
+    public OrderResponseModel updateStatus(Integer id, Status targetStatus) {
         Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + id));
-        order.setDeleteFlag(true);
-        orderRepository.save(order);
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + id));
+
+        orderStatusValidator.validateTransition(order.getOrderStatus(), targetStatus);
+
+        order.setOrderStatus(targetStatus);
+        OrderResponseModel response = OrderMapper.toDto(orderRepository.save(order));
+        orderSseService.broadcast(response);
+        return response;
     }
+
+    // @Transactional
+    // public void deleteOrder(Integer id) {
+    // Order order = orderRepository.findById(id)
+    // .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + id));
+    // order.setDeleteFlag(true);
+    // orderRepository.save(order);
+    // }
 }

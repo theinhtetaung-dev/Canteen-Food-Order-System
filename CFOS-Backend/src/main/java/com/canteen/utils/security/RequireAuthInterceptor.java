@@ -14,6 +14,26 @@ public class RequireAuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        // Allow guest to register (POST /api/users)
+        if ("/api/users".equals(request.getRequestURI()) && "POST".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
+        // Allow guest to browse menu (GET /api/foods/**)
+        if (request.getRequestURI().startsWith("/api/foods") && "GET".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
+        // Allow guest to fetch canteen list (GET /api/branches)
+        if (request.getRequestURI().startsWith("/api/branches") && "GET".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
+        // Allow guest to view reviews (GET /api/reviews)
+        if (request.getRequestURI().startsWith("/api/reviews") && "GET".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
         Object isAuthenticated = request.getAttribute("isAuthenticated");
         if (isAuthenticated != null && (Boolean) isAuthenticated) {
             return true;

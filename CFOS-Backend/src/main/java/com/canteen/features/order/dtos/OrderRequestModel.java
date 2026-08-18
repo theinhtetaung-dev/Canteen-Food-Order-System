@@ -2,15 +2,13 @@ package com.canteen.features.order.dtos;
 
 import lombok.Data;
 import java.util.List;
+
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 
 @Data
 public class OrderRequestModel {
-
-    @NotNull(message = "Username is required")
-    private String userName;
 
     @NotEmpty(message = "Order must have at least one item")
     private List<OrderItemRequestModel> orderItems;
@@ -22,7 +20,9 @@ public class OrderRequestModel {
         private Integer foodId;
 
         @NotNull(message = "Quantity is required")
-        @Positive(message = "Quantity must be positive")
+        @Min(value = 1, message = "Quantity must be at least 1")
         private Integer quantity;
+
+        private String comment;
     }
 }

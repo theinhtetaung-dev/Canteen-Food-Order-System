@@ -2,15 +2,15 @@ package com.canteen.features.auth.dtos;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class CreateUserReqModel {
-    @NotNull(message = "Role ID is required")
     private Integer roleId;
+    private String roleName;
 
     @NotBlank(message = "Username is required")
+    @jakarta.validation.constraints.Pattern(regexp = "^\\S+$", message = "Username cannot contain spaces")
     private String userName;
 
     @NotBlank(message = "Full name is required")
@@ -24,6 +24,6 @@ public class CreateUserReqModel {
 
     private String phoneNumber;
 
-    @NotBlank(message = "Status is required")
-    private String status;
+    // Optional: links the user to a canteen (used for Canteen Admin creation)
+    private Integer canteenId;
 }

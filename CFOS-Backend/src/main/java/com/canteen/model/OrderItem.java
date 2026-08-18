@@ -34,6 +34,9 @@ public class OrderItem {
     @Column(name = "SubTotal", nullable = false, precision = 10, scale = 2)
     private BigDecimal subTotal;
 
+    @Column(name = "Comment", length = 255)
+    private String comment;
+
     @Column(name = "CreatedAt", updatable = false)
     private LocalDateTime createdAt;
 

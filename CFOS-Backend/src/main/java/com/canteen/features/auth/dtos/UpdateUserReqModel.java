@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import com.canteen.model.UserStatus;
 
 @Data
 public class UpdateUserReqModel {
@@ -21,6 +22,6 @@ public class UpdateUserReqModel {
 
     private String phoneNumber;
 
-    @NotBlank(message = "Status is required")
-    private String status;
+    @NotNull(message = "Status is required")
+    private UserStatus status;
 }

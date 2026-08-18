@@ -10,16 +10,19 @@ public class OrderStatusValidator {
 
         switch (current) {
 
-            // Pending order can be completed or canceled
-            case PENDING -> allow(target, Status.COMPLETED, Status.CANCELED);
+            // Pending order can transition to PREPARING or CANCEL
+            case PENDING -> allow(target, Status.PREPARING, Status.CANCEL);
+
+            // Preparing order can transition to COMPLETE only
+            case PREPARING -> allow(target, Status.COMPLETE);
 
             // Completed order is final
-            case COMPLETED -> allow(target, Status.COMPLETED);
+            case COMPLETE -> allow(target, Status.COMPLETE);
 
             // Canceled order is final
-            case CANCELED -> allow(target, Status.CANCELED);
+            case CANCEL -> allow(target, Status.CANCEL);
 
-            default -> throw new RuntimeException("Invalid status change");
+            default -> throw new IllegalArgumentException("Invalid status change from " + current);
         }
     }
 
@@ -27,8 +30,8 @@ public class OrderStatusValidator {
         for (Status status : allowed) {
             if (status == target) return;
         }
-        throw new RuntimeException(
-            "Invalid status transition from " + target
+        throw new IllegalArgumentException(
+            "Invalid status transition to " + target
         );
     }
 }

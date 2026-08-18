@@ -7,16 +7,22 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.canteen.features.auth.dtos.CreateUserReqModel;
 import com.canteen.features.auth.dtos.CreateUserResModel;
+import com.canteen.features.auth.dtos.LoginReqModel;
+import com.canteen.features.auth.dtos.LoginResModel;
 import com.canteen.features.auth.dtos.UpdateUserReqModel;
 import com.canteen.features.auth.dtos.UpdateUserResModel;
+import com.canteen.features.auth.dtos.UpdateProfileReqModel;
 import com.canteen.features.auth.dtos.UserResModel;
 import com.canteen.features.auth.mapper.UserMapper;
+import com.canteen.model.Branch;
 import com.canteen.model.Role;
 import com.canteen.model.User;
+import com.canteen.model.UserStatus;
+import com.canteen.repository.BranchRepository;
 import com.canteen.repository.RoleRepository;
+import com.canteen.repository.RolePermissionRepository;
 import com.canteen.repository.UserRepository;
 import com.canteen.utils.JwtUtil;
 import com.canteen.utils.PaginationValidator;
@@ -32,6 +38,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final BranchRepository branchRepository;
+    private final RolePermissionRepository rolePermissionRepository;
     private final JwtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -44,25 +52,41 @@ public class UserService {
             throw new DuplicateResourceException("Email already exists: " + request.getEmail());
         }
 
-        Role role = roleRepository.findById(request.getRoleId())
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + request.getRoleId()));
+        Role role;
+        if (request.getRoleId() != null) {
+            role = roleRepository.findById(request.getRoleId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + request.getRoleId()));
+        } else if (request.getRoleName() != null) {
+            role = roleRepository.findByRoleName(request.getRoleName())
+                    .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + request.getRoleName()));
+        } else {
+            role = roleRepository.findByRoleName("User")
+                    .orElseThrow(() -> new ResourceNotFoundException("Default 'User' role not found"));
+        }
 
         User user = UserMapper.toEntity(request);
         user.setRole(role);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
 
+        // Link canteen if canteenId is provided (for Canteen Admin creation)
+        if (request.getCanteenId() != null) {
+            Branch canteen = branchRepository.findById(request.getCanteenId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Canteen not found: " + request.getCanteenId()));
+            user.setCanteen(canteen);
+        }
+
         userRepository.save(user);
 
         CreateUserResModel response = new CreateUserResModel();
-        response.setUserId(user.getUserId());
         response.setUserName(user.getUserName());
+        response.setFullName(user.getFullName());
         response.setMessage("User created successfully");
 
         return response;
     }
 
     @Transactional(readOnly = true)
-    public com.canteen.features.auth.dtos.LoginResModel login(com.canteen.features.auth.dtos.LoginReqModel request) {
+    public LoginResModel login(LoginReqModel request) {
         User user = userRepository.findByUserName(request.getUserName())
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid username or password"));
 
@@ -74,12 +98,24 @@ public class UserService {
             throw new ResourceNotFoundException("Account is disabled");
         }
 
-        String roleName = user.getRole() != null ? user.getRole().getRoleName() : "USER";
-        String token = jwtUtil.generateToken(user.getUserName(), user.getUserId(), roleName);
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new ResourceNotFoundException("Account is inactive");
+        }
 
-        com.canteen.features.auth.dtos.LoginResModel response = new com.canteen.features.auth.dtos.LoginResModel();
+        String roleName = user.getRole() != null ? user.getRole().getRoleName() : "USER";
+        
+        java.util.List<String> permissions = new java.util.ArrayList<>();
+        if (user.getRole() != null) {
+            permissions = rolePermissionRepository.findByRole_RoleId(user.getRole().getRoleId())
+                .stream()
+                .map(rp -> rp.getPermission().getMenuName() + "_" + rp.getPermission().getActionName())
+                .toList();
+        }
+
+        String token = jwtUtil.generateToken(user.getUserName(), roleName, permissions);
+
+        LoginResModel response = new LoginResModel();
         response.setToken(token);
-        response.setUserId(user.getUserId());
         response.setUserName(user.getUserName());
         response.setRole(roleName);
 
@@ -133,11 +169,62 @@ public class UserService {
         return response;
     }
 
+    @Transactional(readOnly = true)
+    public UserResModel getUserProfile(String username) {
+        return userRepository.findByUserName(username)
+                .map(UserMapper::toDto)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+    }
+
+    @Transactional
+    public UpdateUserResModel updateUserProfile(String username, UpdateProfileReqModel request) {
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException("Email already exists: " + request.getEmail());
+        }
+
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
+        user.setPhoneNumber(request.getPhoneNumber());
+
+        userRepository.save(user);
+
+        UpdateUserResModel response = new UpdateUserResModel();
+        response.setUserId(user.getUserId());
+        response.setUserName(user.getUserName());
+        response.setMessage("Profile updated successfully");
+
+        return response;
+    }
+
+    @Transactional
+    public void resetPassword(Integer id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
+        user.setPasswordHash(passwordEncoder.encode("1234567890a"));
+        userRepository.save(user);
+    }
+
     @Transactional
     public void deleteUser(Integer id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
         user.setDeleteFlag(true);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void changePassword(String username, com.canteen.features.auth.dtos.ChangePasswordReqModel request) {
+        User user = userRepository.findByUserName(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new IllegalArgumentException("Incorrect current password");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }
 }

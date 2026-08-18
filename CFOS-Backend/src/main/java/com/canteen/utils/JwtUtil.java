@@ -2,13 +2,13 @@ package com.canteen.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
 
 @Component
@@ -20,37 +20,38 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expirationMs;
 
-    private Key getSigningKey() {
+    private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(String username, Integer userId, String role) {
+    public String generateToken(String username, String role, List<String> permissions) {
         return Jwts.builder()
-                .setSubject(username)
-                .claim("userId", userId)
+                .subject(username)
                 .claim("role", role)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .claim("permissions", permissions)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + expirationMs))
+                .signWith(getSigningKey())
                 .compact();
     }
 
     public Claims extractAllClaims(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody();
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        return extractClaim(token, claims -> claims.getSubject());
     }
 
-    public Integer extractUserId(String token) {
-        return extractAllClaims(token).get("userId", Integer.class);
+    @SuppressWarnings("unchecked")
+    public List<String> extractPermissions(String token) {
+        return (List<String>) extractAllClaims(token).get("permissions");
     }
-    
+
     public String extractRole(String token) {
         return extractAllClaims(token).get("role", String.class);
     }
@@ -69,6 +70,6 @@ public class JwtUtil {
     }
 
     private boolean isTokenExpired(String token) {
-        return extractClaim(token, Claims::getExpiration).before(new Date());
+        return extractClaim(token, claims -> claims.getExpiration()).before(new Date());
     }
 }

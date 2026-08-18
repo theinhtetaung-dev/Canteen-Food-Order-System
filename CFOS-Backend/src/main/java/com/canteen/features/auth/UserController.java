@@ -9,8 +9,10 @@ import com.canteen.features.auth.dtos.CreateUserReqModel;
 import com.canteen.features.auth.dtos.CreateUserResModel;
 import com.canteen.features.auth.dtos.UpdateUserReqModel;
 import com.canteen.features.auth.dtos.UpdateUserResModel;
+import com.canteen.features.auth.dtos.UpdateProfileReqModel;
 import com.canteen.features.auth.dtos.UserResModel;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -22,9 +24,24 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
-    public ResponseEntity<CreateUserResModel> createUser(@Valid @RequestBody CreateUserReqModel request) {
-        CreateUserResModel response = userService.createUser(request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    public java.util.concurrent.CompletableFuture<ResponseEntity<CreateUserResModel>> createUser(@Valid @RequestBody CreateUserReqModel request) {
+        return java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+            try {
+                CreateUserResModel response = userService.createUser(request);
+                return new ResponseEntity<>(response, HttpStatus.CREATED);
+            } catch (Exception e) {
+                if (e instanceof RuntimeException) {
+                    throw (RuntimeException) e;
+                }
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @PostMapping("/{id}/reset-password")
+    public ResponseEntity<Void> resetPassword(@PathVariable Integer id) {
+        userService.resetPassword(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/{id}")
@@ -56,5 +73,30 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResModel> getMyProfile(HttpServletRequest httpRequest) {
+        String username = (String) httpRequest.getAttribute("username");
+        UserResModel response = userService.getUserProfile(username);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<UpdateUserResModel> updateMyProfile(
+            @Valid @RequestBody UpdateProfileReqModel request,
+            HttpServletRequest httpRequest) {
+        String username = (String) httpRequest.getAttribute("username");
+        UpdateUserResModel response = userService.updateUserProfile(username, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(
+            @Valid @RequestBody com.canteen.features.auth.dtos.ChangePasswordReqModel request,
+            HttpServletRequest httpRequest) {
+        String username = (String) httpRequest.getAttribute("username");
+        userService.changePassword(username, request);
+        return ResponseEntity.ok().build();
     }
 }

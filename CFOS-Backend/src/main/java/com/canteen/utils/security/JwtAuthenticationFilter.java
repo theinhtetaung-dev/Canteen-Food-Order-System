@@ -21,23 +21,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+        String jwt = null;
         final String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            jwt = authHeader.substring(7);
+        } else {
+            jwt = request.getParameter("token");
+        }
+
+        if (jwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        final String jwt = authHeader.substring(7);
-
         try {
             if (jwtUtil.isTokenValid(jwt)) {
                 String username = jwtUtil.extractUsername(jwt);
-                Integer userId = jwtUtil.extractUserId(jwt);
+                java.util.List<String> permissions = jwtUtil.extractPermissions(jwt);
                 String role = jwtUtil.extractRole(jwt);
 
                 request.setAttribute("username", username);
-                request.setAttribute("userId", userId);
+                request.setAttribute("permissions", permissions);
                 request.setAttribute("role", role);
                 request.setAttribute("isAuthenticated", true);
             }

@@ -26,6 +26,10 @@ public class FoodCategory {
     @JoinColumn(name = "CreatedBy", nullable = false)
     private User createdBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "BranchID")
+    private Branch branch;
+
     @Column(name = "DeleteFlag")
     private Boolean deleteFlag = false;
 

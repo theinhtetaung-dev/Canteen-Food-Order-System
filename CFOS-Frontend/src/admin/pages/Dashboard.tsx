@@ -19,13 +19,18 @@ import {
   XAxis, 
   YAxis, 
   CartesianGrid, 
-  Tooltip 
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
 } from "recharts";
 import { fetchBranches } from "@user/api/branch.api";
 import { useAuth } from "@user/hooks/useAuth";
 import { fetchAllUsers } from "@user/api/user.api";
 import { fetchAllOrders, updateOrderStatus } from "@user/api/order.api";
 import { fetchMenuItems } from "@user/api/menu.api";
+import { fetchReport } from "@user/api/report.api";
 
 // --- Database Schema Alignment Interfaces ---
 interface Tbl_User {
@@ -49,6 +54,8 @@ interface Tbl_Order {
   itemsSummary: string; // e.g. "Chicken Fried Rice x2, Soda x1"
   PaymentMethod: string;
   PaymentStatus: 'PAID' | 'UNPAID';
+  items?: any[];
+  RawDate?: Date;
 }
 
 interface Tbl_Food {
@@ -205,6 +212,8 @@ const topSellingFoods = {
   ]
 };
 
+const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#f97316", "#06b6d4", "#ec4899"];
+
 export const Dashboard = () => {
   const { user } = useAuth();
   const [dbName, setDbName] = useState("");
@@ -240,7 +249,9 @@ export const Dashboard = () => {
         ? apiOrder.items.map((it: any) => `${it.name} x${it.quantity}`).join(", ")
         : "No items",
       PaymentMethod: "Cash",
-      PaymentStatus: (apiOrder.status === "completed" || apiOrder.status === "ready") ? "PAID" : "UNPAID"
+      PaymentStatus: (apiOrder.status === "completed" || apiOrder.status === "ready") ? "PAID" : "UNPAID",
+      items: apiOrder.items || [],
+      RawDate: apiOrder.createdAt ? new Date(apiOrder.createdAt) : new Date()
     };
   };
 
@@ -251,9 +262,9 @@ export const Dashboard = () => {
       setRawApiOrders(apiOrders);
       setOrders(apiOrders.map(mapToTblOrder));
 
-      const reportRes = await api.get("/api/reports");
-      if (reportRes.data && reportRes.data.foodSales) {
-        setBackendTopFoods(reportRes.data.foodSales);
+      const reportRes = await fetchReport("daily");
+      if (reportRes && reportRes.foodSales) {
+        setBackendTopFoods(reportRes.foodSales);
       }
     } catch (err) {
       console.error("Failed to load orders in dashboard", err);
@@ -303,12 +314,48 @@ export const Dashboard = () => {
     loadDashboardData();
   }, []);
 
-  // Filter orders by canteen dropdown
+  // Filter orders by canteen and date range dropdowns
   const filteredOrders = useMemo(() => {
-    if (selectedCanteen === "all") return orders;
-    const canteenIdNum = parseInt(selectedCanteen, 10);
-    return orders.filter(o => o.CanteenID === canteenIdNum);
-  }, [orders, selectedCanteen]);
+    let result = orders;
+    
+    // Filter by canteen
+    if (selectedCanteen !== "all") {
+      const canteenIdNum = parseInt(selectedCanteen, 10);
+      result = result.filter(o => o.CanteenID === canteenIdNum);
+    }
+    
+    // Filter by date range
+    const today = new Date();
+    if (dateRange === "Today") {
+      result = result.filter(o => {
+        if (!o.RawDate) return false;
+        return o.RawDate.getDate() === today.getDate() &&
+               o.RawDate.getMonth() === today.getMonth() &&
+               o.RawDate.getFullYear() === today.getFullYear();
+      });
+    } else if (dateRange === "This Week") {
+      // Current calendar week (since Sunday)
+      const startOfWeek = new Date(today);
+      startOfWeek.setDate(today.getDate() - today.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+      result = result.filter(o => {
+        if (!o.RawDate) return false;
+        return o.RawDate >= startOfWeek;
+      });
+    } else if (dateRange === "This Month") {
+      result = result.filter(o => {
+        if (!o.RawDate) return false;
+        return o.RawDate.getMonth() === today.getMonth() &&
+               o.RawDate.getFullYear() === today.getFullYear();
+      });
+    }
+    
+    return result;
+  }, [orders, selectedCanteen, dateRange]);
+
+  const activeOrders = useMemo(() => {
+    return filteredOrders.filter(o => o.OrderStatus !== "COMPLETED" && o.OrderStatus !== "CANCELLED");
+  }, [filteredOrders]);
 
   // Compute stats metrics dynamically
   const stats = useMemo(() => {
@@ -375,30 +422,20 @@ export const Dashboard = () => {
     filteredOrders.forEach(o => {
       if (o.OrderStatus === "CANCELLED") return;
 
-      const match = o.CreatedAt.match(/(\d+):(\d+)\s*(AM|PM)/i);
-      if (match) {
-        let hr = parseInt(match[1], 10);
-        const ampm = match[3].toUpperCase();
-        if (ampm === "PM" && hr !== 12) hr += 12;
-        if (ampm === "AM" && hr === 12) hr = 0;
+      const date = o.RawDate || new Date();
+      const hr = date.getHours();
 
-        let hourStr = "";
-        if (hr === 8) hourStr = '08:00 AM';
-        else if (hr === 9) hourStr = '09:00 AM';
-        else if (hr === 10) hourStr = '10:00 AM';
-        else if (hr === 11) hourStr = '11:00 AM';
-        else if (hr === 12) hourStr = '12:00 PM';
-        else if (hr === 13 || hr === 1) hourStr = '01:00 PM';
-        else if (hr === 14 || hr === 2) hourStr = '02:00 PM';
-        else if (hr === 15 || hr === 3) hourStr = '03:00 PM';
-        else {
-          if (hr < 8) hourStr = '08:00 AM';
-          else hourStr = '03:00 PM';
-        }
-        salesMap[hourStr] += o.TotalAmount;
-      } else {
-        salesMap['12:00 PM'] += o.TotalAmount;
-      }
+      let hourStr = "";
+      if (hr <= 8) hourStr = '08:00 AM';
+      else if (hr === 9) hourStr = '09:00 AM';
+      else if (hr === 10) hourStr = '10:00 AM';
+      else if (hr === 11) hourStr = '11:00 AM';
+      else if (hr === 12) hourStr = '12:00 PM';
+      else if (hr === 13) hourStr = '01:00 PM';
+      else if (hr === 14) hourStr = '02:00 PM';
+      else hourStr = '03:00 PM';
+
+      salesMap[hourStr] += o.TotalAmount;
     });
 
     return hours.map(h => ({
@@ -409,11 +446,28 @@ export const Dashboard = () => {
 
   // Compute top selling food items dynamically from real order items
   const currentTopFoods = useMemo(() => {
-    const itemsArray = backendTopFoods
-      .map((item: any) => ({
-        name: item.foodName || "Unknown Food",
-        quantity: item.quantitySold || 0,
-        revenue: item.revenue || 0
+    const counts: Record<string, { quantity: number; revenue: number }> = {};
+    
+    filteredOrders.forEach(order => {
+      // Top selling food items are calculated from completed orders
+      if (order.OrderStatus !== "COMPLETED") return;
+      if (order.items) {
+        order.items.forEach(item => {
+          const name = item.name || "Unknown Food";
+          if (!counts[name]) {
+            counts[name] = { quantity: 0, revenue: 0 };
+          }
+          counts[name].quantity += item.quantity;
+          counts[name].revenue += item.quantity * item.price;
+        });
+      }
+    });
+
+    const itemsArray = Object.entries(counts)
+      .map(([name, data]) => ({
+        name,
+        quantity: data.quantity,
+        revenue: data.revenue
       }))
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 5);
@@ -426,7 +480,7 @@ export const Dashboard = () => {
     }
 
     return itemsArray;
-  }, [backendTopFoods]);
+  }, [filteredOrders]);
 
   return (
     <div className="w-full space-y-6 font-sans text-gray-800">
@@ -588,32 +642,54 @@ export const Dashboard = () => {
         </div>
 
         {/* Right (30%): Top Selling Food Items */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between h-full">
           <div>
             <h3 className="text-sm font-extrabold text-slate-900">Top Selling Food Items</h3>
             <p className="text-[10px] text-slate-400 font-medium">Best performing menu dishes</p>
           </div>
 
-          <div className="space-y-3.5 mt-4">
-            {currentTopFoods.map((item, idx) => {
-              const maxVal = currentTopFoods[0]?.quantity || 1;
-              const percent = Math.round((item.quantity / maxVal) * 100);
-
-              return (
-                <div key={item.name} className="space-y-1">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-800 truncate max-w-[120px]">{idx + 1}. {item.name}</span>
-                    <span className="text-slate-500 font-mono text-[10px]">{item.quantity} sold • {item.revenue.toLocaleString()} MMK</span>
-                  </div>
-                  <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div 
-                      className="bg-[#5b7a42] h-full rounded-full transition-all duration-500" 
-                      style={{ width: `${percent}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+          <div className="h-[240px] w-full mt-4 flex items-center justify-center">
+            {currentTopFoods.length === 1 && currentTopFoods[0].name === "No sales yet" ? (
+              <span className="text-xs text-slate-400 font-medium">No sales yet</span>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={currentTopFoods}
+                    dataKey="quantity"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={45}
+                    outerRadius={65}
+                    paddingAngle={3}
+                  >
+                    {currentTopFoods.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ 
+                      background: '#ffffff', 
+                      border: '1px solid #E2E8F0', 
+                      borderRadius: '12px',
+                      fontSize: '11px',
+                    }}
+                    formatter={(value: any, name: string, props: any) => {
+                      const item = props.payload;
+                      return [`${value} sold (${item.revenue.toLocaleString()} MMK)`, name];
+                    }}
+                  />
+                  <Legend 
+                    verticalAlign="bottom" 
+                    height={36} 
+                    iconType="circle"
+                    iconSize={8}
+                    wrapperStyle={{ fontSize: '10px', fontWeight: 'bold' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </div>
       </div>
@@ -629,7 +705,7 @@ export const Dashboard = () => {
             <h3 className="text-sm font-extrabold text-slate-900">Live Kitchen Queue</h3>
           </div>
           <span className="text-[10px] font-bold text-slate-400 tracking-wider">
-            {filteredOrders.filter(o => o.OrderStatus !== "COMPLETED" && o.OrderStatus !== "CANCELLED").length} ACTIVE ORDERS
+            {activeOrders.length} ACTIVE ORDERS
           </span>
         </div>
 
@@ -646,7 +722,7 @@ export const Dashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-600 font-medium">
-              {filteredOrders.map((order) => {
+              {activeOrders.map((order) => {
                 let orderBadgeColor = 'bg-slate-100 text-slate-600';
                 if (order.OrderStatus === 'PENDING') orderBadgeColor = 'bg-yellow-50 text-yellow-700 border border-yellow-100';
                 else if (order.OrderStatus === 'PREPARING') orderBadgeColor = 'bg-blue-50 text-blue-700 border border-blue-100';
@@ -681,7 +757,7 @@ export const Dashboard = () => {
                   </tr>
                 );
               })}
-              {filteredOrders.length === 0 && (
+              {activeOrders.length === 0 && (
                 <tr>
                   <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
                     No active orders found in the selected canteen branch.

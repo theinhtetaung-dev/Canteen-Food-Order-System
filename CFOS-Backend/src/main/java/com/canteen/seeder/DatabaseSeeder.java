@@ -11,7 +11,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.jdbc.core.JdbcTemplate;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +47,8 @@ public class DatabaseSeeder implements CommandLineRunner {
     private void seedDatabase() {
         log.info("Starting database seeding process...");
 
-
+        // Copy food photos to uploads/food-images directory
+        copyFoodPhotosToUploads();
 
         // 1. Clear existing data in correct order to avoid foreign key constraints
         log.info("Clearing existing data...");
@@ -59,6 +64,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         jdbcTemplate.execute("TRUNCATE TABLE tbl_role_permission");
         jdbcTemplate.execute("TRUNCATE TABLE tbl_permission");
         jdbcTemplate.execute("TRUNCATE TABLE tbl_role");
+        jdbcTemplate.execute("TRUNCATE TABLE tbl_review");
         jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 
         // 2. Seed Roles
@@ -201,33 +207,65 @@ public class DatabaseSeeder implements CommandLineRunner {
         foods.add(createFood("Iced Caffe Latte", "Chilled espresso with fresh milk", new BigDecimal("1800.00"), beverage, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1517701604599-bb29b565090c?q=80&w=600"));
         foods.add(createFood("Fresh Lemonade", "Squeezed lemons with ice and mint", new BigDecimal("1200.00"), beverage, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1534353436294-0dbd4bdac845?q=80&w=600"));
 
-        // North Canteen Foods (10 items) - Using local image paths
-        foods.add(createFood("Beef Fried Rice", "Savory beef fried rice with garlic", new BigDecimal("4000.00"), mainCourse, superAdminUser, northCanteen, "/food-images/beef_fried_rice.jpg"));
-        foods.add(createFood("Tom Yum Noodle", "Sour and spicy Thai noodle soup", new BigDecimal("3000.00"), mainCourse, superAdminUser, northCanteen, "/food-images/tom_yum_noodle.jpg"));
-        foods.add(createFood("Cheese Pizza Slice", "Freshly baked pizza slice with mozzarella", new BigDecimal("2500.00"), mainCourse, superAdminUser, northCanteen, "/food-images/cheese_pizza.jpg"));
-        foods.add(createFood("Crispy Chicken Strips", "Golden fried chicken strips with dip", new BigDecimal("3500.00"), mainCourse, superAdminUser, northCanteen, "/food-images/chicken_strips.jpg"));
-        foods.add(createFood("Beef Burger", "Juicy grilled beef patty with fresh lettuce and tomato", new BigDecimal("4800.00"), mainCourse, superAdminUser, northCanteen, "/food-images/beef_burger.jpg"));
-        foods.add(createFood("Vanilla Cheesecake", "Creamy cheesecake on graham crust", new BigDecimal("2800.00"), dessert, superAdminUser, northCanteen, "/food-images/cheesecake.jpg"));
-        foods.add(createFood("Chocolate Brownie", "Fudgy chocolate brownie with walnuts", new BigDecimal("1800.00"), dessert, superAdminUser, northCanteen, "/food-images/brownie.jpg"));
-        foods.add(createFood("Fruit Salad Bowl", "Assorted seasonal fresh fruits", new BigDecimal("2200.00"), dessert, superAdminUser, northCanteen, "/food-images/fruit_salad.jpg"));
-        foods.add(createFood("Bubble Milk Tea", "Classic milk tea with tapioca pearls", new BigDecimal("2500.00"), beverage, superAdminUser, northCanteen, "/food-images/bubble_tea.jpg"));
-        foods.add(createFood("Iced Peach Tea", "Brewed black tea with sweet peach syrup", new BigDecimal("1500.00"), beverage, superAdminUser, northCanteen, "/food-images/peach_tea.jpg"));
+        // North Canteen Foods (10 items) - Using real local image paths from resources
+        foods.add(createFood("Traditional Mohinga", "Traditional Myanmar rice noodle soup with fish broth", new BigDecimal("2000.00"), mainCourse, superAdminUser, northCanteen, "/food-images/Mohinga.jpg"));
+        foods.add(createFood("Shan Noodles", "Traditional Shan style rice noodles with chicken", new BigDecimal("2500.00"), mainCourse, superAdminUser, northCanteen, "/food-images/Shan Noodles.webp"));
+        foods.add(createFood("Nan Gyi Thoke", "Thick rice noodle salad with chicken curry", new BigDecimal("2800.00"), mainCourse, superAdminUser, northCanteen, "/food-images/Nan Gyi Thoke.jpg"));
+        foods.add(createFood("Tea Leaf Salad", "Traditional Myanmar fermented tea leaf salad", new BigDecimal("2200.00"), mainCourse, superAdminUser, northCanteen, "/food-images/Tea Leaf Salad.jpg"));
+        foods.add(createFood("Basil Fried Rice", "Spicy and fragrant fried rice with basil", new BigDecimal("3000.00"), mainCourse, superAdminUser, northCanteen, "/food-images/Basil Fried Rice.jpg"));
+        foods.add(createFood("Crispy Samosa", "Deep fried pastry filled with spiced potatoes and peas", new BigDecimal("1000.00"), dessert, superAdminUser, northCanteen, "/food-images/Samosa.jpeg"));
+        foods.add(createFood("Shwe Yin Aye", "Sweet Myanmar dessert with coconut milk, jelly, sticky rice and bread", new BigDecimal("1800.00"), dessert, superAdminUser, northCanteen, "/food-images/Shwe Yin Aye.jpg"));
+        foods.add(createFood("Myanmar Traditional Tea", "Freshly brewed sweet and creamy milk tea", new BigDecimal("1200.00"), beverage, superAdminUser, northCanteen, "/food-images/Myanmar Traditional Tea.jpg"));
+        foods.add(createFood("Iced Coffee", "Chilled brewed coffee served with ice", new BigDecimal("1500.00"), beverage, superAdminUser, northCanteen, "/food-images/Iced Coffee.jpg"));
+        foods.add(createFood("Fresh Coconut Water", "Natural, refreshing coconut water", new BigDecimal("1500.00"), beverage, superAdminUser, northCanteen, "/food-images/Coconut Water.jpg"));
 
-        // South Canteen Foods (10 items) - Using local image paths
-        foods.add(createFood("Grilled Salmon Salad", "Fresh grilled salmon on top of mixed garden greens", new BigDecimal("6500.00"), mainCourse, superAdminUser, southCanteen, "/food-images/salmon_salad.jpg"));
-        foods.add(createFood("Pasta Carbonara", "Spaghetti in creamy white sauce with ham and cheese", new BigDecimal("4200.00"), mainCourse, superAdminUser, southCanteen, "/food-images/pasta_carbonara.jpg"));
-        foods.add(createFood("Vegetable Fried Rice", "Healthy fried rice loaded with seasonal vegetables", new BigDecimal("2800.00"), mainCourse, superAdminUser, southCanteen, "/food-images/veg_fried_rice.jpg"));
-        foods.add(createFood("Chicken Katsu Curry", "Crispy fried chicken cutlet served with thick curry sauce", new BigDecimal("5200.00"), mainCourse, superAdminUser, southCanteen, "/food-images/chicken_katsu.jpg"));
-        foods.add(createFood("BBQ Chicken Wings", "Crispy chicken wings glazed in sweet and smoky BBQ sauce", new BigDecimal("3800.00"), mainCourse, superAdminUser, southCanteen, "/food-images/chicken_wings.jpg"));
-        foods.add(createFood("Tiramisu Cup", "Classic Italian dessert with coffee-soaked ladyfingers", new BigDecimal("3000.00"), dessert, superAdminUser, southCanteen, "/food-images/tiramisu.jpg"));
-        foods.add(createFood("Ice Cream Sundae", "Three scoops of ice cream topped with chocolate syrup", new BigDecimal("2000.00"), dessert, superAdminUser, southCanteen, "/food-images/ice_cream.jpg"));
-        foods.add(createFood("Churros with Chocolate", "Crispy fried dough pastry served with warm dipping chocolate", new BigDecimal("2500.00"), dessert, superAdminUser, southCanteen, "/food-images/churros.jpg"));
-        foods.add(createFood("Iced Americano", "Double shot of espresso diluted with cold water and ice", new BigDecimal("1500.00"), beverage, superAdminUser, southCanteen, "/food-images/iced_americano.jpg"));
-        foods.add(createFood("Hot Green Tea", "Steeping hot organic green tea leaves", new BigDecimal("1000.00"), beverage, superAdminUser, southCanteen, "/food-images/hot_green_tea.jpg"));
+        // South Canteen Foods (10 items) - Using real local image paths from resources
+        foods.add(createFood("Chicken Dry Noodles", "Savory dry noodles served with tender chicken slices", new BigDecimal("2600.00"), mainCourse, superAdminUser, southCanteen, "/food-images/Chicken Dry Noodles.jpg"));
+        foods.add(createFood("Claypot Meeshay", "Hot claypot rice noodles with pork and pickled veggies", new BigDecimal("3000.00"), mainCourse, superAdminUser, southCanteen, "/food-images/Claypot Meeshay.jpg"));
+        foods.add(createFood("Crispy Chicken Burger", "Crispy fried chicken patty in a toasted bun with mayo", new BigDecimal("4000.00"), mainCourse, superAdminUser, southCanteen, "/food-images/Chicken Burger.jpg"));
+        foods.add(createFood("Spaghetti Bolognese", "Spaghetti pasta with rich tomato minced beef sauce", new BigDecimal("4500.00"), mainCourse, superAdminUser, southCanteen, "/food-images/Spaghetti.jpg"));
+        foods.add(createFood("Spicy Tom Yum Soup", "Spicy and sour soup with shrimp and lemongrass", new BigDecimal("3500.00"), mainCourse, superAdminUser, southCanteen, "/food-images/Tom Yum Soup.jpg"));
+        foods.add(createFood("Sweet Falooda", "Layered dessert with rose syrup, vermicelli, sweet basil seeds and ice cream", new BigDecimal("2500.00"), dessert, superAdminUser, southCanteen, "/food-images/Falooda.jpg"));
+        foods.add(createFood("Caramel Pudding", "Smooth and creamy caramel custard", new BigDecimal("1500.00"), dessert, superAdminUser, southCanteen, "/food-images/Pudding.jpg"));
+        foods.add(createFood("Fresh Lemonade", "Refreshing lemonade with a touch of mint", new BigDecimal("1200.00"), beverage, superAdminUser, southCanteen, "/food-images/Lemonade.jpg"));
+        foods.add(createFood("Chocolate Milkshake", "Rich and creamy chocolate milkshake", new BigDecimal("2200.00"), beverage, superAdminUser, southCanteen, "/food-images/Chocolate Milkshake.jpg"));
+        foods.add(createFood("Fresh Mango Juice", "Freshly blended sweet ripe mangoes", new BigDecimal("1800.00"), beverage, superAdminUser, southCanteen, "/food-images/Mango Juice.jpg"));
 
         foodRepository.saveAll(foods);
 
         log.info("Database seeding completed successfully.");
+    }
+
+    private void copyFoodPhotosToUploads() {
+        log.info("Copying food photos to uploads folder...");
+        try {
+            Path sourceDir = Paths.get(System.getProperty("user.dir"), "src", "main", "resources", "Food_Photos", "Food_Photos");
+            if (!Files.exists(sourceDir)) {
+                log.warn("Source directory for photos not found at path: " + sourceDir);
+                return;
+            }
+            
+            Path targetDir = Paths.get(System.getProperty("user.dir"), "uploads", "food-images");
+            if (!Files.exists(targetDir)) {
+                Files.createDirectories(targetDir);
+            }
+            
+            try (var stream = Files.list(sourceDir)) {
+                stream.forEach(sourcePath -> {
+                    if (Files.isRegularFile(sourcePath)) {
+                        Path targetPath = targetDir.resolve(sourcePath.getFileName());
+                        try {
+                            Files.copy(sourcePath, targetPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                        } catch (IOException e) {
+                            log.error("Failed to copy food photo: " + sourcePath.getFileName(), e);
+                        }
+                    }
+                });
+            }
+            log.info("Successfully copied food photos to uploads folder.");
+        } catch (Exception e) {
+            log.error("Error while copying food photos to uploads folder", e);
+        }
     }
 
     private Role createRole(String roleName) {

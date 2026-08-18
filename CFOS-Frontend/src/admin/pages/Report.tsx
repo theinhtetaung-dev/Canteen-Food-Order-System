@@ -8,7 +8,8 @@ import {
   Download,
   FileSpreadsheet,
   Printer,
-  PackageOpen
+  PackageOpen,
+  Calendar
 } from "lucide-react";
 import { fetchReport, type ReportResponseModel } from "../../user/api/report.api";
 import { fetchAllOrders } from "../../user/api/order.api";
@@ -45,6 +46,13 @@ export function Report() {
     const min = String(date.getMinutes()).padStart(2, '0');
     
     return `${dd}-${mm}-${yyyy} ${hh}:${min} ${ampm}`;
+  };
+
+  const formatDateDisplay = (dateString: string) => {
+    if (!dateString) return "dd/mm/yyyy";
+    const [year, month, day] = dateString.split("-");
+    if (!year || !month || !day) return dateString;
+    return `${day}/${month}/${year}`;
   };
 
   const loadData = async () => {
@@ -219,22 +227,34 @@ export function Report() {
 
           <div className="relative">
             <label className="block text-[10px] font-extrabold text-[#5b7a42] uppercase tracking-wider mb-1.5">Start Date</label>
-            <input 
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full bg-white border border-[#dce5c7] text-[#284208] text-sm font-semibold rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#8db552] placeholder:text-gray-400"
-            />
+            <div className="relative w-full h-[42px] bg-white border border-[#dce5c7] rounded-xl flex items-center justify-between px-4 hover:border-[#8db552] transition-colors focus-within:ring-2 focus-within:ring-[#8db552] focus-within:border-transparent">
+              <span className={`text-sm font-semibold ${startDate ? 'text-[#284208]' : 'text-gray-400'}`}>
+                {formatDateDisplay(startDate)}
+              </span>
+              <Calendar className="w-4 h-4 text-gray-450 pointer-events-none" />
+              <input 
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full text-transparent"
+              />
+            </div>
           </div>
 
           <div className="relative">
             <label className="block text-[10px] font-extrabold text-[#5b7a42] uppercase tracking-wider mb-1.5">End Date</label>
-            <input 
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full bg-white border border-[#dce5c7] text-[#284208] text-sm font-semibold rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#8db552] placeholder:text-gray-400"
-            />
+            <div className="relative w-full h-[42px] bg-white border border-[#dce5c7] rounded-xl flex items-center justify-between px-4 hover:border-[#8db552] transition-colors focus-within:ring-2 focus-within:ring-[#8db552] focus-within:border-transparent">
+              <span className={`text-sm font-semibold ${endDate ? 'text-[#284208]' : 'text-gray-400'}`}>
+                {formatDateDisplay(endDate)}
+              </span>
+              <Calendar className="w-4 h-4 text-gray-450 pointer-events-none" />
+              <input 
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full text-transparent"
+              />
+            </div>
           </div>
 
           <button 

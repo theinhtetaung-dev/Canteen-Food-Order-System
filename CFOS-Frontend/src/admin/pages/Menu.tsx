@@ -91,7 +91,7 @@ export function Menu() {
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
   const [editImageFile, setEditImageFile] = useState<File | null>(null);
 
-  const [startIndex, setStartIndex] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
 
   const categoryRef = useRef<HTMLDivElement>(null);
@@ -261,7 +261,7 @@ export function Menu() {
       setNewItemImage(null);
       setNewImageFile(null);
       setIsAddModalOpen(false);
-      setStartIndex(0);
+      setCurrentPage(1);
     } catch (error) {
       console.error("Failed to add menu item", error);
     }
@@ -343,8 +343,9 @@ export function Menu() {
     );
   }, [filterCategories, categorySearch]);
 
+  const totalPages = Math.ceil(processedItems.length / ITEMS_PER_PAGE);
   const visibleItems = processedItems.length >= 10
-    ? processedItems.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+    ? processedItems.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
     : processedItems;
   const totalCount = processedItems.length;
 
@@ -373,7 +374,7 @@ export function Menu() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   setActiveSearchQuery(searchQuery);
-                  setStartIndex(0);
+                  setCurrentPage(1);
                 }
               }}
               className="pl-10 pr-4 py-2 bg-[#f1f3ee] border border-gray-200 rounded-xl text-sm outline-none focus:bg-white focus:ring-1 focus:ring-emerald-500 w-64 transition-all"
@@ -381,14 +382,14 @@ export function Menu() {
           </div>
 
           <button
-            onClick={() => { setActiveSearchQuery(searchQuery); setStartIndex(0); }}
+            onClick={() => { setActiveSearchQuery(searchQuery); setCurrentPage(1); }}
             className="px-4 py-2 bg-[#414b35] text-white rounded-xl text-sm font-bold hover:bg-[#2d3424] transition-colors shadow-sm"
           >
             Search
           </button>
           
           <button
-            onClick={() => { setSearchQuery(""); setActiveSearchQuery(""); setStartIndex(0); }}
+            onClick={() => { setSearchQuery(""); setActiveSearchQuery(""); setCurrentPage(1); }}
             className="px-4 py-2 bg-[#e2e7d8] text-[#414b35] rounded-xl text-sm font-bold hover:bg-[#d4dbc8] transition-colors shadow-sm"
           >
             Clear
@@ -444,7 +445,7 @@ export function Menu() {
                   onChange={(e) => {
                     const val = e.target.value;
                     setSelectedBranch(val === "all" ? "all" : Number(val));
-                    setStartIndex(0);
+                    setCurrentPage(1);
                   }}
                   className="appearance-none bg-white border border-gray-200 rounded-xl pl-4 pr-10 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm outline-none focus:ring-1 focus:ring-emerald-500 cursor-pointer h-10"
                 >
@@ -497,7 +498,7 @@ export function Menu() {
                       onClick={() => {
                         setSelectedCategory(cat);
                         setIsCategoryOpen(false);
-                        setStartIndex(0);
+                        setCurrentPage(1);
                       }}
                       className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold transition-colors ${
                         selectedCategory === cat
@@ -563,7 +564,7 @@ export function Menu() {
                     className="hover:bg-[#fbfdf8]/80 transition-colors"
                   >
                     <td className="py-4 px-6 font-bold text-gray-500 font-mono text-[11px]">
-                      {startIndex + idx + 1}
+                      {(currentPage - 1) * ITEMS_PER_PAGE + idx + 1}
                     </td>
                     <td className="py-4 px-6">
                       <img
@@ -650,65 +651,41 @@ export function Menu() {
           </table>
         </div>
 
-        {/* 4. Table Pagination Footer */}
+        {/* Pagination Footer */}
         {processedItems.length >= 10 && (
-          <div className="p-4 border-t border-gray-100 bg-[#fafcf7] flex items-center justify-between text-xs text-gray-500">
-            <div>
-              {totalCount > 0
-                ? `${startIndex + 1}-${Math.min(
-                    startIndex + ITEMS_PER_PAGE,
-                    totalCount
-                  )} of ${totalCount}`
-                : "0 of 0"}
-            </div>
+          <div className="p-5 px-7 flex items-center justify-end gap-2 bg-[#fafcf7] border-t border-gray-100">
+            <button
+              type="button"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="w-9 h-9 flex items-center justify-center text-[#555555] hover:text-black disabled:opacity-30 transition-colors"
+            >
+              <ChevronLeft className="w-6 h-6 stroke-[3]" />
+            </button>
 
-            <div className="flex items-center gap-2">
+            {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((page) => (
               <button
+                key={page}
                 type="button"
-                onClick={() =>
-                  setStartIndex((p) => Math.max(0, p - ITEMS_PER_PAGE))
-                }
-                disabled={startIndex === 0}
-                className="p-1 hover:text-gray-900 disabled:opacity-30 transition-opacity"
+                onClick={() => setCurrentPage(page)}
+                className={`w-9 h-9 rounded-[14px] text-sm font-black flex items-center justify-center transition-colors ${
+                  currentPage === page
+                    ? "bg-[#dbebba] text-black"
+                    : "bg-[#eaeaea] text-[#8e8e8e] hover:bg-gray-300"
+                }`}
               >
-                <ChevronsLeft className="w-4 h-4" />
+                {page}
               </button>
-              <button
-                type="button"
-                onClick={() => setStartIndex((p) => Math.max(0, p - 1))}
-                disabled={startIndex === 0}
-                className="p-1 hover:text-gray-900 disabled:opacity-30 transition-opacity"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setStartIndex((p) =>
-                    Math.min(totalCount - ITEMS_PER_PAGE, p + 1)
-                  )
-                }
-                disabled={startIndex + ITEMS_PER_PAGE >= totalCount}
-                className="p-1 hover:text-gray-900 disabled:opacity-30 transition-opacity"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setStartIndex((p) =>
-                    Math.min(
-                      Math.max(0, totalCount - ITEMS_PER_PAGE),
-                      p + ITEMS_PER_PAGE
-                    )
-                  )
-                }
-                disabled={startIndex + ITEMS_PER_PAGE >= totalCount}
-                className="p-1 hover:text-gray-900 disabled:opacity-30 transition-opacity"
-              >
-                <ChevronsRight className="w-4 h-4" />
-              </button>
-            </div>
+            ))}
+
+            <button
+              type="button"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="w-9 h-9 flex items-center justify-center text-[#8e8e8e] hover:text-black disabled:opacity-30 transition-colors"
+            >
+              <ChevronRight className="w-6 h-6 stroke-[3]" />
+            </button>
           </div>
         )}
       </div>

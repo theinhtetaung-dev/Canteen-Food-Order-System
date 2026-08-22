@@ -299,9 +299,6 @@ export const Permissions: React.FC = () => {
         <h2 className="text-3xl font-black text-gray-900 tracking-tight">
           Role Permission & Access Control
         </h2>
-        <p className="text-sm font-medium text-gray-500 mt-1">
-          Configure feature-level permissions and access rights using toggle switches.
-        </p>
       </div>
 
       {/* Role Selector Segmented Control / Tabs */}

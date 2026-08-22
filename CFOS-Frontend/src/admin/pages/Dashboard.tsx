@@ -31,6 +31,7 @@ import { fetchAllUsers } from "@user/api/user.api";
 import { fetchAllOrders, updateOrderStatus } from "@user/api/order.api";
 import { fetchMenuItems } from "@user/api/menu.api";
 import { fetchReport } from "@user/api/report.api";
+import { fetchAdminDashboard } from "@user/api/dashboard.api";
 
 // --- Database Schema Alignment Interfaces ---
 interface Tbl_User {
@@ -65,153 +66,6 @@ interface Tbl_Food {
   BranchID: number;
 }
 
-// Seed mock database records aligning with schema
-const MOCK_USERS: Tbl_User[] = [
-  { FullName: "Aung Myo", RoleID: 2, CanteenID: 1 },
-  { FullName: "Ei Ei Khin", RoleID: 2, CanteenID: 1 },
-  { FullName: "Min Htet", RoleID: 2, CanteenID: 2 },
-  { FullName: "Hsu Myat", RoleID: 2, CanteenID: 1 },
-  { FullName: "Kyaw Zayar", RoleID: 2, CanteenID: 2 },
-  { FullName: "Nandar Win", RoleID: 2, CanteenID: 1 }
-];
-
-const MOCK_FOODS: Tbl_Food[] = [
-  { FoodName: "Chicken Fried Rice", Price: 2500, IsAvailable: true, BranchID: 1 },
-  { FoodName: "Shan Noodle", Price: 2000, IsAvailable: true, BranchID: 1 },
-  { FoodName: "Pork Dumplings", Price: 2000, IsAvailable: true, BranchID: 1 },
-  { FoodName: "Samosa Salad", Price: 1500, IsAvailable: true, BranchID: 2 },
-  { FoodName: "Green Tea", Price: 1000, IsAvailable: true, BranchID: 1 },
-  { FoodName: "Lime Juice", Price: 1000, IsAvailable: false, BranchID: 2 },
-];
-
-const initialOrders: Tbl_Order[] = [
-  {
-    OrderID: "ORD-9481",
-    UserID: "Aung Myo",
-    TotalAmount: 6000,
-    OrderStatus: "PENDING",
-    CreatedAt: "10:15 AM",
-    CanteenID: 1,
-    itemsSummary: "Chicken Fried Rice x2, Green Tea x1",
-    PaymentMethod: "KBZPay",
-    PaymentStatus: "PAID"
-  },
-  {
-    OrderID: "ORD-9482",
-    UserID: "Ei Ei Khin",
-    TotalAmount: 3000,
-    OrderStatus: "PREPARING",
-    CreatedAt: "10:20 AM",
-    CanteenID: 1,
-    itemsSummary: "Pork Dumplings x1, Green Tea x1",
-    PaymentMethod: "WavePay",
-    PaymentStatus: "PAID"
-  },
-  {
-    OrderID: "ORD-9483",
-    UserID: "Min Htet",
-    TotalAmount: 8000,
-    OrderStatus: "READY",
-    CreatedAt: "10:35 AM",
-    CanteenID: 2,
-    itemsSummary: "Shan Noodle x3, Lime Juice x2",
-    PaymentMethod: "Cash",
-    PaymentStatus: "PAID"
-  },
-  {
-    OrderID: "ORD-9484",
-    UserID: "Hsu Myat",
-    TotalAmount: 5000,
-    OrderStatus: "COMPLETED",
-    CreatedAt: "09:45 AM",
-    CanteenID: 1,
-    itemsSummary: "Chicken Fried Rice x2",
-    PaymentMethod: "KBZPay",
-    PaymentStatus: "PAID"
-  },
-  {
-    OrderID: "ORD-9485",
-    UserID: "Kyaw Zayar",
-    TotalAmount: 2500,
-    OrderStatus: "PENDING",
-    CreatedAt: "10:42 AM",
-    CanteenID: 2,
-    itemsSummary: "Samosa Salad x1, Lime Juice x1",
-    PaymentMethod: "Cash",
-    PaymentStatus: "UNPAID"
-  },
-  {
-    OrderID: "ORD-9486",
-    UserID: "Nandar Win",
-    TotalAmount: 11000,
-    OrderStatus: "PREPARING",
-    CreatedAt: "10:50 AM",
-    CanteenID: 1,
-    itemsSummary: "Pork Dumplings x4, Green Tea x3",
-    PaymentMethod: "KBZPay",
-    PaymentStatus: "PAID"
-  }
-];
-
-// Sales & Revenue mock charts data categorized by canteen
-const hourlyRevenueData = {
-  all: [
-    { hour: '08:00 AM', sales: 45000 },
-    { hour: '09:00 AM', sales: 78000 },
-    { hour: '10:00 AM', sales: 112000 },
-    { hour: '11:00 AM', sales: 245000 },
-    { hour: '12:00 PM', sales: 380000 },
-    { hour: '01:00 PM', sales: 290000 },
-    { hour: '02:00 PM', sales: 156000 },
-    { hour: '03:00 PM', sales: 98000 },
-  ],
-  '1': [
-    { hour: '08:00 AM', sales: 25000 },
-    { hour: '09:00 AM', sales: 48000 },
-    { hour: '10:00 AM', sales: 72000 },
-    { hour: '11:00 AM', sales: 155000 },
-    { hour: '12:00 PM', sales: 240000 },
-    { hour: '01:00 PM', sales: 180000 },
-    { hour: '02:00 PM', sales: 96000 },
-    { hour: '03:00 PM', sales: 58000 },
-  ],
-  '2': [
-    { hour: '08:00 AM', sales: 20000 },
-    { hour: '09:00 AM', sales: 30000 },
-    { hour: '10:00 AM', sales: 40000 },
-    { hour: '11:00 AM', sales: 90000 },
-    { hour: '12:00 PM', sales: 140000 },
-    { hour: '01:00 PM', sales: 110000 },
-    { hour: '02:00 PM', sales: 60000 },
-    { hour: '03:00 PM', sales: 40000 },
-  ]
-};
-
-// Top Selling Items mock data by canteen
-const topSellingFoods = {
-  all: [
-    { name: 'Chicken Fried Rice', quantity: 72, revenue: 180000 },
-    { name: 'Shan Noodle', quantity: 64, revenue: 128000 },
-    { name: 'Pork Dumplings', quantity: 48, revenue: 96000 },
-    { name: 'Samosa Salad', quantity: 36, revenue: 54000 },
-    { name: 'Green Tea', quantity: 30, revenue: 30000 },
-  ],
-  '1': [
-    { name: 'Chicken Fried Rice', quantity: 45, revenue: 112500 },
-    { name: 'Shan Noodle', quantity: 38, revenue: 76000 },
-    { name: 'Pork Dumplings', quantity: 28, revenue: 56000 },
-    { name: 'Samosa Salad', quantity: 20, revenue: 30000 },
-    { name: 'Green Tea', quantity: 18, revenue: 18000 },
-  ],
-  '2': [
-    { name: 'Chicken Fried Rice', quantity: 27, revenue: 67500 },
-    { name: 'Shan Noodle', quantity: 26, revenue: 52000 },
-    { name: 'Pork Dumplings', quantity: 20, revenue: 40000 },
-    { name: 'Samosa Salad', quantity: 16, revenue: 24000 },
-    { name: 'Lime Juice', quantity: 12, revenue: 12000 },
-  ]
-};
-
 const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#f97316", "#06b6d4", "#ec4899"];
 
 export const Dashboard = () => {
@@ -225,12 +79,13 @@ export const Dashboard = () => {
     { BranchID: 2, BranchName: "North Canteen" }
   ]);
   const [selectedCanteen, setSelectedCanteen] = useState<string>("all");
-  const [dateRange, setDateRange] = useState<"Today" | "This Week" | "This Month">("Today");
+  const [dateRange, setDateRange] = useState<string>("Today");
   const [kitchenOpen, setKitchenOpen] = useState<boolean>(true);
   const [orders, setOrders] = useState<Tbl_Order[]>([]);
   const [rawApiOrders, setRawApiOrders] = useState<any[]>([]);
   const [foodItems, setFoodItems] = useState<any[]>([]);
-  const [backendTopFoods, setBackendTopFoods] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [pieData, setPieData] = useState<any[]>([]);
 
   // Map backend Order to Tbl_Order
   const mapToTblOrder = (apiOrder: any): Tbl_Order => {
@@ -261,15 +116,30 @@ export const Dashboard = () => {
       const apiOrders = await fetchAllOrders();
       setRawApiOrders(apiOrders);
       setOrders(apiOrders.map(mapToTblOrder));
-
-      const reportRes = await fetchReport("daily");
-      if (reportRes && reportRes.foodSales) {
-        setBackendTopFoods(reportRes.foodSales);
-      }
     } catch (err) {
       console.error("Failed to load orders in dashboard", err);
     }
   };
+
+  const loadChartData = async () => {
+    try {
+      const canteenIdParam = selectedCanteen === "all" ? undefined : parseInt(selectedCanteen, 10);
+      const res = await fetchAdminDashboard(dateRange, canteenIdParam);
+      setChartData(res.salesTrends || []);
+      const mappedFoods = (res.topSellingFoods || []).map((f: any) => ({
+        name: f.foodName || "Unknown",
+        quantity: f.quantitySold,
+        revenue: f.revenue
+      }));
+      setPieData(mappedFoods.length > 0 ? mappedFoods : [{ name: 'No sales', quantity: 0, revenue: 0 }]);
+    } catch (err) {
+      console.error("Failed to load chart data", err);
+    }
+  };
+
+  useEffect(() => {
+    loadChartData();
+  }, [dateRange, selectedCanteen]);
 
   useEffect(() => {
     async function loadDbUser() {
@@ -342,11 +212,16 @@ export const Dashboard = () => {
         if (!o.RawDate) return false;
         return o.RawDate >= startOfWeek;
       });
-    } else if (dateRange === "This Month") {
+    } else if (dateRange === "This Month" || dateRange === "Monthly") {
       result = result.filter(o => {
         if (!o.RawDate) return false;
         return o.RawDate.getMonth() === today.getMonth() &&
                o.RawDate.getFullYear() === today.getFullYear();
+      });
+    } else if (dateRange === "Yearly") {
+      result = result.filter(o => {
+        if (!o.RawDate) return false;
+        return o.RawDate.getFullYear() === today.getFullYear();
       });
     }
     
@@ -413,74 +288,7 @@ export const Dashboard = () => {
     }
   };
 
-  // Compute hourly sales trends dynamically from real orders
-  const currentChartData = useMemo(() => {
-    const hours = ['08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM'];
-    const salesMap: Record<string, number> = {};
-    hours.forEach(h => { salesMap[h] = 0; });
 
-    filteredOrders.forEach(o => {
-      if (o.OrderStatus === "CANCELLED") return;
-
-      const date = o.RawDate || new Date();
-      const hr = date.getHours();
-
-      let hourStr = "";
-      if (hr <= 8) hourStr = '08:00 AM';
-      else if (hr === 9) hourStr = '09:00 AM';
-      else if (hr === 10) hourStr = '10:00 AM';
-      else if (hr === 11) hourStr = '11:00 AM';
-      else if (hr === 12) hourStr = '12:00 PM';
-      else if (hr === 13) hourStr = '01:00 PM';
-      else if (hr === 14) hourStr = '02:00 PM';
-      else hourStr = '03:00 PM';
-
-      salesMap[hourStr] += o.TotalAmount;
-    });
-
-    return hours.map(h => ({
-      hour: h,
-      sales: salesMap[h]
-    }));
-  }, [filteredOrders]);
-
-  // Compute top selling food items dynamically from real order items
-  const currentTopFoods = useMemo(() => {
-    const counts: Record<string, { quantity: number; revenue: number }> = {};
-    
-    filteredOrders.forEach(order => {
-      // Top selling food items are calculated from completed orders
-      if (order.OrderStatus !== "COMPLETED") return;
-      if (order.items) {
-        order.items.forEach(item => {
-          const name = item.name || "Unknown Food";
-          if (!counts[name]) {
-            counts[name] = { quantity: 0, revenue: 0 };
-          }
-          counts[name].quantity += item.quantity;
-          counts[name].revenue += item.quantity * item.price;
-        });
-      }
-    });
-
-    const itemsArray = Object.entries(counts)
-      .map(([name, data]) => ({
-        name,
-        quantity: data.quantity,
-        revenue: data.revenue
-      }))
-      .sort((a, b) => b.quantity - a.quantity)
-      .slice(0, 5);
-
-    // Fallback if empty to avoid rendering empty screen
-    if (itemsArray.length === 0) {
-      return [
-        { name: 'No sales yet', quantity: 0, revenue: 0 }
-      ];
-    }
-
-    return itemsArray;
-  }, [filteredOrders]);
 
   return (
     <div className="w-full space-y-6 font-sans text-gray-800">
@@ -525,7 +333,8 @@ export const Dashboard = () => {
             >
               <option value="Today">Today</option>
               <option value="This Week">This Week</option>
-              <option value="This Month">This Month</option>
+              <option value="This Month">Monthly</option>
+              <option value="Yearly">Yearly</option>
             </select>
             <ChevronDown className="absolute right-3 top-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
           </div>
@@ -616,7 +425,7 @@ export const Dashboard = () => {
 
           <div className="h-[240px] w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={currentChartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#5b7a42" stopOpacity={0.2}/>
@@ -624,7 +433,7 @@ export const Dashboard = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                <XAxis dataKey="hour" stroke="#94A3B8" fontSize={9} tickLine={false} axisLine={false} />
+                <XAxis dataKey="label" stroke="#94A3B8" fontSize={9} tickLine={false} axisLine={false} />
                 <YAxis stroke="#94A3B8" fontSize={9} tickLine={false} axisLine={false} />
                 <Tooltip 
                   contentStyle={{ 
@@ -633,9 +442,9 @@ export const Dashboard = () => {
                     borderRadius: '12px',
                     fontSize: '11px',
                   }}
-                  formatter={(value: any) => [`${value.toLocaleString()} MMK`, 'Sales']}
+                  formatter={(value: any) => [`${Number(value).toLocaleString()} MMK`, 'Sales']}
                 />
-                <Area type="monotone" dataKey="sales" stroke="#5b7a42" strokeWidth={2} fillOpacity={1} fill="url(#colorSales)" />
+                <Area type="monotone" dataKey="value" stroke="#5b7a42" strokeWidth={2} fillOpacity={1} fill="url(#colorSales)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -649,13 +458,13 @@ export const Dashboard = () => {
           </div>
 
           <div className="h-[240px] w-full mt-4 flex items-center justify-center">
-            {currentTopFoods.length === 1 && currentTopFoods[0].name === "No sales yet" ? (
+            {pieData.length === 1 && pieData[0].name === "No sales" ? (
               <span className="text-xs text-slate-400 font-medium">No sales yet</span>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={currentTopFoods}
+                    data={pieData}
                     dataKey="quantity"
                     nameKey="name"
                     cx="50%"
@@ -664,7 +473,7 @@ export const Dashboard = () => {
                     outerRadius={65}
                     paddingAngle={3}
                   >
-                    {currentTopFoods.map((entry, index) => (
+                    {pieData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>

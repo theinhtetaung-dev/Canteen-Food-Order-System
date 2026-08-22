@@ -436,9 +436,6 @@ export const UserReports: React.FC = () => {
           <h2 className="text-3xl font-black text-gray-900 tracking-tight">
             User Management Reports
           </h2>
-          <p className="text-sm font-medium text-gray-500 mt-1">
-            Access secure audit reports, canteen admin allocations, and user growth analytics.
-          </p>
         </div>
         <button
           onClick={loadData}
@@ -670,14 +667,7 @@ export const UserReports: React.FC = () => {
               <FileText className="w-3.5 h-3.5 text-slate-500" />
               <span>CSV</span>
             </button>
-            <button
-              onClick={handleExportExcel}
-              className="flex items-center gap-1.5 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
-              title="Download Excel spreadsheet"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-slate-500" />
-              <span>Excel</span>
-            </button>
+
             <button
               onClick={handlePrint}
               className="flex items-center gap-1.5 px-3 py-2 bg-[#7ca038] hover:bg-[#68872e] text-white text-xs font-bold rounded-xl transition-all shadow-xs hover:shadow-md cursor-pointer"

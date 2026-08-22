@@ -5,12 +5,25 @@ import { PageContainer } from "@user/components/layout/PageContainer";
 import { heroSlides } from "@user/data/heroItems";
 import { useAuth } from "@user/hooks/useAuth";
 import { fetchMenuItems } from "@user/api/menu.api";
+import { fetchReviews } from "@user/api/review.api";
 import type { HeroSlide } from "@user/types/menu";
 import heroImage from "../assets/images/hero/heropage.png";
 
-function LandingPage({ slides }: { slides: HeroSlide[] }) {
+function LandingPage({ slides, menuCount, avgRating }: { slides: HeroSlide[], menuCount: string | number, avgRating: string | number }) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIsAnimating(true);
+      setTimeout(() => {
+        setCurrentSlide((prev) => (prev + 1) % slides.length);
+        setIsAnimating(false);
+      }, 300);
+    }, 4000);
+    return () => clearInterval(timer);
+  }, [slides.length]);
 
   const slide = slides[currentSlide] || slides[0];
 
@@ -50,11 +63,11 @@ function LandingPage({ slides }: { slides: HeroSlide[] }) {
 
             <div className="flex flex-wrap gap-6 pt-6">
               <div className="flex min-w-[120px] flex-col rounded-2xl border-2 border-brand-light bg-white p-4 shadow-sm">
-                <span className="text-2xl font-black text-gray-900">54+</span>
+                <span className="text-2xl font-black text-gray-900">{menuCount}</span>
                 <span className="text-xs font-medium text-gray-500">Menu Items</span>
               </div>
               <div className="flex min-w-[120px] flex-col rounded-2xl border-2 border-brand-light bg-white p-4 shadow-sm">
-                <span className="text-2xl font-black text-gray-900">4.8</span>
+                <span className="text-2xl font-black text-gray-900">{avgRating}</span>
                 <span className="text-xs font-medium text-gray-500">Avg Rating</span>
               </div>
             </div>
@@ -67,7 +80,7 @@ function LandingPage({ slides }: { slides: HeroSlide[] }) {
             <div className="absolute h-[300px] w-[300px] rounded-full bg-white shadow-xl sm:h-[400px] sm:w-[400px] lg:h-[480px] lg:w-[480px]" />
 
             {/* Main Image */}
-            <div className="relative z-10 animate-fadeIn">
+            <div className={`relative z-10 transition-all duration-500 ${isAnimating ? "scale-90 opacity-0" : "scale-100 opacity-100"}`}>
               <img
                 src={slide?.image || heroImage}
                 alt={slide?.name || "Fried Rice"}
@@ -76,19 +89,20 @@ function LandingPage({ slides }: { slides: HeroSlide[] }) {
             </div>
 
             {/* Floating Badge */}
-            <div className="absolute bottom-12 right-4 z-20 animate-fadeIn rounded-2xl bg-white px-5 py-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] sm:bottom-16 sm:right-12 lg:bottom-20 lg:right-16">
+            <div className={`absolute bottom-12 right-4 z-20 rounded-2xl bg-white px-5 py-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] sm:bottom-16 sm:right-12 lg:bottom-20 lg:right-16 transition-all duration-500 ${isAnimating ? "translate-x-4 opacity-0" : "translate-x-0 opacity-100"}`}>
               <p className="text-sm font-bold text-gray-800">{slide?.name || "Fried Rice"}</p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-base font-black text-gray-900">{slide?.rating || "4.8"}</span>
-                <Star className="h-4 w-4 fill-brand text-brand" />
-              </div>
             </div>
 
-            {/* Slider Dots (Decorative for now to match design) */}
+            {/* Slider Dots */}
             <div className="absolute -bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
-              <div className="h-2 w-2 rounded-full bg-brand-light" />
-              <div className="h-2 w-6 rounded-full bg-brand" />
-              <div className="h-2 w-2 rounded-full bg-brand-light" />
+              {slides.map((_, index) => (
+                <div
+                  key={index}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    index === currentSlide ? "w-6 bg-brand" : "w-2 bg-brand-light"
+                  }`}
+                />
+              ))}
             </div>
           </div>
 
@@ -98,7 +112,7 @@ function LandingPage({ slides }: { slides: HeroSlide[] }) {
   );
 }
 
-function DashboardHome({ slides }: { slides: HeroSlide[] }) {
+function DashboardHome({ slides, menuCount, avgRating }: { slides: HeroSlide[], menuCount: string | number, avgRating: string | number }) {
   const { user } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -112,7 +126,7 @@ function DashboardHome({ slides }: { slides: HeroSlide[] }) {
       }, 300);
     }, 4000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides.length]);
 
   const goToSlide = (index: number) => {
     setIsAnimating(true);
@@ -155,11 +169,11 @@ function DashboardHome({ slides }: { slides: HeroSlide[] }) {
 
           <div className="flex flex-wrap gap-4 pt-4">
             <div className="rounded-xl border border-brand bg-white px-5 py-3 shadow-md">
-              <span className="text-2xl font-bold text-gray-800">54+</span>
+              <span className="text-2xl font-bold text-gray-800">{menuCount}</span>
               <p className="text-xs text-gray-500">Menu Items</p>
             </div>
             <div className="rounded-xl border border-brand bg-white px-5 py-3 shadow-md">
-              <span className="text-2xl font-bold text-gray-800">4.8</span>
+              <span className="text-2xl font-bold text-gray-800">{avgRating}</span>
               <p className="text-xs text-gray-500">Avg Rating</p>
             </div>
           </div>
@@ -182,12 +196,6 @@ function DashboardHome({ slides }: { slides: HeroSlide[] }) {
             className={`absolute bottom-4 right-4 rounded-xl border border-b-brand bg-white px-4 py-2 shadow-lg transition-all duration-500 sm:bottom-8 sm:right-8 ${isAnimating ? "translate-x-4 opacity-0" : "translate-x-0 opacity-100"}`}
           >
             <p className="text-sm font-semibold text-gray-800">{slide.name}</p>
-            <div className="flex items-center gap-1">
-              <span className="text-lg font-bold text-gray-800">
-                {slide.rating}
-              </span>
-              <Star className="h-4 w-4 fill-brand text-brand" />
-            </div>
           </div>
 
           <div className="absolute bottom-0 left-1/2 flex -translate-x-1/2 gap-2">
@@ -213,31 +221,44 @@ function DashboardHome({ slides }: { slides: HeroSlide[] }) {
 export default function HomePage() {
   const { isAuthenticated } = useAuth();
   const [slides, setSlides] = useState<HeroSlide[]>(heroSlides);
+  const [menuCount, setMenuCount] = useState<number | string>("54+");
+  const [avgRating, setAvgRating] = useState<number | string>("0.0");
 
   useEffect(() => {
-    const loadMenu = async () => {
+    const loadData = async () => {
       try {
-        const items = await fetchMenuItems();
+        const [items, reviews] = await Promise.all([
+          fetchMenuItems().catch(() => []),
+          fetchReviews().catch(() => [])
+        ]);
+
         if (items && items.length > 0) {
+          setMenuCount(items.length > 54 ? `${items.length}+` : items.length.toString());
           const topItems = items.filter(i => i.isAvailable && i.image).slice(0, 3);
           if (topItems.length > 0) {
             setSlides(topItems.map(i => ({
               name: i.name,
-              rating: i.rating || 4.8,
+              rating: i.rating || 0.0,
               image: i.image
             })));
           }
         }
+
+        if (reviews && reviews.length > 0) {
+          const total = reviews.reduce((sum, rev) => sum + rev.rating, 0);
+          const avg = (total / reviews.length).toFixed(1);
+          setAvgRating(avg);
+        }
       } catch (error) {
-        console.error("Failed to fetch menu items for landing page", error);
+        console.error("Failed to fetch data for landing page", error);
       }
     };
-    loadMenu();
+    loadData();
   }, []);
 
   if (isAuthenticated) {
-    return <DashboardHome slides={slides} />;
+    return <DashboardHome slides={slides} menuCount={menuCount} avgRating={avgRating} />;
   }
 
-  return <LandingPage slides={slides} />;
+  return <LandingPage slides={slides} menuCount={menuCount} avgRating={avgRating} />;
 }

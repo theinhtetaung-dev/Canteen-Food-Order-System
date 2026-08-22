@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Store, Users, User, UtensilsCrossed, MapPin, ShieldCheck, BarChart3, UserPlus, LogOut } from 'lucide-react';
+import { LayoutDashboard, Store, Users, User, UtensilsCrossed, MapPin, ShieldCheck, BarChart3, UserPlus, LogOut, Star } from 'lucide-react';
 import { useAuth } from "@user/hooks/useAuth";
 import { fetchAllUsers } from "@user/api/user.api";
 import brandLogo from "../../../assets/image.png";
@@ -203,6 +203,19 @@ export const Sidebar: React.FC = () => {
           >
             <BarChart3 className="w-4 h-4" />
             User Reports
+          </NavLink>
+
+          <NavLink
+            to="/reviews"
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all ${isActive
+                ? 'bg-[#E1EEB4] text-[#3B5B11] font-semibold'
+                : 'text-gray-600 hover:bg-black/5'
+              }`
+            }
+          >
+            <Star className="w-4 h-4" />
+            Reviews
           </NavLink>
         </nav>
       </div>

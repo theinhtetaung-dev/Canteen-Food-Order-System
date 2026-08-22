@@ -108,7 +108,7 @@ export const Professors: React.FC = () => {
       const allUsers = await fetchAllUsers();
       // Filter for users with role "User"
       const mapped = allUsers
-        .filter((u) => u.roleName && u.roleName.toLowerCase() === "user")
+        .filter((u) => u.roleName && u.roleName.toLowerCase() === "user" && u.userName !== u.fullName && u.email && u.email.trim() !== "" && !u.email.endsWith("@student.local"))
         .map((u) => ({
           id: String(u.userId),
           username: u.userName,
@@ -344,9 +344,6 @@ export const Professors: React.FC = () => {
         <h2 className="text-3xl font-black text-gray-900 tracking-tight">
           Professor Account Creation
         </h2>
-        <p className="text-sm font-medium text-gray-500 mt-1">
-          Create and manage Professor and Customer accounts with a default password.
-        </p>
       </div>
 
       {/* Main Container */}

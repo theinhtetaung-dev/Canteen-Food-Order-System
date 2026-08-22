@@ -181,7 +181,34 @@ public class DatabaseSeeder implements CommandLineRunner {
         normalUser.setStatus(UserStatus.ACTIVE);
         normalUser.setRole(userRole);
 
-        userRepository.saveAll(List.of(superAdminUser, managerUser, managerUser2, managerUser3, normalUser));
+        User student1 = new User();
+        student1.setUserName("CS1001");
+        student1.setFullName("Alice Johnson");
+        student1.setEmail(null); // Students have no email
+        student1.setPasswordHash(passwordEncoder.encode("student123"));
+        student1.setPhoneNumber("0991234567");
+        student1.setStatus(UserStatus.ACTIVE);
+        student1.setRole(userRole);
+
+        User student2 = new User();
+        student2.setUserName("CS1002");
+        student2.setFullName("Bob Williams");
+        student2.setEmail(null); // Students have no email
+        student2.setPasswordHash(passwordEncoder.encode("student123"));
+        student2.setPhoneNumber("0997654321");
+        student2.setStatus(UserStatus.ACTIVE);
+        student2.setRole(userRole);
+
+        User professor1 = new User();
+        professor1.setUserName("drsmith");
+        professor1.setFullName("Dr. John Smith");
+        professor1.setEmail("john.smith@canteen.com"); // Professors have emails
+        professor1.setPasswordHash(passwordEncoder.encode("prof123"));
+        professor1.setPhoneNumber("0981112222");
+        professor1.setStatus(UserStatus.ACTIVE);
+        professor1.setRole(userRole);
+
+        userRepository.saveAll(List.of(superAdminUser, managerUser, managerUser2, managerUser3, normalUser, student1, student2, professor1));
 
         // 6. Seed Food Categories
         log.info("Seeding Food Categories...");

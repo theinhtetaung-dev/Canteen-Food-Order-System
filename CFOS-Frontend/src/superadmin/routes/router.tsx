@@ -8,7 +8,7 @@ import { AdminProfile } from '../pages/AdminProfile';
 import { Branches } from '../pages/Branches';
 import { Permissions } from '../pages/Permissions';
 import { UserReports } from '../pages/UserReports';
-
+import Review from '../pages/Reviews';
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -41,6 +41,10 @@ export const router = createBrowserRouter([
       {
         path: 'user-reports',
         element: <UserReports />,
+      },
+      {
+        path: 'reviews',
+        element: <Review />,
       },
       {
         path: 'profile',

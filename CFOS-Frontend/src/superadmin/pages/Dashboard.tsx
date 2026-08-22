@@ -10,7 +10,8 @@ import {
   TrendingUp,
   MapPin,
   Calendar,
-  Sparkles
+  Sparkles,
+  ChevronDown
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -25,24 +26,11 @@ import {
   Cell,
   Legend
 } from 'recharts';
-import { fetchStudents, fetchKitchenAdmins } from '@user/api/user.api';
+import { fetchStudents, fetchKitchenAdmins, fetchAllUsers } from '@user/api/user.api';
 import { fetchBranches, type Branch } from '@user/api/branch.api';
 import { useAuth } from "@user/hooks/useAuth";
 
-// Registration growth mock data for last 30 days
-const registrationGrowthData = [
-  { date: 'Jul 12', signups: 15 },
-  { date: 'Jul 15', signups: 22 },
-  { date: 'Jul 18', signups: 18 },
-  { date: 'Jul 21', signups: 32 },
-  { date: 'Jul 24', signups: 25 },
-  { date: 'Jul 27', signups: 40 },
-  { date: 'Jul 30', signups: 48 },
-  { date: 'Aug 02', signups: 35 },
-  { date: 'Aug 05', signups: 55 },
-  { date: 'Aug 08', signups: 62 },
-  { date: 'Aug 11', signups: 74 },
-];
+import { fetchSuperadminDashboard } from '@user/api/dashboard.api';
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -50,10 +38,13 @@ export const Dashboard: React.FC = () => {
   const [totalUsers, setTotalUsers] = useState<number>(0);
   const [totalAdminsCount, setTotalAdminsCount] = useState<number>(0);
   const [totalCanteens, setTotalCanteens] = useState<number>(0);
-  const [activeStudents, setActiveStudents] = useState<number>(0);
+  const [totalProfessors, setTotalProfessors] = useState<number>(0);
   const [recentAdmins, setRecentAdmins] = useState<any[]>([]);
   const [canteenAllocations, setCanteenAllocations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [dateRange, setDateRange] = useState<string>("Today");
+  const [registrationGrowthData, setRegistrationGrowthData] = useState<any[]>([]);
+  const [roleDistributionData, setRoleDistributionData] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadDashboardStats() {
@@ -62,7 +53,11 @@ export const Dashboard: React.FC = () => {
         // Fetch Students
         const students = await fetchStudents();
         setTotalUsers(students.length);
-        setActiveStudents(Math.floor(students.length * 0.95)); // 95% Active
+
+        // Fetch Professors
+        const allUsers = await fetchAllUsers();
+        const professors = allUsers.filter((u) => u.roleName && u.roleName.toLowerCase() === "user" && u.email && u.email.trim() !== "");
+        setTotalProfessors(professors.length);
 
         // Fetch Canteens/Branches
         const branches = await fetchBranches();
@@ -97,30 +92,49 @@ export const Dashboard: React.FC = () => {
     loadDashboardStats();
   }, []);
 
-  // Pie chart cell colors
-  const roleDistributionData = [
-    { name: 'Students', value: totalUsers || 1, color: '#88C425' },
-    { name: 'Canteen Admins', value: totalAdminsCount || 1, color: '#3B5B11' },
-    { name: 'Super Admins', value: 1, color: '#A3D944' },
-  ];
+  useEffect(() => {
+    async function loadChartData() {
+      try {
+        const res = await fetchSuperadminDashboard(dateRange);
+        setRegistrationGrowthData(res.registrationGrowth || []);
+        
+        // Map backend generic pie data to recharts expected format
+        const pieMapped = (res.roleDistribution || []).map((p) => ({
+          name: p.name,
+          value: Number(p.value),
+          color: p.color || '#cbd5e1'
+        }));
+        setRoleDistributionData(pieMapped);
+      } catch (err) {
+        console.error("Failed to load superadmin charts", err);
+      }
+    }
+    loadChartData();
+  }, [dateRange]);
 
   return (
     <div className="w-full space-y-8 font-sans">
       {/* 1. Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-[#88C425] uppercase tracking-widest">
-            <Sparkles className="w-4 h-4 text-[#88C425] animate-pulse" />
-            Superadmin Console
-          </div>
           <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mt-1">
             Welcome back, {user?.name || 'Super Admin'}
           </h2>
-          <p className="text-xs text-gray-500 font-medium mt-0.5">
-            Manage system configuration, campus canteens, and platform authentication.
-          </p>
         </div>
         <div className="flex items-center gap-3 shrink-0">
+          <div className="relative">
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              className="appearance-none bg-white border border-gray-200 rounded-xl pl-3.5 pr-9 py-2.5 text-xs font-bold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#88C425]/10 focus:border-[#88C425] cursor-pointer shadow-sm"
+            >
+              <option value="Today">Today</option>
+              <option value="This Week">This Week</option>
+              <option value="Monthly">Monthly</option>
+              <option value="Yearly">Yearly</option>
+            </select>
+            <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
+          </div>
           <button
             onClick={() => navigate('/branches')}
             className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 font-semibold text-xs text-gray-700 transition-all flex items-center gap-2 shadow-sm"
@@ -141,7 +155,10 @@ export const Dashboard: React.FC = () => {
       {/* 2. KPI Summary Cards (4 Cards Grid) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Card 1: Total Canteens */}
-        <div className="bg-[#F8FBF2] p-5 rounded-2xl flex items-center justify-between border border-gray-100/60 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-md">
+        <div 
+          onClick={() => navigate('/branches')}
+          className="bg-[#F8FBF2] p-5 rounded-2xl flex items-center justify-between border border-gray-100/60 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-md cursor-pointer"
+        >
           <div>
             <span className="text-[10px] uppercase font-extrabold text-gray-400 tracking-wider">TOTAL CANTEENS</span>
             <p className="text-2xl font-black text-gray-900 mt-1">{totalCanteens}</p>
@@ -155,7 +172,10 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Card 2: Canteen Admins */}
-        <div className="bg-[#F8FBF2] p-5 rounded-2xl flex items-center justify-between border border-gray-100/60 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-md">
+        <div 
+          onClick={() => navigate('/kitchen-admin')}
+          className="bg-[#F8FBF2] p-5 rounded-2xl flex items-center justify-between border border-gray-100/60 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-md cursor-pointer"
+        >
           <div>
             <span className="text-[10px] uppercase font-extrabold text-gray-400 tracking-wider">CANTEEN ADMINS</span>
             <p className="text-2xl font-black text-gray-900 mt-1">{totalAdminsCount}</p>
@@ -169,7 +189,10 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Card 3: Registered Students */}
-        <div className="bg-[#F8FBF2] p-5 rounded-2xl flex items-center justify-between border border-gray-100/60 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-md">
+        <div 
+          onClick={() => navigate('/users')}
+          className="bg-[#F8FBF2] p-5 rounded-2xl flex items-center justify-between border border-gray-100/60 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-md cursor-pointer"
+        >
           <div>
             <span className="text-[10px] uppercase font-extrabold text-gray-400 tracking-wider">REGISTERED STUDENTS</span>
             <p className="text-2xl font-black text-gray-900 mt-1">
@@ -184,15 +207,18 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Card 4: Account Status */}
-        <div className="bg-[#F8FBF2] p-5 rounded-2xl flex items-center justify-between border border-gray-100/60 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-md">
+        {/* Card 4: Professor Accounts */}
+        <div 
+          onClick={() => navigate('/professors')}
+          className="bg-[#F8FBF2] p-5 rounded-2xl flex items-center justify-between border border-gray-100/60 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-md cursor-pointer"
+        >
           <div>
-            <span className="text-[10px] uppercase font-extrabold text-gray-400 tracking-wider">ACCOUNT STATUS</span>
+            <span className="text-[10px] uppercase font-extrabold text-gray-400 tracking-wider">PROFESSOR ACCOUNTS</span>
             <p className="text-2xl font-black text-gray-900 mt-1">
-              {activeStudents.toLocaleString()}
+              {totalProfessors.toLocaleString()}
             </p>
             <span className="text-[10px] font-bold text-[#3B5B11] bg-[#E1EEB4] px-2 py-0.5 rounded-full mt-2 inline-block">
-              Active / 0 Suspended
+              Faculty Members
             </span>
           </div>
           <div className="p-3 bg-[#E1EEB4] rounded-2xl text-[#3B5B11] shrink-0">
@@ -225,7 +251,7 @@ export const Dashboard: React.FC = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                <XAxis dataKey="date" stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={false} />
+                <XAxis dataKey="label" stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={false} />
                 <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={false} />
                 <Tooltip 
                   contentStyle={{ 
@@ -235,8 +261,9 @@ export const Dashboard: React.FC = () => {
                     fontSize: '11px',
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)'
                   }} 
+                  formatter={(value: any) => [value, 'Signups']}
                 />
-                <Area type="monotone" dataKey="signups" stroke="#88C425" strokeWidth={2} fillOpacity={1} fill="url(#colorSignups)" />
+                <Area type="monotone" dataKey="value" stroke="#88C425" strokeWidth={2} fillOpacity={1} fill="url(#colorSignups)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -275,10 +302,10 @@ export const Dashboard: React.FC = () => {
               </PieChart>
             </ResponsiveContainer>
             {/* Center label */}
-            <div className="absolute flex flex-col items-center justify-center">
+            <div className="absolute flex flex-col items-center justify-center pointer-events-none">
               <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Total Users</span>
               <span className="text-xl font-black text-gray-900">
-                {(totalUsers + totalAdminsCount + 1).toLocaleString()}
+                {roleDistributionData.reduce((acc, curr) => acc + curr.value, 0).toLocaleString()}
               </span>
             </div>
           </div>

@@ -380,9 +380,6 @@ export const KitchenAdmins: React.FC = () => {
         <h2 className="text-3xl font-black text-gray-900 tracking-tight">
           Canteen Admins
         </h2>
-        <p className="text-sm font-medium text-gray-500 mt-1">
-          Manage and create new canteen admins.
-        </p>
       </div>
 
       {/* Main Container */}

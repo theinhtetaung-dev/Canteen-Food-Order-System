@@ -87,6 +87,7 @@ export async function fetchUserOrders(userId: string): Promise<Order[]> {
       createdAt: order.createdAt || new Date().toISOString(),
       updatedAt: order.updatedAt || new Date().toISOString(),
       canteenId: order.canteenId,
+      canteenName: order.canteenName,
     }));
   } catch (err) {
     console.error("Error fetching orders:", err);
@@ -138,6 +139,7 @@ export async function fetchAllOrders(): Promise<Order[]> {
       createdAt: order.createdAt || new Date().toISOString(),
       updatedAt: order.updatedAt || new Date().toISOString(),
       canteenId: order.canteenId,
+      canteenName: order.canteenName,
     }));
   } catch (err) {
     console.error("Error fetching all orders:", err);

@@ -106,6 +106,7 @@ export default function OrdersPage() {
               <thead className="bg-gray-50 text-xs uppercase text-gray-700">
                 <tr>
                   <th scope="col" className="px-6 py-4 font-medium">No</th>
+                  <th scope="col" className="px-6 py-4 font-medium">Order Code</th>
                   <th scope="col" className="px-6 py-4 font-medium">Date</th>
                   <th scope="col" className="px-6 py-4 font-medium">Total Price</th>
                   <th scope="col" className="px-6 py-4 font-medium">Status</th>
@@ -116,6 +117,7 @@ export default function OrdersPage() {
                 {orders.map((order, index) => (
                   <tr key={order.id} className={`hover:bg-gray-50 transition-colors ${highlightId === order.id ? 'bg-brand-light/20' : ''}`}>
                     <td className="px-6 py-4 font-medium text-gray-900">{index + 1}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900">{order.id}</td>
                     <td className="px-6 py-4">{formatDateTime(order.createdAt)}</td>
                     <td className="px-6 py-4 font-semibold text-brand-dark">{formatPrice(order.totalPrice)}</td>
                     <td className="px-6 py-4">
@@ -168,14 +170,16 @@ export default function OrdersPage() {
               </button>
             </div>
             
+            <div className="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
+              <p className="text-sm font-semibold text-gray-800">Order Code: <span className="font-normal text-gray-600">{detailOrder.id}</span></p>
+              {(detailOrder.canteenName || detailOrder.canteenId) && (
+                <p className="text-sm font-semibold text-gray-800 mt-1">Canteen: <span className="font-normal text-gray-600">{detailOrder.canteenName || `Canteen ${detailOrder.canteenId}`}</span></p>
+              )}
+            </div>
+
             <div className="mb-4 space-y-4 max-h-64 overflow-y-auto pr-2">
               {detailOrder.items.map((item) => (
                 <div key={item.menuItemId} className="flex items-center gap-3">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="h-12 w-12 rounded-lg object-cover"
-                  />
                   <div className="flex-1 text-sm">
                     <p className="font-medium text-gray-800">{item.name}</p>
                     <p className="text-gray-500">

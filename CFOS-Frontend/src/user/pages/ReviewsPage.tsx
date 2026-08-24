@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Star, Edit2, Trash2, Plus, Loader2, X } from
 import { PageContainer } from "@user/components/layout/PageContainer";
 import { useAuth } from "@user/hooks/useAuth";
 import { useMediaQuery } from "@user/hooks/useMediaQuery";
-import { cn } from "@user/lib/utils";
+import { cn, formatDate } from "@user/lib/utils";
 import { Link } from "react-router-dom";
 import {
   fetchReviews,
@@ -18,7 +18,8 @@ export default function ReviewsPage() {
   const [reviewsList, setReviewsList] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Filtering & Sorting State
@@ -162,27 +163,16 @@ export default function ReviewsPage() {
     return list;
   }, [reviewsList, activeTab, ratingFilter, sortBy, user]);
 
-  const visibleCount = isMobile ? 1 : 3;
-  const totalProcessed = processedReviews.length;
-  const maxIndex = Math.max(0, totalProcessed - visibleCount);
+  const totalPages = Math.ceil(processedReviews.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedReviews = useMemo(() => {
+    return processedReviews.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [processedReviews, startIndex]);
 
-  const visibleReviews = processedReviews.slice(
-    currentIndex,
-    currentIndex + visibleCount,
-  );
-
-  const nextSlide = () => {
-    setCurrentIndex((prev) => Math.min(prev + 1, maxIndex));
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => Math.max(prev - 1, 0));
-  };
-
-  // Reset pagination index when list length or filters change
+  // Reset pagination index when filters change
   useEffect(() => {
-    setCurrentIndex(0);
-  }, [totalProcessed]);
+    setCurrentPage(1);
+  }, [activeTab, ratingFilter, sortBy]);
 
   return (
     <PageContainer>
@@ -191,12 +181,9 @@ export default function ReviewsPage() {
           <h1 className="text-2xl font-black text-gray-900 tracking-tight">
             Customer Reviews & Ratings
           </h1>
-          <p className="text-xs font-semibold text-gray-400 mt-1">
-            Community feedback and ratings for the MIIT Canteen
-          </p>
         </div>
         <div className="shrink-0">
-          {isAuthenticated ? (
+          {isAuthenticated && totalReviews > 0 && (
             <button
               type="button"
               onClick={handleOpenCreateModal}
@@ -205,13 +192,6 @@ export default function ReviewsPage() {
               <Plus className="h-4 w-4" />
               Write a Review
             </button>
-          ) : (
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-2 rounded-xl bg-gray-100 px-5 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-200 transition-all shadow-sm"
-            >
-              Login to Review
-            </Link>
           )}
         </div>
       </div>
@@ -397,7 +377,7 @@ export default function ReviewsPage() {
             )}
           </div>
         </div>
-      ) : totalProcessed === 0 ? (
+      ) : processedReviews.length === 0 ? (
         /* Filtered Empty State */
         <div className="text-center py-16 px-6 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center max-w-xl mx-auto space-y-4 my-8">
           <div className="bg-gray-50 p-4 rounded-full border border-gray-100 text-gray-400">
@@ -420,32 +400,13 @@ export default function ReviewsPage() {
       ) : (
         /* Review cards list */
         <>
-          <div className="mb-8 flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={prevSlide}
-              disabled={currentIndex === 0}
-              className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-gray-300 text-gray-500 transition-all duration-300 hover:border-brand hover:text-brand disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={nextSlide}
-              disabled={currentIndex >= maxIndex}
-              className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-gray-300 text-gray-500 transition-all duration-300 hover:border-brand hover:text-brand disabled:cursor-not-allowed disabled:opacity-40 cursor-pointer"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-
           <div
             className={cn(
               "grid gap-6 lg:gap-8",
               isMobile ? "grid-cols-1" : "grid-cols-3",
             )}
           >
-            {visibleReviews.map((review, index) => (
+            {paginatedReviews.map((review, index) => (
               <article
                 key={review.reviewId}
                 className="animate-fadeIn rounded-2xl border border-gray-100 bg-white p-6 shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl flex flex-col justify-between"
@@ -465,7 +426,7 @@ export default function ReviewsPage() {
                           <span className="text-[10px] text-gray-400 font-mono">{review.userName}</span>
                           <span className="text-[10px] text-gray-300">•</span>
                           <span className="text-[10px] text-gray-400">
-                            {new Date(review.createdAt).toLocaleDateString()}
+                            {formatDate(review.createdAt)}
                           </span>
                         </div>
                       </div>
@@ -499,7 +460,7 @@ export default function ReviewsPage() {
                         key={i}
                         className={cn(
                           "h-4 w-4",
-                          i < Math.floor(review.rating)
+                          i < Math.round(review.rating)
                             ? "fill-brand text-brand"
                             : "text-gray-200",
                         )}
@@ -514,6 +475,43 @@ export default function ReviewsPage() {
               </article>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-8 border-t border-gray-100 pt-6 text-xs px-2">
+              <span className="text-gray-500 font-medium">
+                Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, processedReviews.length)} of {processedReviews.length} reviews
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="w-8 h-8 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-55 hover:text-gray-700 disabled:opacity-50 disabled:hover:bg-white transition-colors cursor-pointer bg-white"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                {Array.from({ length: totalPages }).map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      currentPage === i + 1
+                        ? "bg-brand text-white shadow-sm"
+                        : "text-gray-600 bg-white border border-gray-200 hover:bg-gray-100"
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="w-8 h-8 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-55 hover:text-gray-700 disabled:opacity-50 disabled:hover:bg-white transition-colors cursor-pointer bg-white"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
 

@@ -7,6 +7,8 @@ import OrderLists from "../pages/OrderLists";
 import Categories from "../pages/Categories";
 import Report from "../pages/Report";
 import Pos from "../pages/Pos";
+import Review from "../pages/Reviews";
+import OrderHistory from "../pages/OrderHistory";
 import React from "react";
 
 export const router = createBrowserRouter([
@@ -16,6 +18,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Dashboard /> },
       { path: "orders", element: <OrderLists /> },
+      { path: "orders-history", element: <OrderHistory /> },
       { path: "menu", element: <Menu /> },
       { path: "categories", element: <Categories /> },
       { path: "reviews", element: <div className="p-6 font-sans"><h1 className="text-xl font-bold text-gray-900">Reviews Management</h1><p className="text-xs text-gray-500 mt-2">Manage customer feedback and ratings.</p></div> },

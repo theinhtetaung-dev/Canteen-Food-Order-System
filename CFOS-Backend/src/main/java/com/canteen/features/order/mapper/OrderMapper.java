@@ -17,6 +17,9 @@ public class OrderMapper {
         
         if (order.getUser() != null) {
             dto.setUserName(order.getUser().getUserName());
+            if (order.getUser().getRole() != null) {
+                dto.setUserRole(order.getUser().getRole().getRoleName());
+            }
         }
         dto.setTotalAmount(order.getTotalAmount());
         
@@ -32,6 +35,7 @@ public class OrderMapper {
                 com.canteen.model.OrderItem firstItem = order.getOrderItems().get(0);
                 if (firstItem.getFood() != null && firstItem.getFood().getBranch() != null) {
                     dto.setCanteenId(firstItem.getFood().getBranch().getBranchId());
+                    dto.setCanteenName(firstItem.getFood().getBranch().getBranchName());
                 }
             }
         }

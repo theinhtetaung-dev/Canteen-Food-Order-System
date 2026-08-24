@@ -10,10 +10,12 @@ public class OrderResponseModel {
 
     private Integer orderId;
     private String userName;
+    private String userRole;
     private BigDecimal totalAmount;
     private com.canteen.model.Status orderStatus;
     private List<OrderItemResponse> orderItems;
     private Integer canteenId;
+    private String canteenName;
     private Boolean deleteFlag = false;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

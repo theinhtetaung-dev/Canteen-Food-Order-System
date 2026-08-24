@@ -75,7 +75,11 @@ public class UserService {
             user.setCanteen(canteen);
         }
 
-        userRepository.save(user);
+        try {
+            userRepository.save(user);
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            throw new DuplicateResourceException("User already exists in the system (possibly deactivated).");
+        }
 
         CreateUserResModel response = new CreateUserResModel();
         response.setUserName(user.getUserName());

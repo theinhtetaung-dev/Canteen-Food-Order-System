@@ -1,4 +1,5 @@
 import { api } from "@user/api/axios";
+import { formatDate } from "@user/lib/utils";
 
 export interface StudentUser {
   id: string;
@@ -14,7 +15,7 @@ export async function fetchStudents(): Promise<StudentUser[]> {
   const { data } = await api.get<any>("/api/users?size=1000");
   const users = data.content || data;
   return users
-    .filter((u: any) => u.roleName && u.roleName.toLowerCase() === "user")
+    .filter((u: any) => u.roleName && u.roleName.toLowerCase() === "user" && (u.userName === u.fullName || !u.email || u.email.trim() === "" || u.email.endsWith("@student.local")))
     .map((u: any) => ({
       id: String(u.userId),
       rollNo: u.userName,
@@ -22,8 +23,8 @@ export async function fetchStudents(): Promise<StudentUser[]> {
       phone: u.phoneNumber || "+959 000 0000",
       status: 'Active',
       joinedOn: u.createdAt
-        ? new Date(u.createdAt).toLocaleDateString()
-        : new Date().toLocaleDateString(),
+        ? formatDate(u.createdAt)
+        : formatDate(new Date()),
       batch: 'All Categories',
     }));
 }
@@ -75,8 +76,8 @@ export async function fetchKitchenAdmins(): Promise<any[]> {
       phone: u.phoneNumber || '+959 000 0000',
       status: 'Active',
       joinedOn: u.createdAt
-        ? new Date(u.createdAt).toLocaleDateString()
-        : new Date().toLocaleDateString(),
+        ? formatDate(u.createdAt)
+        : formatDate(new Date()),
     }));
 }
 

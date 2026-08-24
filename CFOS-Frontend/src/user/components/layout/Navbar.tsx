@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LogOut, Menu as MenuIcon, Package, Star, Utensils, User, UtensilsCrossed, X } from "lucide-react";
+import { LogOut, Menu as MenuIcon, Package, Star, Utensils, User, UtensilsCrossed, X, Bell, Globe } from "lucide-react";
 import brandLogo from "../../../assets/logo.png";
 import { NotificationBell } from "@user/components/layout/NotificationBell";
 import { useAuth } from "@user/hooks/useAuth";
 import { cn } from "@user/lib/utils";
 import { fetchAllUsers } from "@user/api/user.api";
+import { translate } from "@user/lib/translations";
 
 const navLinks = [
   { name: "Menu", path: "/user/menu", icon: Utensils },
@@ -17,6 +18,31 @@ export function Navbar() {
   const navigate = useNavigate();
   const { isAuthenticated, logout, user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [lang, setLang] = useState<"EN" | "MM">(
+    (localStorage.getItem("campus_bites_lang") as "EN" | "MM") || "EN"
+  );
+
+  const toggleLanguage = () => {
+    const newLang = lang === "EN" ? "MM" : "EN";
+    setLang(newLang);
+    localStorage.setItem("campus_bites_lang", newLang);
+    window.dispatchEvent(new Event("languageChanged"));
+  };
+
+  useEffect(() => {
+    const handleLanguageUpdate = () => {
+      const saved = localStorage.getItem("campus_bites_lang") as "EN" | "MM";
+      if (saved) {
+        setLang(saved);
+      }
+    };
+    window.addEventListener("languageChanged", handleLanguageUpdate);
+    window.addEventListener("storage", handleLanguageUpdate);
+    return () => {
+      window.removeEventListener("languageChanged", handleLanguageUpdate);
+      window.removeEventListener("storage", handleLanguageUpdate);
+    };
+  }, []);
 
   const [profile, setProfile] = useState(() => {
     const saved = localStorage.getItem("campus_bites_profile");
@@ -165,7 +191,7 @@ export function Navbar() {
                     )}
                   >
                     <Icon className="h-5 w-5" />
-                    {link.name}
+                    {translate(link.name.toLowerCase() as any, lang)}
                   </Link>
                 );
               })}
@@ -183,7 +209,20 @@ export function Navbar() {
                     )}
                   >
                     <Package className="h-5 w-5" />
-                    My Orders
+                    {translate("orders", lang)}
+                  </Link>
+                  <Link
+                    to="/user/notifications"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-base font-medium",
+                      isActive("/user/notifications")
+                        ? "bg-[#e2f0c2] text-[#284208]"
+                        : "text-gray-600 hover:bg-[#ebf3d8]",
+                    )}
+                  >
+                    <Bell className="h-5 w-5" />
+                    {translate("notifications", lang)}
                   </Link>
                   <Link
                     to="/user/profile"
@@ -196,8 +235,16 @@ export function Navbar() {
                     )}
                   >
                     <User className="h-5 w-5" />
-                    Profile
+                    {translate("profile", lang)}
                   </Link>
+                  <button
+                    type="button"
+                    onClick={toggleLanguage}
+                    className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:bg-[#ebf3d8]"
+                  >
+                    <Globe className="h-5 w-5" />
+                    {translate("language", lang)}
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -208,7 +255,7 @@ export function Navbar() {
                     className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:bg-[#ebf3d8]"
                   >
                     <LogOut className="h-5 w-5" />
-                    Log Out
+                    {translate("logout", lang)}
                   </button>
                 </>
               ) : (
@@ -252,7 +299,7 @@ export function Navbar() {
             </div>
 
             <div className="flex flex-col space-y-2">
-              <span className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Navigation</span>
+              <span className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{translate("navigation", lang)}</span>
               {navLinks.map((link) => {
                 const Icon = link.icon;
                 return (
@@ -267,7 +314,7 @@ export function Navbar() {
                     )}
                   >
                     <Icon className="h-4 w-4" />
-                    {link.name}
+                    {translate(link.name.toLowerCase() as any, lang)}
                   </Link>
                 );
               })}
@@ -275,7 +322,7 @@ export function Navbar() {
               {isAuthenticated && (
                 <>
                   <div className="my-2 border-t border-gray-100" />
-                  <span className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-4 block">Account</span>
+                  <span className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-4 block">{translate("account", lang)}</span>
                   <Link
                     to="/user/orders"
                     className={cn(
@@ -286,7 +333,19 @@ export function Navbar() {
                     )}
                   >
                     <Package className="h-4 w-4" />
-                    Orders
+                    {translate("orders", lang)}
+                  </Link>
+                  <Link
+                    to="/user/notifications"
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300",
+                      isActive("/user/notifications")
+                        ? "bg-[#e2f0c2] text-[#284208] shadow-sm"
+                        : "text-gray-600 hover:bg-[#ebf3d8] hover:text-gray-900",
+                    )}
+                  >
+                    <Bell className="h-4 w-4" />
+                    {translate("notifications", lang)}
                   </Link>
                 </>
               )}
@@ -317,6 +376,13 @@ export function Navbar() {
                 </div>
               </NavLink>
               <button
+                onClick={toggleLanguage}
+                className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 text-xs font-bold transition-all cursor-pointer border border-gray-200"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>{translate("language", lang)}</span>
+              </button>
+              <button
                 onClick={() => {
                   logout();
                   navigate("/user");
@@ -324,7 +390,7 @@ export function Navbar() {
                 className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 text-xs font-bold transition-all cursor-pointer border border-red-100/60"
               >
                 <LogOut className="w-3.5 h-3.5" />
-                <span>Logout</span>
+                <span>{translate("logout", lang)}</span>
               </button>
             </div>
           )}

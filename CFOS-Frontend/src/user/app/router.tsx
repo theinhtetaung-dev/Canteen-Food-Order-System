@@ -8,6 +8,7 @@ import ReviewsPage from "@user/pages/ReviewsPage";
 import NotFoundPage from "@user/pages/NotFoundPage";
 import ProfilePage from "@user/pages/ProfilePage";
 import OrdersPage from "@user/pages/OrdersPage";
+import NotificationsPage from "@user/pages/NotificationsPage";
 import LoginPage from "@user/pages/auth/LoginPage";
 import RegisterPage from "@user/pages/auth/RegisterPage";
 
@@ -34,6 +35,14 @@ export function userRoutes() {
           element={
             <ProtectedRoute>
               <OrdersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
             </ProtectedRoute>
           }
         />

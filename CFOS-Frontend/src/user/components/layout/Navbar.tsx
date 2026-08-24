@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { LogOut, Menu as MenuIcon, Package, Star, Utensils, User, UtensilsCrossed, X } from "lucide-react";
+import { LogOut, Menu as MenuIcon, Package, Star, Utensils, User, UtensilsCrossed, X, Bell, Globe } from "lucide-react";
 import brandLogo from "../../../assets/logo.png";
 import { NotificationBell } from "@user/components/layout/NotificationBell";
 import { useAuth } from "@user/hooks/useAuth";
@@ -17,6 +17,15 @@ export function Navbar() {
   const navigate = useNavigate();
   const { isAuthenticated, logout, user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [lang, setLang] = useState<"EN" | "MM">(
+    (localStorage.getItem("campus_bites_lang") as "EN" | "MM") || "EN"
+  );
+
+  const toggleLanguage = () => {
+    const newLang = lang === "EN" ? "MM" : "EN";
+    setLang(newLang);
+    localStorage.setItem("campus_bites_lang", newLang);
+  };
 
   const [profile, setProfile] = useState(() => {
     const saved = localStorage.getItem("campus_bites_profile");
@@ -186,6 +195,19 @@ export function Navbar() {
                     My Orders
                   </Link>
                   <Link
+                    to="/user/notifications"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-base font-medium",
+                      isActive("/user/notifications")
+                        ? "bg-[#e2f0c2] text-[#284208]"
+                        : "text-gray-600 hover:bg-[#ebf3d8]",
+                    )}
+                  >
+                    <Bell className="h-5 w-5" />
+                    Notifications
+                  </Link>
+                  <Link
                     to="/user/profile"
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
@@ -198,6 +220,14 @@ export function Navbar() {
                     <User className="h-5 w-5" />
                     Profile
                   </Link>
+                  <button
+                    type="button"
+                    onClick={toggleLanguage}
+                    className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-base font-medium text-gray-600 hover:bg-[#ebf3d8]"
+                  >
+                    <Globe className="h-5 w-5" />
+                    Language: {lang === "EN" ? "English" : "Myanmar"}
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -288,6 +318,18 @@ export function Navbar() {
                     <Package className="h-4 w-4" />
                     Orders
                   </Link>
+                  <Link
+                    to="/user/notifications"
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300",
+                      isActive("/user/notifications")
+                        ? "bg-[#e2f0c2] text-[#284208] shadow-sm"
+                        : "text-gray-600 hover:bg-[#ebf3d8] hover:text-gray-900",
+                    )}
+                  >
+                    <Bell className="h-4 w-4" />
+                    Notifications
+                  </Link>
                 </>
               )}
             </div>
@@ -316,6 +358,13 @@ export function Navbar() {
                   </p>
                 </div>
               </NavLink>
+              <button
+                onClick={toggleLanguage}
+                className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 text-xs font-bold transition-all cursor-pointer border border-gray-200"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>Language: {lang === "EN" ? "English" : "Myanmar"}</span>
+              </button>
               <button
                 onClick={() => {
                   logout();

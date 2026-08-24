@@ -191,12 +191,9 @@ export default function ReviewsPage() {
           <h1 className="text-2xl font-black text-gray-900 tracking-tight">
             Customer Reviews & Ratings
           </h1>
-          <p className="text-xs font-semibold text-gray-400 mt-1">
-            Community feedback and ratings for the MIIT Canteen
-          </p>
         </div>
         <div className="shrink-0">
-          {isAuthenticated ? (
+          {isAuthenticated && totalReviews > 0 && (
             <button
               type="button"
               onClick={handleOpenCreateModal}
@@ -205,13 +202,6 @@ export default function ReviewsPage() {
               <Plus className="h-4 w-4" />
               Write a Review
             </button>
-          ) : (
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-2 rounded-xl bg-gray-100 px-5 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-200 transition-all shadow-sm"
-            >
-              Login to Review
-            </Link>
           )}
         </div>
       </div>

@@ -23,7 +23,7 @@ export async function registerUser(payload: RegisterPayload): Promise<User> {
   await api.post("/api/users", {
     userName: payload.rollNumber,
     fullName: payload.rollNumber,
-    email: `${payload.rollNumber}@canteen.com`,
+    email: `${payload.rollNumber}@student.local`,
     password: payload.password,
   });
 

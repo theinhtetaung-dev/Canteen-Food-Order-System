@@ -7,6 +7,7 @@ import OrderLists from "../pages/OrderLists";
 import Categories from "../pages/Categories";
 import Report from "../pages/Report";
 import Pos from "../pages/Pos";
+import Review from "../pages/Reviews";
 import React from "react";
 
 export const router = createBrowserRouter([

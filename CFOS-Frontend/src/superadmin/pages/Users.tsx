@@ -145,9 +145,6 @@ export const Users: React.FC = () => {
         <h2 className="text-3xl font-black text-gray-900 tracking-tight">
           Student Users
         </h2>
-        <p className="text-sm font-medium text-gray-500 mt-1">
-          Manage and monitor registered student profiles.
-        </p>
       </div>
 
       {/* Main Container Card */}

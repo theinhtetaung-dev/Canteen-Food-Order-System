@@ -377,8 +377,20 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
 
       {/* Save status feedback */}
       {saveStatus === "success" && (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
-          ✓ Profile updated successfully.
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white w-full max-w-sm rounded-2xl border border-gray-100 shadow-xl p-6 space-y-6 animate-slideUp text-center">
+            <div className="flex flex-col items-center gap-4">
+              <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+              <h3 className="text-xl font-bold text-gray-900">Success</h3>
+              <p className="text-sm text-gray-500">Profile updated successfully.</p>
+            </div>
+            <button
+              onClick={() => setSaveStatus("idle")}
+              className="w-full bg-brand text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-brand-dark transition-colors shadow-sm cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
       {saveStatus === "error" && (

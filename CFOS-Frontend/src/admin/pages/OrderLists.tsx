@@ -16,6 +16,7 @@ interface Order {
   status: OrderStatus;
   canteenId?: number;
   createdAt?: string;
+  userRole?: string;
 }
 
 export function OrderLists() {
@@ -88,6 +89,7 @@ export function OrderLists() {
           status: mappedStatus,
           canteenId: d.canteenId,
           createdAt: d.createdAt,
+          userRole: d.userRole,
         };
       });
       setOrders(mapped);
@@ -139,6 +141,7 @@ export function OrderLists() {
           status: mappedStatus,
           canteenId: d.canteenId,
           createdAt: d.createdAt,
+          userRole: d.userRole,
         };
 
         setOrders((prev) => {
@@ -619,14 +622,10 @@ export function OrderLists() {
             </div>
             
             <div className="p-6 space-y-6">
-              <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="grid grid-cols-1 gap-4 text-sm">
                 <div>
-                  <span className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Student</span>
+                  <span className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{selectedOrder.userRole || "Student"}</span>
                   <span className="font-semibold text-gray-800">{selectedOrder.studentId}</span>
-                </div>
-                <div>
-                  <span className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Pickup Time</span>
-                  <span className="font-semibold text-gray-800">{selectedOrder.pickupTime}</span>
                 </div>
               </div>
 
@@ -636,9 +635,6 @@ export function OrderLists() {
                   {selectedOrder.rawItems.map((item: any, i: number) => (
                     <div key={i} className="flex justify-between items-center text-sm font-medium py-1">
                       <div className="flex items-center gap-3">
-                        {item.image && (
-                          <img src={item.image} alt={item.name} className="w-10 h-10 object-cover rounded-lg shadow-sm border border-gray-200" />
-                        )}
                         <div className="flex flex-col">
                           <span className="text-gray-700 font-bold">{item.name}</span>
                           <span className="text-gray-500 text-xs font-semibold">{item.quantity} x {item.price} MMK</span>

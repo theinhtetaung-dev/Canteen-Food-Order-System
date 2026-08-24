@@ -21,6 +21,7 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
   canteenId?: number;
+  canteenName?: string;
 }
 
 export interface PlaceOrderPayload {

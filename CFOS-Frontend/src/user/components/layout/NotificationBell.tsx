@@ -4,6 +4,7 @@ import { useAuth } from "@user/hooks/useAuth";
 import { useOrders } from "@user/hooks/useOrders";
 import { cn } from "@user/lib/utils";
 
+import { Link } from "react-router-dom";
 export function NotificationBell({ className }: { className?: string }) {
   const { isAuthenticated } = useAuth();
   const { notifications, unreadCount, markRead, markAllRead } = useOrders();
@@ -69,6 +70,15 @@ export function NotificationBell({ className }: { className?: string }) {
                   </button>
                 ))
               )}
+            </div>
+            <div className="border-t border-gray-100 p-2">
+              <Link
+                to="/user/notifications"
+                onClick={() => setOpen(false)}
+                className="block w-full text-center py-2 text-sm font-semibold text-brand hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                View all notifications
+              </Link>
             </div>
           </div>
         </>

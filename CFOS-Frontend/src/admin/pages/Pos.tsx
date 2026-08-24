@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Search, ChevronLeft, ChevronRight, ShoppingCart, ChevronDown, Plus, Minus, CheckCircle } from "lucide-react";
 import { FoodDetailModal } from "../../user/components/menu/FoodDetailModal";
 import { FoodGrid } from "../../user/components/menu/FoodGrid";
+import { CartItem } from "../../user/components/cart/CartItem";
 import { useCart } from "../../user/hooks/useCart";
 import { api } from "../../user/api/axios";
 import { fetchBranches, type Branch } from "../../user/api/branch.api";
@@ -25,7 +26,7 @@ export default function Pos() {
   const [isLoading, setIsLoading] = useState(true);
 
   // POS Cart State
-  const { lines, addToCart, removeFromCart, deleteFromCart, clearCart, totalItems, totalPrice } = useCart();
+  const { lines, addToCart, removeFromCart, deleteFromCart, clearCart, totalItems, totalPrice, updateComment } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [confirmedOrder, setConfirmedOrder] = useState<any>(null);
@@ -120,7 +121,7 @@ export default function Pos() {
     setIsCheckingOut(true);
     try {
       const payload = {
-        orderItems: lines.map(c => ({ foodId: c.item.id, quantity: c.quantity, comment: "" }))
+        orderItems: lines.map(c => ({ foodId: c.item.id, quantity: c.quantity, comment: c.comment || "" }))
       };
       const res = await api.post("/api/orders", payload);
       setConfirmedOrder({ ...res.data, lines: [...lines], total: totalPrice });
@@ -243,23 +244,18 @@ export default function Pos() {
         </div>
         
         <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50/50">
-          {lines.map((line) => (
-            <div key={line.item.id} className="flex gap-4 items-start border border-gray-100 rounded-2xl p-4 bg-white shadow-sm">
-              <img src={line.item.image} alt={line.item.name} className="h-16 w-16 rounded-xl object-cover shadow-sm border border-gray-100" />
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold text-gray-900 truncate">{line.item.name}</h3>
-                <p className="text-sm font-black text-[#5b7a42] mt-1">{formatPrice(line.item.price * line.quantity)}</p>
-                <div className="flex items-center justify-between mt-3">
-                  <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
-                    <button onClick={() => removeFromCart(line.item.id)} className="p-1.5 text-gray-500 hover:bg-gray-100"><Minus className="h-3.5 w-3.5" /></button>
-                    <span className="w-8 text-center text-xs font-bold text-gray-700">{line.quantity}</span>
-                    <button onClick={() => addToCart(line.item.id)} className="p-1.5 text-gray-500 hover:bg-gray-100"><Plus className="h-3.5 w-3.5" /></button>
-                  </div>
-                  <button onClick={() => deleteFromCart(line.item.id)} className="text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-lg">Remove</button>
-                </div>
-              </div>
-            </div>
-          ))}
+          <ul className="space-y-4">
+            {lines.map((line) => (
+              <CartItem
+                key={line.item.id}
+                line={line}
+                onAdd={addToCart}
+                onRemove={removeFromCart}
+                onDelete={deleteFromCart}
+                onUpdateComment={updateComment}
+              />
+            ))}
+          </ul>
           {lines.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-3 py-12">
               <ShoppingCart className="w-12 h-12 text-gray-300" />
@@ -329,9 +325,16 @@ export default function Pos() {
             
             <div className="bg-gray-50 rounded-xl p-4 mb-6 space-y-3 max-h-60 overflow-y-auto border border-gray-100">
               {confirmedOrder.lines.map((line: any) => (
-                <div key={line.item.id} className="flex justify-between text-sm">
-                  <span className="font-medium text-gray-700">{line.quantity}x {line.item.name}</span>
-                  <span className="font-bold text-gray-900">{formatPrice(line.item.price * line.quantity)}</span>
+                <div key={line.item.id} className="text-sm">
+                  <div className="flex justify-between">
+                    <span className="font-medium text-gray-700">{line.quantity}x {line.item.name}</span>
+                    <span className="font-bold text-gray-900">{formatPrice(line.item.price * line.quantity)}</span>
+                  </div>
+                  {line.comment && (
+                    <p className="text-xs text-gray-500 italic mt-0.5 ml-4">
+                      Note: {line.comment}
+                    </p>
+                  )}
                 </div>
               ))}
               <div className="border-t border-gray-200 pt-3 flex justify-between mt-3 sticky bottom-0 bg-gray-50 pb-1">

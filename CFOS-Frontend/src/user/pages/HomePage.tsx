@@ -46,9 +46,8 @@ function LandingPage({ slides, menuCount, avgRating }: { slides: HeroSlide[], me
               the Best Part of the Day.
             </h1>
 
-            <p className="max-w-lg text-base leading-relaxed text-gray-500">
-              From crispy fresh salads to warm, nourishing classics—we serve
-              balanced meals that students love and parents trust.
+            <p className={`max-w-lg text-base leading-relaxed text-gray-500 transition-all duration-500 ${isAnimating ? "opacity-0" : "opacity-100"}`}>
+              {slide?.description || "From crispy fresh salads to warm, nourishing classics—we serve balanced meals that students love and parents trust."}
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-2">
@@ -152,9 +151,8 @@ function DashboardHome({ slides, menuCount, avgRating }: { slides: HeroSlide[], 
             the Best Part of the Day.
           </h1>
 
-          <p className="max-w-md text-sm leading-relaxed text-gray-500 sm:text-base">
-            From crispy fresh salads to warm, nourishing classics—we serve
-            balanced meals that students love and parents trust.
+          <p className={`max-w-md text-sm leading-relaxed text-gray-500 sm:text-base transition-all duration-500 ${isAnimating ? "opacity-0" : "opacity-100"}`}>
+            {slide.description || "From crispy fresh salads to warm, nourishing classics—we serve balanced meals that students love and parents trust."}
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -193,7 +191,7 @@ function DashboardHome({ slides, menuCount, avgRating }: { slides: HeroSlide[], 
           </div>
 
           <div
-            className={`absolute bottom-4 right-4 rounded-xl border border-b-brand bg-white px-4 py-2 shadow-lg transition-all duration-500 sm:bottom-8 sm:right-8 ${isAnimating ? "translate-x-4 opacity-0" : "translate-x-0 opacity-100"}`}
+            className={`absolute bottom-4 right-4 z-20 rounded-xl border border-b-brand bg-white px-4 py-2 shadow-lg transition-all duration-500 sm:bottom-8 sm:right-8 ${isAnimating ? "translate-x-4 opacity-0" : "translate-x-0 opacity-100"}`}
           >
             <p className="text-sm font-semibold text-gray-800">{slide.name}</p>
           </div>
@@ -239,7 +237,8 @@ export default function HomePage() {
             setSlides(topItems.map(i => ({
               name: i.name,
               rating: i.rating || 0.0,
-              image: i.image
+              image: i.image,
+              description: i.description
             })));
           }
         }

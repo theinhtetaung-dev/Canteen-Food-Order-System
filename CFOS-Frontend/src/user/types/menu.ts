@@ -25,4 +25,6 @@ export interface HeroSlide {
   name: string;
   rating: number;
   image: string;
+  description?: string;
 }
+

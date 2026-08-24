@@ -15,6 +15,8 @@ export default function OrdersPage() {
   const [viewStyle, setViewStyle] = useState<"card" | "table">("table");
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
   const [cancelConfirmId, setCancelConfirmId] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
 
   const handleCancelOrder = (orderId: string) => {
     setCancelConfirmId(orderId);
@@ -40,39 +42,94 @@ export default function OrdersPage() {
     }
   }, [location.state]);
 
+  const filteredOrders = orders.filter((order) => {
+    if (!order.createdAt) return true;
+    const orderDate = new Date(order.createdAt);
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      if (orderDate < start) return false;
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      if (orderDate > end) return false;
+    }
+    return true;
+  });
+
   return (
     <PageContainer>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-        <div>
-          <h1 className="mb-2 text-3xl font-bold text-gray-800">My Orders</h1>
-          <p className="text-sm text-gray-500">
-            Track your order status and view order history.
-          </p>
-        </div>
-        <div className="flex bg-white rounded-lg p-1 border border-gray-200">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setViewStyle("table")}
-            className={viewStyle === "table" ? "bg-brand/10 text-brand" : "text-gray-500"}
-          >
-            <List className="h-4 w-4 mr-2" /> Table
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setViewStyle("card")}
-            className={viewStyle === "card" ? "bg-brand/10 text-brand" : "text-gray-500"}
-          >
-            <LayoutGrid className="h-4 w-4 mr-2" /> Card
-          </Button>
-        </div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">My Orders</h1>
       </div>
 
       {highlightId && (
         <div className="mb-6 rounded-xl border border-brand/30 bg-brand-light/40 px-4 py-3 text-sm text-brand-dark">
           Order {highlightId} placed successfully! Status updates will appear
           here and in notifications.
+        </div>
+      )}
+
+      {orders.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-gray-600">Filter by Date:</span>
+            </div>
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500 font-medium">Start:</span>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand text-gray-700"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500 font-medium">End:</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="px-3 py-1.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand text-gray-700"
+                />
+              </div>
+              {(startDate || endDate) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setStartDate("");
+                    setEndDate("");
+                  }}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50 text-xs font-bold"
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="flex bg-white rounded-lg p-1 border border-gray-200 self-start sm:self-auto shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setViewStyle("table")}
+              className={viewStyle === "table" ? "bg-brand/10 text-brand" : "text-gray-500"}
+            >
+              <List className="h-4 w-4 mr-2" /> Table
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setViewStyle("card")}
+              className={viewStyle === "card" ? "bg-brand/10 text-brand" : "text-gray-500"}
+            >
+              <LayoutGrid className="h-4 w-4 mr-2" /> Card
+            </Button>
+          </div>
         </div>
       )}
 
@@ -84,10 +141,27 @@ export default function OrdersPage() {
             Browse the menu and place your first order!
           </p>
         </div>
+      ) : filteredOrders.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-white py-16 text-center">
+          <Package className="mb-4 h-12 w-12 text-brand-light" />
+          <p className="text-gray-500 font-semibold">No orders found</p>
+          <p className="mt-1 text-sm text-gray-400 mb-4">
+            No orders match the selected date range.
+          </p>
+          <Button
+            size="sm"
+            onClick={() => {
+              setStartDate("");
+              setEndDate("");
+            }}
+          >
+            Clear Date Filter
+          </Button>
+        </div>
       ) : (
         viewStyle === "card" ? (
           <div className="grid gap-6 md:grid-cols-2">
-            {orders.map((order) => (
+            {filteredOrders.map((order) => (
               <div
                 key={order.id}
                 className={
@@ -96,7 +170,7 @@ export default function OrdersPage() {
                     : undefined
                 }
               >
-                <OrderCard order={order} />
+                <OrderCard order={order} onDetailClick={() => setDetailOrder(order)} />
               </div>
             ))}
           </div>
@@ -106,7 +180,6 @@ export default function OrdersPage() {
               <thead className="bg-gray-50 text-xs uppercase text-gray-700">
                 <tr>
                   <th scope="col" className="px-6 py-4 font-medium">No</th>
-                  <th scope="col" className="px-6 py-4 font-medium">Order Code</th>
                   <th scope="col" className="px-6 py-4 font-medium">Date</th>
                   <th scope="col" className="px-6 py-4 font-medium">Total Price</th>
                   <th scope="col" className="px-6 py-4 font-medium">Status</th>
@@ -114,10 +187,9 @@ export default function OrdersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {orders.map((order, index) => (
+                {filteredOrders.map((order, index) => (
                   <tr key={order.id} className={`hover:bg-gray-50 transition-colors ${highlightId === order.id ? 'bg-brand-light/20' : ''}`}>
                     <td className="px-6 py-4 font-medium text-gray-900">{index + 1}</td>
-                    <td className="px-6 py-4 font-medium text-gray-900">{order.id}</td>
                     <td className="px-6 py-4">{formatDateTime(order.createdAt)}</td>
                     <td className="px-6 py-4 font-semibold text-brand-dark">{formatPrice(order.totalPrice)}</td>
                     <td className="px-6 py-4">

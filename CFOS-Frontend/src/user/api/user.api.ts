@@ -1,4 +1,5 @@
 import { api } from "@user/api/axios";
+import { formatDate } from "@user/lib/utils";
 
 export interface StudentUser {
   id: string;
@@ -22,8 +23,8 @@ export async function fetchStudents(): Promise<StudentUser[]> {
       phone: u.phoneNumber || "+959 000 0000",
       status: 'Active',
       joinedOn: u.createdAt
-        ? new Date(u.createdAt).toLocaleDateString()
-        : new Date().toLocaleDateString(),
+        ? formatDate(u.createdAt)
+        : formatDate(new Date()),
       batch: 'All Categories',
     }));
 }
@@ -75,8 +76,8 @@ export async function fetchKitchenAdmins(): Promise<any[]> {
       phone: u.phoneNumber || '+959 000 0000',
       status: 'Active',
       joinedOn: u.createdAt
-        ? new Date(u.createdAt).toLocaleDateString()
-        : new Date().toLocaleDateString(),
+        ? formatDate(u.createdAt)
+        : formatDate(new Date()),
     }));
 }
 

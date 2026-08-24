@@ -30,6 +30,7 @@ import {
 import { fetchAllUsers, type ReportUser } from "@user/api/user.api";
 import { fetchBranches, type Branch } from "@user/api/branch.api";
 import Swal from 'sweetalert2';
+import { formatDate, formatDateTime } from "@user/lib/utils";
 
 // Standardized SweetAlert2 classes matching the Campus Bites theme
 const swalAlertClass = {
@@ -207,7 +208,7 @@ export const UserReports: React.FC = () => {
         u.canteenName || '—',
         u.email || '—',
         u.phoneNumber || '—',
-        new Date(u.createdAt).toLocaleDateString()
+        formatDate(u.createdAt)
       ];
     });
 
@@ -255,7 +256,7 @@ export const UserReports: React.FC = () => {
         u.canteenName || '—',
         u.email || '—',
         u.phoneNumber || '—',
-        new Date(u.createdAt).toLocaleDateString()
+        formatDate(u.createdAt)
       ];
     });
 
@@ -402,11 +403,7 @@ export const UserReports: React.FC = () => {
       ),
       cell: ({ row }) => (
         <span className="text-[11px] text-slate-500 font-semibold">
-          {new Date(row.original.createdAt).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          })}
+          {formatDate(row.original.createdAt)}
         </span>
       ),
     },
@@ -805,7 +802,7 @@ export const UserReports: React.FC = () => {
             <h1 className="text-3xl font-black tracking-tight text-slate-900 uppercase">Campus Bites Canteen System</h1>
             <h2 className="text-lg font-bold text-[#3B5B11] mt-1">USER SECURITY & ACCESS AUDIT REPORT</h2>
             <div className="text-xs text-slate-500 mt-2 font-medium">
-              Document generated on {new Date().toLocaleString()} by System Administrator.
+              Document generated on {formatDateTime(new Date())} by System Administrator.
             </div>
           </div>
           <div className="text-right text-xs space-y-1 font-semibold text-slate-600">
@@ -869,7 +866,7 @@ export const UserReports: React.FC = () => {
                   <td className="py-2 px-3 border-r border-slate-300 truncate max-w-[130px]">{u.email || '—'}</td>
                   <td className="py-2 px-3 border-r border-slate-300 font-mono text-[10px]">{u.phoneNumber || '—'}</td>
                   <td className="py-2 px-3 border-r border-slate-300 font-semibold">{statusStr}</td>
-                  <td className="py-2 px-3">{new Date(u.createdAt).toLocaleDateString()}</td>
+                  <td className="py-2 px-3">{formatDate(u.createdAt)}</td>
                 </tr>
               );
             })}

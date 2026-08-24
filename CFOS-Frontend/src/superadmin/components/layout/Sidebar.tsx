@@ -1,14 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Store, Users, User, UtensilsCrossed, MapPin, ShieldCheck, BarChart3, UserPlus, LogOut, Star } from 'lucide-react';
+import { LayoutDashboard, Store, Users, User, UtensilsCrossed, MapPin, ShieldCheck, BarChart3, UserPlus, LogOut, Star, Globe } from 'lucide-react';
 import { useAuth } from "@user/hooks/useAuth";
 import { fetchAllUsers } from "@user/api/user.api";
+import { translate } from "@user/lib/translations";
 import brandLogo from "../../../assets/image.png";
 
 export const Sidebar: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  
+
+  const [lang, setLang] = useState<"EN" | "MM">(
+    (localStorage.getItem("campus_bites_lang") as "EN" | "MM") || "EN"
+  );
+
+  const toggleLanguage = () => {
+    const newLang = lang === "EN" ? "MM" : "EN";
+    setLang(newLang);
+    localStorage.setItem("campus_bites_lang", newLang);
+    window.dispatchEvent(new Event("languageChanged"));
+  };
+
+  useEffect(() => {
+    const handleLanguageUpdate = () => {
+      const saved = localStorage.getItem("campus_bites_lang") as "EN" | "MM";
+      if (saved) {
+        setLang(saved);
+      }
+    };
+    window.addEventListener("languageChanged", handleLanguageUpdate);
+    window.addEventListener("storage", handleLanguageUpdate);
+    return () => {
+      window.removeEventListener("languageChanged", handleLanguageUpdate);
+      window.removeEventListener("storage", handleLanguageUpdate);
+    };
+  }, []);
+
   const [profile, setProfile] = useState(() => {
     const saved = localStorage.getItem("campus_bites_profile");
     if (saved) {
@@ -124,7 +151,7 @@ export const Sidebar: React.FC = () => {
             }
           >
             <LayoutDashboard className="w-4 h-4" />
-            Dashboard
+            {translate("dashboard", lang)}
           </NavLink>
 
           <NavLink
@@ -137,7 +164,7 @@ export const Sidebar: React.FC = () => {
             }
           >
             <Store className="w-4 h-4" />
-            Canteen Admin
+            {translate("canteenAdmin", lang)}
           </NavLink>
 
           <NavLink
@@ -150,7 +177,7 @@ export const Sidebar: React.FC = () => {
             }
           >
             <Users className="w-4 h-4" />
-            Users
+            {translate("users", lang)}
           </NavLink>
 
           <NavLink
@@ -163,7 +190,7 @@ export const Sidebar: React.FC = () => {
             }
           >
             <UserPlus className="w-4 h-4" />
-            Professor Account
+            {translate("professorAccount", lang)}
           </NavLink>
 
           <NavLink
@@ -176,7 +203,7 @@ export const Sidebar: React.FC = () => {
             }
           >
             <MapPin className="w-4 h-4" />
-            Canteens
+            {translate("canteens", lang)}
           </NavLink>
 
           <NavLink
@@ -189,7 +216,7 @@ export const Sidebar: React.FC = () => {
             }
           >
             <ShieldCheck className="w-4 h-4" />
-            Permissions
+            {translate("permissions", lang)}
           </NavLink>
 
           <NavLink
@@ -202,7 +229,7 @@ export const Sidebar: React.FC = () => {
             }
           >
             <BarChart3 className="w-4 h-4" />
-            User Reports
+            {translate("userReports", lang)}
           </NavLink>
 
           <NavLink
@@ -215,7 +242,7 @@ export const Sidebar: React.FC = () => {
             }
           >
             <Star className="w-4 h-4" />
-            Reviews
+            {translate("reviews", lang)}
           </NavLink>
         </nav>
       </div>
@@ -243,11 +270,18 @@ export const Sidebar: React.FC = () => {
           </div>
         </NavLink>
         <button
+          onClick={toggleLanguage}
+          className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 text-xs font-bold transition-all cursor-pointer border border-gray-200"
+        >
+          <Globe className="w-3.5 h-3.5" />
+          <span>{translate("language", lang)}</span>
+        </button>
+        <button
           onClick={handleLogout}
           className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 text-xs font-bold transition-all cursor-pointer border border-red-100/60"
         >
           <LogOut className="w-3.5 h-3.5" />
-          <span>Logout</span>
+          <span>{translate("logout", lang)}</span>
         </button>
       </div>
     </aside>

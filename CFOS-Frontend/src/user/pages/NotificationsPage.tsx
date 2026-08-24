@@ -1,5 +1,5 @@
 import { useOrders } from "@user/hooks/useOrders";
-import { cn } from "@user/lib/utils";
+import { cn, formatDateTime } from "@user/lib/utils";
 import { CheckCheck, Bell } from "lucide-react";
 
 export default function NotificationsPage() {
@@ -61,7 +61,7 @@ export default function NotificationsPage() {
                   </h4>
                   <p className="text-sm text-gray-500 mt-1">{n.message}</p>
                   <span className="text-xs text-gray-400 mt-2 block">
-                    {new Date(n.createdAt).toLocaleString()}
+                    {formatDateTime(n.createdAt)}
                   </span>
                 </div>
               </div>

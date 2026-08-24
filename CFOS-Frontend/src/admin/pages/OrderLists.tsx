@@ -26,7 +26,7 @@ export function OrderLists() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [filterBox, setFilterBox] = useState<"ALL" | "ACTIVE" | "PREPARING" | "COMPLETED">("ALL");
+  const [filterBox, setFilterBox] = useState<"ALL" | "PENDING" | "PREPARING">("ALL");
   const [viewStyle, setViewStyle] = useState<"card" | "table">("table");
 
   useEffect(() => {
@@ -170,12 +170,9 @@ export function OrderLists() {
 
   const filteredOrders = React.useMemo(() => {
     const baseOrders = userCanteenId === null ? orders : orders.filter(o => o.canteenId === userCanteenId);
-    return [...baseOrders].sort((a, b) => {
-      // Push Completed/Cancelled to the bottom
-      const aDone = a.status === "Completed" || a.status === "Cancelled" ? 1 : 0;
-      const bDone = b.status === "Completed" || b.status === "Cancelled" ? 1 : 0;
-      if (aDone !== bDone) return aDone - bDone;
-      
+    // Only display not completed/cancelled orders in the queue
+    const activeOrders = baseOrders.filter(o => o.status !== "Completed" && o.status !== "Cancelled");
+    return [...activeOrders].sort((a, b) => {
       // FIFO: Oldest orders first
       const timeA = a.createdAt ? new Date(a.createdAt).getTime() : parseInt(a.id.replace(/\\D/g, '')) || 0;
       const timeB = b.createdAt ? new Date(b.createdAt).getTime() : parseInt(b.id.replace(/\\D/g, '')) || 0;
@@ -186,9 +183,8 @@ export function OrderLists() {
   const ORDERS_PER_PAGE = 10;
   
   const boxFilteredOrders = filteredOrders.filter((o) => {
-    if (filterBox === "ACTIVE") return o.status !== "Completed" && o.status !== "Cancelled";
+    if (filterBox === "PENDING") return o.status === "Pending";
     if (filterBox === "PREPARING") return o.status === "Preparing";
-    if (filterBox === "COMPLETED") return o.status === "Completed";
     return true;
   });
 
@@ -198,9 +194,9 @@ export function OrderLists() {
     : boxFilteredOrders;
 
   // Stats Counters
-  const activeOrdersCount = filteredOrders.filter((o) => o.status !== "Completed" && o.status !== "Cancelled").length;
+  const activeOrdersCount = filteredOrders.length;
+  const pendingCount = filteredOrders.filter((o) => o.status === "Pending").length;
   const readyCount = filteredOrders.filter((o) => o.status === "Preparing").length;
-  const completedTodayCount = filteredOrders.filter((o) => o.status === "Completed").length;
 
   const handleNextStatus = async (id: string, targetBackendStatus: "PREPARING" | "COMPLETE" | "CANCEL") => {
     let nextStatus: OrderStatus = "Pending";
@@ -309,20 +305,20 @@ export function OrderLists() {
 
       {/* Top Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* ACTIVE ORDERS */}
+        {/* PENDING ORDERS */}
         <div 
-          onClick={() => setFilterBox(filterBox === "ACTIVE" ? "ALL" : "ACTIVE")}
-          className={`rounded-[26px] p-6 border flex items-center gap-5 shadow-sm cursor-pointer transition-all ${filterBox === "ACTIVE" ? "bg-[#dbebba] border-[#8ba168]" : "bg-[#fcfdfa] border-[#8ba168]/40 hover:bg-[#f6f8f2]"}`}
+          onClick={() => setFilterBox(filterBox === "PENDING" ? "ALL" : "PENDING")}
+          className={`rounded-[26px] p-6 border flex items-center gap-5 shadow-sm cursor-pointer transition-all ${filterBox === "PENDING" ? "bg-[#dbebba] border-[#8ba168]" : "bg-[#fcfdfa] border-[#8ba168]/40 hover:bg-[#f6f8f2]"}`}
         >
           <div className="w-14 h-14 rounded-2xl bg-white/60 flex items-center justify-center shrink-0">
             <List className="w-7 h-7 text-[#1a1a1a] stroke-[2.5]" />
           </div>
           <div className="space-y-1">
             <span className="text-[11px] font-extrabold tracking-wider text-[#2d3126] uppercase">
-              ACTIVE ORDERS
+              PENDING ORDERS
             </span>
             <div className="text-[42px] font-black text-[#111111] leading-none">
-              {activeOrdersCount}
+              {pendingCount}
             </div>
           </div>
         </div>
@@ -359,20 +355,20 @@ export function OrderLists() {
           </div>
         </div>
 
-        {/* COMPLETED TODAY */}
+        {/* TOTAL ACTIVE */}
         <div 
-          onClick={() => setFilterBox(filterBox === "COMPLETED" ? "ALL" : "COMPLETED")}
-          className={`rounded-[26px] p-6 border flex items-center gap-5 shadow-sm cursor-pointer transition-all ${filterBox === "COMPLETED" ? "bg-[#dbebba] border-[#8ba168]" : "bg-[#fcfdfa] border-[#8ba168]/40 hover:bg-[#f6f8f2]"}`}
+          onClick={() => setFilterBox("ALL")}
+          className={`rounded-[26px] p-6 border flex items-center gap-5 shadow-sm cursor-pointer transition-all ${filterBox === "ALL" ? "bg-[#dbebba] border-[#8ba168]" : "bg-[#fcfdfa] border-[#8ba168]/40 hover:bg-[#f6f8f2]"}`}
         >
           <div className="w-14 h-14 rounded-2xl bg-white/60 flex items-center justify-center shrink-0">
             <List className="w-7 h-7 text-[#1a1a1a] stroke-[2.5]" />
           </div>
           <div className="space-y-1">
             <span className="text-[11px] font-extrabold tracking-wider text-[#2d3126] uppercase">
-              COMPLETED TODAY
+              TOTAL ACTIVE
             </span>
             <div className="text-[42px] font-black text-[#111111] leading-none">
-              {completedTodayCount}
+              {activeOrdersCount}
             </div>
           </div>
         </div>
@@ -427,7 +423,7 @@ export function OrderLists() {
               <thead>
                 <tr className="bg-[#b9c2a8] text-[11px] font-extrabold text-[#2a2e23] uppercase tracking-wider">
                   <th className="py-3.5 px-7 w-16">NO</th>
-                  <th className="py-3.5 px-7">STUDENT ID</th>
+                  <th className="py-3.5 px-7">USER</th>
                   <th className="py-3.5 px-6">TOTAL AMOUNT</th>
                   <th className="py-3.5 px-6 text-center">STATUS</th>
                   <th className="py-3.5 px-7 text-center">ACTIONS</th>

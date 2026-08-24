@@ -42,17 +42,16 @@ export function Report() {
     const ampm = hours >= 12 ? 'PM' : 'AM';
     hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
-    const hh = String(hours).padStart(2, '0');
     const min = String(date.getMinutes()).padStart(2, '0');
     
-    return `${dd}-${mm}-${yyyy} ${hh}:${min} ${ampm}`;
+    return `${dd}-${mm}-${yyyy} ${hours}:${min} ${ampm}`;
   };
 
   const formatDateDisplay = (dateString: string) => {
-    if (!dateString) return "dd/mm/yyyy";
+    if (!dateString) return "dd-mm-yyyy";
     const [year, month, day] = dateString.split("-");
     if (!year || !month || !day) return dateString;
-    return `${day}/${month}/${year}`;
+    return `${day}-${month}-${year}`;
   };
 
   const loadData = async () => {
@@ -121,7 +120,7 @@ export function Report() {
   const handleDownloadExcel = () => {
     if (orders.length === 0) return;
     
-    const headers = ['NO', 'STUDENT ID', 'TOTAL AMOUNT (MMK)', 'STATUS', 'ORDER DATE'];
+    const headers = ['NO', 'USER', 'TOTAL AMOUNT (MMK)', 'STATUS', 'ORDER DATE'];
     const rows = orders.map((order, idx) => [
       (idx + 1).toString(),
       order.userId,

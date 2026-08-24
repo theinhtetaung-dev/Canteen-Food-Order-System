@@ -9,11 +9,14 @@ import {
   BarChart3,
   LogOut,
   UtensilsCrossed,
-  User
+  User,
+  Globe,
+  History
 } from "lucide-react";
 import { useAuth } from "@user/hooks/useAuth";
 import { fetchAllUsers } from "@user/api/user.api";
 import { fetchAllOrders } from "@user/api/order.api";
+import { translate } from "@user/lib/translations";
 
 import brandLogo from "../../../assets/logo.png";
 
@@ -22,6 +25,32 @@ export function Sidebar() {
   const { user, logout } = useAuth();
   const [userCanteenId, setUserCanteenId] = useState<number | null>(null);
   const [newOrdersCount, setNewOrdersCount] = useState(0);
+  const [lang, setLang] = useState<"EN" | "MM">(
+    (localStorage.getItem("campus_bites_lang") as "EN" | "MM") || "EN"
+  );
+
+  const toggleLanguage = () => {
+    const newLang = lang === "EN" ? "MM" : "EN";
+    setLang(newLang);
+    localStorage.setItem("campus_bites_lang", newLang);
+    window.dispatchEvent(new Event("languageChanged"));
+  };
+
+  useEffect(() => {
+    const handleLanguageUpdate = () => {
+      const saved = localStorage.getItem("campus_bites_lang") as "EN" | "MM";
+      if (saved) {
+        setLang(saved);
+      }
+    };
+    window.addEventListener("languageChanged", handleLanguageUpdate);
+    window.addEventListener("storage", handleLanguageUpdate);
+    return () => {
+      window.removeEventListener("languageChanged", handleLanguageUpdate);
+      window.removeEventListener("storage", handleLanguageUpdate);
+    };
+  }, []);
+
   const [profile, setProfile] = useState(() => {
     const saved = localStorage.getItem("campus_bites_profile");
     if (saved) {
@@ -148,12 +177,13 @@ export function Sidebar() {
   }, [userCanteenId]);
 
   const navItems = [
-    { label: "Dashboard", path: "/", icon: LayoutDashboard },
-    { label: "Walk-in POS", path: "/pos", icon: UtensilsCrossed },
-    { label: "Orders Management", path: "/orders", icon: ShoppingBag },
-    { label: "Menu Items", path: "/menu", icon: Utensils },
-    { label: "Categories", path: "/categories", icon: Layers },
-    { label: "Reports", path: "/reports", icon: BarChart3 },
+    { label: translate("dashboard", lang), path: "/", icon: LayoutDashboard },
+    { label: translate("walkinPos", lang), path: "/pos", icon: UtensilsCrossed },
+    { label: translate("ordersManagement", lang), path: "/orders", icon: ShoppingBag },
+    { label: translate("orderHistory", lang), path: "/orders-history", icon: History },
+    { label: translate("menuItems", lang), path: "/menu", icon: Utensils },
+    { label: translate("categories", lang), path: "/categories", icon: Layers },
+    { label: translate("reports", lang), path: "/reports", icon: BarChart3 },
   ];
 
   const handleLogout = () => {
@@ -214,7 +244,7 @@ export function Sidebar() {
                   <Icon className="w-4 h-4 stroke-[2.2]" />
                   <span>{item.label}</span>
                 </div>
-                {item.label === "Orders Management" && newOrdersCount > 0 && (
+                {item.path === "/orders" && newOrdersCount > 0 && (
                   <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-black text-white">
                     {newOrdersCount}
                   </span>
@@ -248,11 +278,18 @@ export function Sidebar() {
           </div>
         </NavLink>
         <button
+          onClick={toggleLanguage}
+          className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-gray-900 text-xs font-bold transition-all cursor-pointer border border-gray-200"
+        >
+          <Globe className="w-3.5 h-3.5" />
+          <span>{translate("language", lang)}</span>
+        </button>
+        <button
           onClick={handleLogout}
           className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 text-xs font-bold transition-all cursor-pointer border border-red-100/60"
         >
           <LogOut className="w-3.5 h-3.5" />
-          <span>Logout</span>
+          <span>{translate("logout", lang)}</span>
         </button>
       </div>
     </aside>

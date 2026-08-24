@@ -1,4 +1,4 @@
-import { ShoppingCart, Star, X } from "lucide-react";
+import { ShoppingCart, X } from "lucide-react";
 import { formatPrice } from "@user/lib/utils";
 import type { MenuItem } from "@user/types/menu";
 
@@ -41,10 +41,6 @@ export function FoodDetailModal({
         <div className="p-6">
           <div className="mb-3 flex items-start justify-between gap-3">
             <h2 className="text-2xl font-bold text-gray-800">{item.name}</h2>
-            <div className="flex items-center gap-1 text-sm text-gray-500">
-              <Star className="h-4 w-4 fill-brand text-brand" />
-              {item.rating}
-            </div>
           </div>
 
           <p className="mb-4 text-sm capitalize text-brand-dark">

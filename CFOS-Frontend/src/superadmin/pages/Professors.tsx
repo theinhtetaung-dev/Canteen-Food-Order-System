@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchStudents, createProfessor, deleteUser, resetUserPassword, type StudentUser } from "@user/api/user.api";
 import Swal from 'sweetalert2';
+import { formatDate } from "@user/lib/utils";
 import {
   Search,
   Plus,
@@ -117,8 +118,8 @@ export const Professors: React.FC = () => {
           phone: u.phoneNumber || '—',
           status: (u.status === 'ACTIVE' ? 'Active' : 'Inactive') as 'Active' | 'Inactive',
           joinedOn: u.createdAt
-            ? new Date(u.createdAt).toLocaleDateString()
-            : new Date().toLocaleDateString(),
+            ? formatDate(u.createdAt)
+            : formatDate(new Date()),
         }));
       setProfessors(mapped);
     } catch (err) {

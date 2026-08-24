@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchReviews, type Review } from '@user/api/review.api';
+import { formatDate } from '@user/lib/utils';
 
 const ReviewPage: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -187,7 +188,7 @@ const ReviewPage: React.FC = () => {
                <div className="flex justify-between items-center px-1">
                   <span className="text-sm font-bold text-gray-900">{r.userFullName || r.userName || 'Anonymous'}</span>
                   <span className="text-[10px] text-gray-400 font-semibold">
-                    {new Date(r.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    {formatDate(r.createdAt)}
                   </span>
                </div>
 

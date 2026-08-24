@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, Star, Edit2, Trash2, Plus, Loader2, X } from
 import { PageContainer } from "@user/components/layout/PageContainer";
 import { useAuth } from "@user/hooks/useAuth";
 import { useMediaQuery } from "@user/hooks/useMediaQuery";
-import { cn } from "@user/lib/utils";
+import { cn, formatDate } from "@user/lib/utils";
 import { Link } from "react-router-dom";
 import {
   fetchReviews,
@@ -426,7 +426,7 @@ export default function ReviewsPage() {
                           <span className="text-[10px] text-gray-400 font-mono">{review.userName}</span>
                           <span className="text-[10px] text-gray-300">•</span>
                           <span className="text-[10px] text-gray-400">
-                            {new Date(review.createdAt).toLocaleDateString()}
+                            {formatDate(review.createdAt)}
                           </span>
                         </div>
                       </div>

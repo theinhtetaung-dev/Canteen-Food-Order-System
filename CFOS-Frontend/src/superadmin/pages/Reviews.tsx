@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { fetchReviews, type Review } from '@user/api/review.api';
 
 const ReviewPage: React.FC = () => {
@@ -64,7 +65,8 @@ const ReviewPage: React.FC = () => {
   }, [reviews]);
 
   const totalPages = Math.ceil(reviews.length / itemsPerPage) || 1;
-  const currentReviews = reviews.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentReviews = reviews.slice(startIndex, currentPage * itemsPerPage);
 
   const handlePrevPage = () => setCurrentPage(p => Math.max(1, p - 1));
   const handleNextPage = () => setCurrentPage(p => Math.min(totalPages, p + 1));
@@ -205,25 +207,40 @@ const ReviewPage: React.FC = () => {
         </div>
 
         {/* Pagination Footer */}
-        {reviews.length > 0 && (
-          <div className="flex items-center justify-between">
-             <div className="flex items-center gap-3 text-sm text-gray-500 font-bold">
-                Showing <span className="bg-white px-4 py-1 rounded-lg text-gray-900 border border-gray-100">{currentReviews.length}</span> out of {totalReviews}
-             </div>
-             <div className="flex items-center gap-2">
-                <button onClick={handlePrevPage} disabled={currentPage === 1} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 hover:bg-gray-50 disabled:opacity-50">‹</button>
-                <button className="w-10 h-10 flex items-center justify-center bg-[#c5e1a5] rounded-xl shadow-sm font-bold">{currentPage}</button>
-                {currentPage < totalPages && (
-                  <button onClick={() => setCurrentPage(currentPage + 1)} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 font-bold text-gray-400">{currentPage + 1}</button>
-                )}
-                {currentPage < totalPages - 1 && (
-                  <>
-                    <span className="text-gray-400 font-bold">....</span>
-                    <button onClick={() => setCurrentPage(totalPages)} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 font-bold text-gray-400">{totalPages}</button>
-                  </>
-                )}
-                <button onClick={handleNextPage} disabled={currentPage === totalPages} className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm border border-gray-100 hover:bg-gray-50 disabled:opacity-50">›</button>
-             </div>
+        {reviews.length > 0 && totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 text-xs px-2">
+            <span className="text-gray-500 font-medium">
+              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, reviews.length)} of {reviews.length} reviews
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handlePrevPage}
+                disabled={currentPage === 1}
+                className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:hover:bg-white bg-white transition-all cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              {Array.from({ length: totalPages }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentPage(i + 1)}
+                  className={`w-7 h-7 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    currentPage === i + 1
+                      ? "bg-[#88C425] text-white shadow-sm"
+                      : "text-gray-600 bg-white border border-gray-200 hover:bg-gray-100"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:hover:bg-white bg-white transition-all cursor-pointer"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         )}
       </section>

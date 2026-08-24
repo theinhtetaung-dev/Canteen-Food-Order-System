@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +35,8 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final BranchRepository branchRepository;
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
+    private final NotificationRepository notificationRepository;
+    private final ReviewRepository reviewRepository;
     private final JdbcTemplate jdbcTemplate;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -49,6 +52,8 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         // Copy food photos to uploads/food-images directory
         copyFoodPhotosToUploads();
+
+
 
         // 1. Clear existing data in correct order to avoid foreign key constraints
         log.info("Clearing existing data...");
@@ -114,151 +119,329 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
         rolePermissionRepository.saveAll(rolePermissions);
 
-        // 5. Seed Canteens/Branches
+        // 5. Seed Canteens/Branches (6 canteens)
         log.info("Seeding Canteens...");
-        Branch mainCanteen = new Branch();
-        mainCanteen.setBranchName("Main Canteen");
-        mainCanteen.setLocation("Building A, Ground Floor");
-
-        Branch northCanteen = new Branch();
-        northCanteen.setBranchName("North Canteen");
-        northCanteen.setLocation("Building C, 1st Floor");
-
-        Branch southCanteen = new Branch();
-        southCanteen.setBranchName("South Canteen");
-        southCanteen.setLocation("Building B, Basement");
-
-        branchRepository.saveAll(List.of(mainCanteen, northCanteen, southCanteen));
+        List<Branch> branches = new ArrayList<>();
+        String[] branchNames = {
+            "Main Canteen", "North Canteen", "South Canteen", 
+            "East Canteen", "West Canteen", "Central Cafeteria"
+        };
+        String[] locations = {
+            "Building A, Ground Floor", "Building C, 1st Floor", "Building B, Basement",
+            "Building D, Ground Floor", "Building E, 2nd Floor", "Student Center, Hall 1"
+        };
+        for (int i = 0; i < 6; i++) {
+            Branch branch = new Branch();
+            branch.setBranchName(branchNames[i]);
+            branch.setLocation(locations[i]);
+            branches.add(branch);
+        }
+        branchRepository.saveAll(branches);
         branchRepository.flush();
 
-        // 5.5 Seed Users
+        // 5.5 Seed Users (Superadmin 2, CanteenAdmin 12, Users 20)
         log.info("Seeding Users...");
-        User superAdminUser = new User();
-        superAdminUser.setUserName("superadmin");
-        superAdminUser.setFullName("Super Administrator");
-        superAdminUser.setEmail("superadmin@canteen.com");
-        superAdminUser.setPasswordHash(passwordEncoder.encode("superadmin123"));
-        superAdminUser.setPhoneNumber("1112223333");
-        superAdminUser.setStatus(UserStatus.ACTIVE);
-        superAdminUser.setRole(superAdminRole);
-
-        User managerUser = new User();
-        managerUser.setUserName("manager");
-        managerUser.setFullName("Central Canteen Manager");
-        managerUser.setEmail("manager@canteen.com");
-        managerUser.setPasswordHash(passwordEncoder.encode("manager123"));
-        managerUser.setPhoneNumber("4445556666");
-        managerUser.setStatus(UserStatus.ACTIVE);
-        managerUser.setRole(managerRole);
-        managerUser.setCanteen(mainCanteen);
-
-        User managerUser2 = new User();
-        managerUser2.setUserName("manager2");
-        managerUser2.setFullName("Garden Bistro Manager");
-        managerUser2.setEmail("manager2@canteen.com");
-        managerUser2.setPasswordHash(passwordEncoder.encode("manager123"));
-        managerUser2.setPhoneNumber("4445557777");
-        managerUser2.setStatus(UserStatus.ACTIVE);
-        managerUser2.setRole(managerRole);
-        managerUser2.setCanteen(northCanteen);
-
-        User managerUser3 = new User();
-        managerUser3.setUserName("manager3");
-        managerUser3.setFullName("Skyline Cafeteria Manager");
-        managerUser3.setEmail("manager3@canteen.com");
-        managerUser3.setPasswordHash(passwordEncoder.encode("manager123"));
-        managerUser3.setPhoneNumber("4445558888");
-        managerUser3.setStatus(UserStatus.ACTIVE);
-        managerUser3.setRole(managerRole);
-        managerUser3.setCanteen(southCanteen);
         
-        User normalUser = new User();
-        normalUser.setUserName("user");
-        normalUser.setFullName("Normal User");
-        normalUser.setEmail("user@canteen.com");
-        normalUser.setPasswordHash(passwordEncoder.encode("user123"));
-        normalUser.setPhoneNumber("0987654321");
-        normalUser.setStatus(UserStatus.ACTIVE);
-        normalUser.setRole(userRole);
+        // 2 SuperAdmin Accounts
+        User superAdminUser1 = new User();
+        superAdminUser1.setUserName("superadmin");
+        superAdminUser1.setFullName("Super Admin One");
+        superAdminUser1.setEmail("superadmin1@canteen.com");
+        superAdminUser1.setPasswordHash(passwordEncoder.encode("superadmin123"));
+        superAdminUser1.setPhoneNumber("1112223333");
+        superAdminUser1.setStatus(UserStatus.ACTIVE);
+        superAdminUser1.setRole(superAdminRole);
 
-        User student1 = new User();
-        student1.setUserName("CS1001");
-        student1.setFullName("Alice Johnson");
-        student1.setEmail(null); // Students have no email
-        student1.setPasswordHash(passwordEncoder.encode("student123"));
-        student1.setPhoneNumber("0991234567");
-        student1.setStatus(UserStatus.ACTIVE);
-        student1.setRole(userRole);
+        User superAdminUser2 = new User();
+        superAdminUser2.setUserName("superadmin2");
+        superAdminUser2.setFullName("Super Admin Two");
+        superAdminUser2.setEmail("superadmin2@canteen.com");
+        superAdminUser2.setPasswordHash(passwordEncoder.encode("superadmin123"));
+        superAdminUser2.setPhoneNumber("1112224444");
+        superAdminUser2.setStatus(UserStatus.ACTIVE);
+        superAdminUser2.setRole(superAdminRole);
 
-        User student2 = new User();
-        student2.setUserName("CS1002");
-        student2.setFullName("Bob Williams");
-        student2.setEmail(null); // Students have no email
-        student2.setPasswordHash(passwordEncoder.encode("student123"));
-        student2.setPhoneNumber("0997654321");
-        student2.setStatus(UserStatus.ACTIVE);
-        student2.setRole(userRole);
+        userRepository.saveAll(List.of(superAdminUser1, superAdminUser2));
 
-        User professor1 = new User();
-        professor1.setUserName("drsmith");
-        professor1.setFullName("Dr. John Smith");
-        professor1.setEmail("john.smith@canteen.com"); // Professors have emails
-        professor1.setPasswordHash(passwordEncoder.encode("prof123"));
-        professor1.setPhoneNumber("0981112222");
-        professor1.setStatus(UserStatus.ACTIVE);
-        professor1.setRole(userRole);
+        // 12 CanteenAdmin Accounts (2 for each canteen)
+        List<User> canteenAdmins = new ArrayList<>();
+        for (int i = 0; i < 6; i++) {
+            Branch branch = branches.get(i);
+            for (int m = 1; m <= 2; m++) {
+                int managerIndex = i * 2 + m;
+                User manager = new User();
+                manager.setUserName("manager" + managerIndex);
+                manager.setFullName(branch.getBranchName() + " Admin " + m);
+                manager.setEmail("manager" + managerIndex + "@canteen.com");
+                manager.setPasswordHash(passwordEncoder.encode("manager123"));
+                manager.setPhoneNumber("444555" + String.format("%04d", managerIndex));
+                manager.setStatus(UserStatus.ACTIVE);
+                manager.setRole(managerRole);
+                manager.setCanteen(branch);
+                canteenAdmins.add(manager);
+            }
+        }
+        userRepository.saveAll(canteenAdmins);
 
-        userRepository.saveAll(List.of(superAdminUser, managerUser, managerUser2, managerUser3, normalUser, student1, student2, professor1));
+        // 20 Users (username must be 2024-miit-cse-001 to 020)
+        List<User> students = new ArrayList<>();
+        for (int i = 1; i <= 20; i++) {
+            String username = String.format("2024-miit-cse-%03d", i);
+            User student = new User();
+            student.setUserName(username);
+            student.setFullName("Student " + String.format("%02d", i));
+            student.setEmail(null);
+            student.setPasswordHash(passwordEncoder.encode("student123"));
+            student.setPhoneNumber("099" + String.format("%07d", i));
+            student.setStatus(UserStatus.ACTIVE);
+            student.setRole(userRole);
+            students.add(student);
+        }
+        userRepository.saveAll(students);
 
         // 6. Seed Food Categories
         log.info("Seeding Food Categories...");
-        FoodCategory mainCourse = createCategory("Main Course", "Heavy meals for lunch or dinner", superAdminUser);
-        FoodCategory dessert = createCategory("Dessert", "Sweet treats after meals", superAdminUser);
-        FoodCategory beverage = createCategory("Beverage", "Drinks and refreshments", superAdminUser);
+        FoodCategory mainCourse = createCategory("Main Course", "Heavy meals for lunch or dinner", superAdminUser1);
+        FoodCategory dessert = createCategory("Dessert", "Sweet treats after meals", superAdminUser1);
+        FoodCategory beverage = createCategory("Beverage", "Drinks and refreshments", superAdminUser1);
+        FoodCategory snacks = createCategory("Snacks", "Quick bites and light food", superAdminUser1);
         
-        foodCategoryRepository.saveAll(List.of(mainCourse, dessert, beverage));
+        foodCategoryRepository.saveAll(List.of(mainCourse, dessert, beverage, snacks));
 
-        // 7. Seed Food Items
+        // 7. Seed Food Items (20 food for each canteen)
         log.info("Seeding Food Items...");
-        List<Food> foods = new ArrayList<>();
+        
+        class FoodTemplate {
+            String name;
+            String desc;
+            BigDecimal price;
+            FoodCategory category;
+            String imageUrl;
 
-        // Main Canteen Foods (10 items) - Using Online URLs (Unsplash)
-        foods.add(createFood("Chicken Fried Rice", "Delicious chicken fried rice with fresh veggies", new BigDecimal("3500.00"), mainCourse, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1603133872878-684f208fb84b?q=80&w=600"));
-        foods.add(createFood("Spicy Noodle Soup", "Hot and spicy noodle soup with chicken", new BigDecimal("2800.00"), mainCourse, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?q=80&w=600"));
-        foods.add(createFood("Grilled Chicken Burger", "Juicy grilled chicken burger with cheese", new BigDecimal("4500.00"), mainCourse, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600"));
-        foods.add(createFood("Classic Club Sandwich", "Double decker sandwich with chicken and egg", new BigDecimal("3200.00"), mainCourse, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?q=80&w=600"));
-        foods.add(createFood("Margherita Pizza", "Classic tomato sauce and mozzarella cheese", new BigDecimal("5000.00"), mainCourse, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?q=80&w=600"));
-        foods.add(createFood("Chocolate Lava Cake", "Warm chocolate cake with molten center", new BigDecimal("2000.00"), dessert, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=600"));
-        foods.add(createFood("Strawberry Waffle", "Fresh waffles topped with strawberry syrup", new BigDecimal("2500.00"), dessert, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?q=80&w=600"));
-        foods.add(createFood("Mango Pudding", "Sweet mango pudding with fresh cream", new BigDecimal("1500.00"), dessert, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1541832676-9b763b0239ab?q=80&w=600"));
-        foods.add(createFood("Iced Caffe Latte", "Chilled espresso with fresh milk", new BigDecimal("1800.00"), beverage, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1517701604599-bb29b565090c?q=80&w=600"));
-        foods.add(createFood("Fresh Lemonade", "Squeezed lemons with ice and mint", new BigDecimal("1200.00"), beverage, superAdminUser, mainCanteen, "https://images.unsplash.com/photo-1534353436294-0dbd4bdac845?q=80&w=600"));
+            FoodTemplate(String name, String desc, double price, FoodCategory category, String imageUrl) {
+                this.name = name;
+                this.desc = desc;
+                this.price = new BigDecimal(price);
+                this.category = category;
+                this.imageUrl = imageUrl;
+            }
+        }
 
-        // North Canteen Foods (10 items) - Using real local image paths from resources
-        foods.add(createFood("Traditional Mohinga", "Traditional Myanmar rice noodle soup with fish broth", new BigDecimal("2000.00"), mainCourse, superAdminUser, northCanteen, "/food-images/Mohinga.jpg"));
-        foods.add(createFood("Shan Noodles", "Traditional Shan style rice noodles with chicken", new BigDecimal("2500.00"), mainCourse, superAdminUser, northCanteen, "/food-images/Shan Noodles.webp"));
-        foods.add(createFood("Nan Gyi Thoke", "Thick rice noodle salad with chicken curry", new BigDecimal("2800.00"), mainCourse, superAdminUser, northCanteen, "/food-images/Nan Gyi Thoke.jpg"));
-        foods.add(createFood("Tea Leaf Salad", "Traditional Myanmar fermented tea leaf salad", new BigDecimal("2200.00"), mainCourse, superAdminUser, northCanteen, "/food-images/Tea Leaf Salad.jpg"));
-        foods.add(createFood("Basil Fried Rice", "Spicy and fragrant fried rice with basil", new BigDecimal("3000.00"), mainCourse, superAdminUser, northCanteen, "/food-images/Basil Fried Rice.jpg"));
-        foods.add(createFood("Crispy Samosa", "Deep fried pastry filled with spiced potatoes and peas", new BigDecimal("1000.00"), dessert, superAdminUser, northCanteen, "/food-images/Samosa.jpeg"));
-        foods.add(createFood("Shwe Yin Aye", "Sweet Myanmar dessert with coconut milk, jelly, sticky rice and bread", new BigDecimal("1800.00"), dessert, superAdminUser, northCanteen, "/food-images/Shwe Yin Aye.jpg"));
-        foods.add(createFood("Myanmar Traditional Tea", "Freshly brewed sweet and creamy milk tea", new BigDecimal("1200.00"), beverage, superAdminUser, northCanteen, "/food-images/Myanmar Traditional Tea.jpg"));
-        foods.add(createFood("Iced Coffee", "Chilled brewed coffee served with ice", new BigDecimal("1500.00"), beverage, superAdminUser, northCanteen, "/food-images/Iced Coffee.jpg"));
-        foods.add(createFood("Fresh Coconut Water", "Natural, refreshing coconut water", new BigDecimal("1500.00"), beverage, superAdminUser, northCanteen, "/food-images/Coconut Water.jpg"));
+        List<FoodTemplate> templates = List.of(
+            new FoodTemplate("Chicken Fried Rice", "Delicious chicken fried rice with fresh veggies", 3500.0, mainCourse, "https://images.unsplash.com/photo-1603133872878-684f208fb84b?q=80&w=600"),
+            new FoodTemplate("Spicy Noodle Soup", "Hot and spicy noodle soup with chicken", 2800.0, mainCourse, "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?q=80&w=600"),
+            new FoodTemplate("Grilled Chicken Burger", "Juicy grilled chicken burger with cheese", 4500.0, mainCourse, "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600"),
+            new FoodTemplate("Classic Club Sandwich", "Double decker sandwich with chicken and egg", 3200.0, mainCourse, "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?q=80&w=600"),
+            new FoodTemplate("Margherita Pizza", "Classic tomato sauce and mozzarella cheese", 5000.0, mainCourse, "https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?q=80&w=600"),
+            new FoodTemplate("Shan Noodles", "Traditional Shan style rice noodles with chicken", 2500.0, mainCourse, "/food-images/Shan Noodles.webp"),
+            new FoodTemplate("Nan Gyi Thoke", "Thick rice noodle salad with chicken curry", 2800.0, mainCourse, "/food-images/Nan Gyi Thoke.jpg"),
+            new FoodTemplate("Tea Leaf Salad", "Traditional Myanmar fermented tea leaf salad", 2200.0, mainCourse, "/food-images/Tea Leaf Salad.jpg"),
+            new FoodTemplate("Basil Fried Rice", "Spicy and fragrant fried rice with basil", 3000.0, mainCourse, "/food-images/Basil Fried Rice.jpg"),
+            new FoodTemplate("Spaghetti Bolognese", "Spaghetti pasta with rich tomato minced beef sauce", 4500.0, mainCourse, "/food-images/Spaghetti.jpg"),
+            new FoodTemplate("Chocolate Lava Cake", "Warm chocolate cake with molten center", 2000.0, dessert, "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?q=80&w=600"),
+            new FoodTemplate("Strawberry Waffle", "Fresh waffles topped with strawberry syrup", 2500.0, dessert, "https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?q=80&w=600"),
+            new FoodTemplate("Mango Pudding", "Sweet mango pudding with fresh cream", 1500.0, dessert, "https://images.unsplash.com/photo-1541832676-9b763b0239ab?q=80&w=600"),
+            new FoodTemplate("Shwe Yin Aye", "Sweet Myanmar dessert with coconut milk, jelly, sticky rice and bread", 1800.0, dessert, "/food-images/Shwe Yin Aye.jpg"),
+            new FoodTemplate("Sweet Falooda", "Layered dessert with rose syrup, vermicelli, sweet basil seeds and ice cream", 2500.0, dessert, "/food-images/Falooda.jpg"),
+            new FoodTemplate("Iced Caffe Latte", "Chilled espresso with fresh milk", 1800.0, beverage, "https://images.unsplash.com/photo-1517701604599-bb29b565090c?q=80&w=600"),
+            new FoodTemplate("Fresh Lemonade", "Squeezed lemons with ice and mint", 1200.0, beverage, "https://images.unsplash.com/photo-1534353436294-0dbd4bdac845?q=80&w=600"),
+            new FoodTemplate("Myanmar Traditional Tea", "Freshly brewed sweet and creamy milk tea", 1200.0, beverage, "/food-images/Myanmar Traditional Tea.jpg"),
+            new FoodTemplate("Chocolate Milkshake", "Rich and creamy chocolate milkshake", 2200.0, beverage, "/food-images/Chocolate Milkshake.jpg"),
+            new FoodTemplate("Fresh Mango Juice", "Freshly blended sweet ripe mangoes", 1800.0, beverage, "/food-images/Mango Juice.jpg")
+        );
 
-        // South Canteen Foods (10 items) - Using real local image paths from resources
-        foods.add(createFood("Chicken Dry Noodles", "Savory dry noodles served with tender chicken slices", new BigDecimal("2600.00"), mainCourse, superAdminUser, southCanteen, "/food-images/Chicken Dry Noodles.jpg"));
-        foods.add(createFood("Claypot Meeshay", "Hot claypot rice noodles with pork and pickled veggies", new BigDecimal("3000.00"), mainCourse, superAdminUser, southCanteen, "/food-images/Claypot Meeshay.jpg"));
-        foods.add(createFood("Crispy Chicken Burger", "Crispy fried chicken patty in a toasted bun with mayo", new BigDecimal("4000.00"), mainCourse, superAdminUser, southCanteen, "/food-images/Chicken Burger.jpg"));
-        foods.add(createFood("Spaghetti Bolognese", "Spaghetti pasta with rich tomato minced beef sauce", new BigDecimal("4500.00"), mainCourse, superAdminUser, southCanteen, "/food-images/Spaghetti.jpg"));
-        foods.add(createFood("Spicy Tom Yum Soup", "Spicy and sour soup with shrimp and lemongrass", new BigDecimal("3500.00"), mainCourse, superAdminUser, southCanteen, "/food-images/Tom Yum Soup.jpg"));
-        foods.add(createFood("Sweet Falooda", "Layered dessert with rose syrup, vermicelli, sweet basil seeds and ice cream", new BigDecimal("2500.00"), dessert, superAdminUser, southCanteen, "/food-images/Falooda.jpg"));
-        foods.add(createFood("Caramel Pudding", "Smooth and creamy caramel custard", new BigDecimal("1500.00"), dessert, superAdminUser, southCanteen, "/food-images/Pudding.jpg"));
-        foods.add(createFood("Fresh Lemonade", "Refreshing lemonade with a touch of mint", new BigDecimal("1200.00"), beverage, superAdminUser, southCanteen, "/food-images/Lemonade.jpg"));
-        foods.add(createFood("Chocolate Milkshake", "Rich and creamy chocolate milkshake", new BigDecimal("2200.00"), beverage, superAdminUser, southCanteen, "/food-images/Chocolate Milkshake.jpg"));
-        foods.add(createFood("Fresh Mango Juice", "Freshly blended sweet ripe mangoes", new BigDecimal("1800.00"), beverage, superAdminUser, southCanteen, "/food-images/Mango Juice.jpg"));
+        List<Food> allFoods = new ArrayList<>();
+        java.util.Map<Integer, List<Food>> branchFoodMap = new java.util.HashMap<>();
 
-        foodRepository.saveAll(foods);
+        for (Branch branch : branches) {
+            List<Food> branchFoods = new ArrayList<>();
+            for (FoodTemplate temp : templates) {
+                Food food = new Food();
+                food.setFoodName(branch.getBranchName() + " " + temp.name);
+                food.setDescription(temp.desc);
+                food.setPrice(temp.price);
+                food.setCategory(temp.category);
+                food.setCreatedBy(superAdminUser1);
+                food.setBranch(branch);
+                food.setImageUrl(temp.imageUrl);
+                food.setIsAvailable(true);
+                branchFoods.add(food);
+                allFoods.add(food);
+            }
+            foodRepository.saveAll(branchFoods);
+            branchFoodMap.put(branch.getBranchId(), branchFoods);
+        }
+
+        // 8. Seed Orders (each user have 10 orders spread across 1 year)
+        log.info("Seeding Orders (each user gets 10 orders)...");
+        java.util.Random random = new java.util.Random();
+        
+        for (User student : students) {
+            for (int oIdx = 0; oIdx < 10; oIdx++) {
+                // Pick a random canteen
+                Branch branch = branches.get(random.nextInt(branches.size()));
+                List<Food> branchFoods = branchFoodMap.get(branch.getBranchId());
+
+                Order order = new Order();
+                order.setUser(student);
+                
+                // Status distribution (8 COMPLETE, 1 PREPARING, 1 CANCEL)
+                Status status;
+                if (oIdx < 8) {
+                    status = Status.COMPLETE;
+                } else if (oIdx == 8) {
+                    status = Status.PREPARING;
+                } else {
+                    status = Status.CANCEL;
+                }
+                order.setOrderStatus(status);
+
+                // Select 1 to 3 random items from this branch
+                int numItems = random.nextInt(3) + 1;
+                List<OrderItem> items = new ArrayList<>();
+                BigDecimal total = BigDecimal.ZERO;
+                
+                java.util.Set<Integer> pickedIndices = new java.util.HashSet<>();
+                for (int itemIdx = 0; itemIdx < numItems; itemIdx++) {
+                    int foodIdx = random.nextInt(branchFoods.size());
+                    while (pickedIndices.contains(foodIdx)) {
+                        foodIdx = random.nextInt(branchFoods.size());
+                    }
+                    pickedIndices.add(foodIdx);
+                    Food food = branchFoods.get(foodIdx);
+
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setFood(food);
+                    int qty = random.nextInt(2) + 1;
+                    orderItem.setQuantity(qty);
+                    orderItem.setSnapPrice(food.getPrice());
+                    BigDecimal subTotal = food.getPrice().multiply(new BigDecimal(qty));
+                    orderItem.setSubTotal(subTotal);
+                    orderItem.setComment(random.nextBoolean() ? "Extra spicy" : null);
+                    orderItem.setOrder(order);
+                    items.add(orderItem);
+                    
+                    total = total.add(subTotal);
+                }
+                
+                order.setOrderItems(items);
+                order.setTotalAmount(total);
+
+                // Save order & items
+                Order savedOrder = orderRepository.save(order);
+
+                // Distribute date over the past 365 days
+                int baseDaysAgo = (9 - oIdx) * 36;
+                int randomOffset = random.nextInt(30);
+                LocalDateTime orderDate = LocalDateTime.now()
+                    .minusDays(baseDaysAgo + randomOffset)
+                    .minusHours(random.nextInt(12))
+                    .minusMinutes(random.nextInt(60));
+
+                java.sql.Timestamp sqlOrderDate = java.sql.Timestamp.valueOf(orderDate);
+                
+                // Update Order and OrderItems timestamps in DB via JDBC
+                jdbcTemplate.update("UPDATE tbl_order SET created_at = ?, updated_at = ? WHERE orderid = ?", 
+                    sqlOrderDate, sqlOrderDate, savedOrder.getOrderId());
+
+                for (OrderItem item : savedOrder.getOrderItems()) {
+                    jdbcTemplate.update("UPDATE tbl_order_item SET created_at = ?, updated_at = ? WHERE order_itemid = ?", 
+                        sqlOrderDate, sqlOrderDate, item.getOrderItemId());
+                }
+
+                // Seed Payment
+                if (status == Status.COMPLETE || status == Status.PREPARING) {
+                    Payment payment = new Payment();
+                    payment.setOrder(savedOrder);
+                    payment.setAmount(total);
+                    
+                    String[] methods = {"KPay", "WavePay", "AYAPay", "Cash", "Card"};
+                    payment.setPaymentMethod(methods[random.nextInt(methods.length)]);
+                    payment.setPaidAt(orderDate.plusMinutes(random.nextInt(5) + 1));
+                    Payment savedPayment = paymentRepository.save(payment);
+
+                    java.sql.Timestamp sqlPaidAt = java.sql.Timestamp.valueOf(payment.getPaidAt());
+                    jdbcTemplate.update("UPDATE tbl_payment SET created_at = ?, paid_at = ? WHERE paymentid = ?", 
+                        sqlOrderDate, sqlPaidAt, savedPayment.getPaymentId());
+                }
+
+                // Seed Notifications
+                Notification placeNotification = new Notification();
+                placeNotification.setUser(student);
+                placeNotification.setOrder(savedOrder);
+                placeNotification.setTitle("Order Placed");
+                placeNotification.setMessage("Your order of " + total + " MMK has been received.");
+                placeNotification.setIsRead(true);
+                Notification savedPlaceNotif = notificationRepository.save(placeNotification);
+                jdbcTemplate.update("UPDATE tbl_notification SET created_at = ? WHERE notificationid = ?", 
+                    sqlOrderDate, savedPlaceNotif.getNotificationId());
+
+                if (status == Status.COMPLETE) {
+                    Notification readyNotification = new Notification();
+                    readyNotification.setUser(student);
+                    readyNotification.setOrder(savedOrder);
+                    readyNotification.setTitle("Order Completed");
+                    readyNotification.setMessage("Your order is ready. Enjoy your meal!");
+                    readyNotification.setIsRead(true);
+                    Notification savedReadyNotif = notificationRepository.save(readyNotification);
+                    LocalDateTime completedDate = orderDate.plusMinutes(15 + random.nextInt(10));
+                    jdbcTemplate.update("UPDATE tbl_notification SET created_at = ? WHERE notificationid = ?", 
+                        java.sql.Timestamp.valueOf(completedDate), savedReadyNotif.getNotificationId());
+                } else if (status == Status.CANCEL) {
+                    Notification cancelNotification = new Notification();
+                    cancelNotification.setUser(student);
+                    cancelNotification.setOrder(savedOrder);
+                    cancelNotification.setTitle("Order Cancelled");
+                    cancelNotification.setMessage("Your order was cancelled.");
+                    cancelNotification.setIsRead(true);
+                    Notification savedCancelNotif = notificationRepository.save(cancelNotification);
+                    LocalDateTime cancelledDate = orderDate.plusMinutes(5 + random.nextInt(5));
+                    jdbcTemplate.update("UPDATE tbl_notification SET created_at = ? WHERE notificationid = ?", 
+                        java.sql.Timestamp.valueOf(cancelledDate), savedCancelNotif.getNotificationId());
+                }
+            }
+        }
+
+        // 9. Seed Reviews (suitable mock data)
+        log.info("Seeding Reviews...");
+        String[] reviewTexts = {
+            "Excellent food quality, especially the fried rice!",
+            "The Shan noodles were amazing and served very hot.",
+            "Very clean environment and polite staff.",
+            "Order was prepared very fast today.",
+            "The lemonade was very refreshing on a hot day.",
+            "The burger was juicy and delicious.",
+            "Great service, clean place, and affordable prices.",
+            "Falooda is a must-try dessert here!",
+            "Love the mango pudding. Will order again.",
+            "Convenient system to order food in advance.",
+            "Basil fried rice has the perfect level of spice.",
+            "Nice variety of beverages and desserts.",
+            "Perfect spot for quick lunch between lectures.",
+            "Spaghetti bolognese is rich in flavor.",
+            "Staff is very friendly and fast.",
+            "Good quality ingredients and hygienic cooking.",
+            "Love the hot tea. Classic flavor.",
+            "Waffles are super crispy and sweet.",
+            "Wide selection of local Myanmar dishes.",
+            "Really helpful food ordering app!"
+        };
+
+        for (int i = 0; i < 20; i++) {
+            User student = students.get(i);
+            Review review = new Review();
+            review.setUser(student);
+            
+            double rating = 3.5 + (random.nextDouble() * 1.5);
+            rating = Math.round(rating * 10.0) / 10.0;
+            review.setRating(rating);
+            review.setReviewText(reviewTexts[i]);
+            Review savedReview = reviewRepository.save(review);
+            
+            LocalDateTime reviewDate = LocalDateTime.now().minusDays(random.nextInt(365)).minusHours(random.nextInt(24));
+            jdbcTemplate.update("UPDATE tbl_review SET created_at = ?, updated_at = ? WHERE reviewid = ?", 
+                java.sql.Timestamp.valueOf(reviewDate), java.sql.Timestamp.valueOf(reviewDate), savedReview.getReviewId());
+        }
 
         log.info("Database seeding completed successfully.");
     }

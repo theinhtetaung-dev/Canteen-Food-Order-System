@@ -1,0 +1,42 @@
+Table: tbl_order
+  column 1: orderid
+  column 2: created_at
+  column 3: delete_flag
+  column 4: order_status
+  column 5: total_amount
+  column 6: updated_at
+  column 7: userid
+Table: tbl_order_item
+  column 1: order_itemid
+  column 2: created_at
+  column 3: quantity
+  column 4: snap_price
+  column 5: sub_total
+  column 6: updated_at
+  column 7: foodid
+  column 8: orderid
+  column 9: comment
+Table: tbl_payment
+  column 1: paymentid
+  column 2: amount
+  column 3: created_at
+  column 4: delete_flag
+  column 5: paid_at
+  column 6: payment_method
+  column 7: orderid
+Table: tbl_notification
+  column 1: notificationid
+  column 2: created_at
+  column 3: is_read
+  column 4: message
+  column 5: title
+  column 6: orderid
+  column 7: userid
+Table: tbl_review
+  column 1: reviewid
+  column 2: created_at
+  column 3: delete_flag
+  column 4: rating
+  column 5: review_text
+  column 6: updated_at
+  column 7: userid

@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { 
-  TrendingUp, 
   Store, 
-  Clock, 
   AlertCircle, 
   DollarSign, 
   ShoppingBag,
@@ -10,7 +8,6 @@ import {
   Calendar,
   Utensils,
   ChevronDown,
-  Power
 } from "lucide-react";
 import { 
   ResponsiveContainer, 
@@ -295,35 +292,10 @@ export const Dashboard = () => {
       {/* 2. TOP BAR CONTROLS ROW */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">{dbName || user?.name || user?.rollNumber || "Canteen Admin"}</h2>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Tracking student meal requests in real-time.
-          </p>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">{userCanteenName || "Canteen Admin"}</h2>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Canteen Selector Dropdown */}
-          <div className="relative">
-            <select
-              disabled={userCanteenId !== null}
-              value={selectedCanteen}
-              onChange={(e) => setSelectedCanteen(e.target.value)}
-              className="appearance-none bg-white border border-slate-200 rounded-xl pl-3.5 pr-9 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#5b7a42]/10 focus:border-[#5b7a42] cursor-pointer shadow-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
-            >
-              {userCanteenId === null ? (
-                <>
-                  <option value="all">All Canteens</option>
-                  {canteens.map(c => (
-                    <option key={c.BranchID} value={c.BranchID.toString()}>{c.BranchName}</option>
-                  ))}
-                </>
-              ) : (
-                <option value={userCanteenId.toString()}>{userCanteenName || "My Canteen"}</option>
-              )}
-            </select>
-            <ChevronDown className="absolute right-3 top-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
-          </div>
-
           {/* Date Range Filter */}
           <div className="relative">
             <select
@@ -338,20 +310,6 @@ export const Dashboard = () => {
             </select>
             <ChevronDown className="absolute right-3 top-2.5 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
           </div>
-
-          {/* Kitchen Status Toggle */}
-          <button
-            onClick={() => setKitchenOpen(!kitchenOpen)}
-            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm border cursor-pointer ${
-              kitchenOpen
-                ? "bg-emerald-50 border-emerald-100 text-emerald-700"
-                : "bg-rose-50 border-rose-100 text-rose-700"
-            }`}
-          >
-            <Power className="w-3.5 h-3.5" />
-            <span>Kitchen: {kitchenOpen ? "OPEN" : "CLOSED"}</span>
-            <span className={`w-2 h-2 rounded-full ${kitchenOpen ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
-          </button>
         </div>
       </div>
 
@@ -362,9 +320,6 @@ export const Dashboard = () => {
           <div>
             <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">TOTAL REVENUE</span>
             <p className="text-xl font-black text-slate-900 mt-1.5">{stats.totalRevenue.toLocaleString()} MMK</p>
-            <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full mt-2 inline-flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" /> +12.4% from yesterday
-            </span>
           </div>
           <div className="p-3 bg-[#e2f0c2] text-[#284208] rounded-xl shrink-0">
             <DollarSign className="w-5 h-5" />
@@ -376,9 +331,6 @@ export const Dashboard = () => {
           <div>
             <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">TOTAL ORDERS</span>
             <p className="text-xl font-black text-slate-900 mt-1.5">{stats.totalOrdersCount} Orders</p>
-            <span className="text-[9px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full mt-2 inline-block">
-              +8.2% vs previous period
-            </span>
           </div>
           <div className="p-3 bg-[#e2f0c2] text-[#284208] rounded-xl shrink-0">
             <ShoppingBag className="w-5 h-5" />
@@ -390,9 +342,6 @@ export const Dashboard = () => {
           <div>
             <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">PENDING QUEUE</span>
             <p className="text-xl font-black text-slate-900 mt-1.5">{stats.pendingQueueCount} Active</p>
-            <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full mt-2 inline-flex items-center gap-1 animate-pulse">
-              <Clock className="w-3 h-3" /> High Priority Queue
-            </span>
           </div>
           <div className="p-3 bg-amber-100 text-amber-700 rounded-xl shrink-0">
             <Activity className="w-5 h-5" />
@@ -404,9 +353,6 @@ export const Dashboard = () => {
           <div>
             <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">MENU SUMMARY</span>
             <p className="text-xl font-black text-slate-900 mt-1.5">{stats.activeItems} Active</p>
-            <span className="text-[9px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full mt-2 inline-block">
-              {stats.outOfStockItems} Out of Stock
-            </span>
           </div>
           <div className="p-3 bg-[#e2f0c2] text-[#284208] rounded-xl shrink-0">
             <Utensils className="w-5 h-5" />
@@ -511,7 +457,7 @@ export const Dashboard = () => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
             </span>
-            <h3 className="text-sm font-extrabold text-slate-900">Live Kitchen Queue</h3>
+            <h3 className="text-sm font-extrabold text-slate-900">Active Orders</h3>
           </div>
           <span className="text-[10px] font-bold text-slate-400 tracking-wider">
             {activeOrders.length} ACTIVE ORDERS
@@ -522,16 +468,16 @@ export const Dashboard = () => {
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-50 text-slate-500 font-extrabold border-b border-slate-150">
-                <th className="py-3 px-4 font-bold rounded-l-lg">ORDER ID</th>
+                <th className="py-3 px-4 font-bold rounded-l-lg">NO.</th>
+                <th className="py-3 px-4">ORDER ID</th>
                 <th className="py-3 px-4">CUSTOMER NAME</th>
-                <th className="py-3 px-4">ITEMS SUMMARY</th>
                 <th className="py-3 px-4">TOTAL AMOUNT</th>
                 <th className="py-3 px-4">PAYMENT STATUS</th>
                 <th className="py-3 px-4 rounded-r-lg">ORDER STATUS</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-slate-600 font-medium">
-              {activeOrders.map((order) => {
+              {activeOrders.map((order, index) => {
                 let orderBadgeColor = 'bg-slate-100 text-slate-600';
                 if (order.OrderStatus === 'PENDING') orderBadgeColor = 'bg-yellow-50 text-yellow-700 border border-yellow-100';
                 else if (order.OrderStatus === 'PREPARING') orderBadgeColor = 'bg-blue-50 text-blue-700 border border-blue-100';
@@ -545,11 +491,9 @@ export const Dashboard = () => {
 
                 return (
                   <tr key={order.OrderID} className="hover:bg-slate-50/40 transition-colors">
+                    <td className="py-3.5 px-4 font-semibold text-slate-800">{index + 1}</td>
                     <td className="py-3.5 px-4 font-extrabold text-slate-900 font-mono">{order.OrderID}</td>
                     <td className="py-3.5 px-4 font-semibold text-slate-800">{order.UserID}</td>
-                    <td className="py-3.5 px-4 max-w-[200px] truncate" title={order.itemsSummary}>
-                      {order.itemsSummary}
-                    </td>
                     <td className="py-3.5 px-4 font-bold text-slate-900 font-mono">
                       {order.TotalAmount.toLocaleString()} MMK
                     </td>
@@ -568,7 +512,7 @@ export const Dashboard = () => {
               })}
               {activeOrders.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-slate-400 font-medium">
+                  <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
                     No active orders found in the selected canteen branch.
                   </td>
                 </tr>

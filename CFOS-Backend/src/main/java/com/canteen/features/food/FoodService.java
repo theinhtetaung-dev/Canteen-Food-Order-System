@@ -54,6 +54,8 @@ public class FoodService {
             Branch branch = branchRepository.findById(dto.getBranchId())
                     .orElseThrow(() -> new com.canteen.utils.exceptions.ResourceNotFoundException("Branch not found: " + dto.getBranchId()));
             food.setBranch(branch);
+        } else if (user.getCanteen() != null) {
+            food.setBranch(user.getCanteen());
         }
 
         // 3. Handle image upload (local folder)

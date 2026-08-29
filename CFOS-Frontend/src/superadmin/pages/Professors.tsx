@@ -631,8 +631,8 @@ export const Professors: React.FC = () => {
                         onClick={() => setCurrentPage(Number(page))}
                         className={`w-8 h-8 rounded-full text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer ${
                           currentPage === page
-                            ? "bg-[#2a3eb1] text-white shadow-sm"
-                            : "text-slate-600 hover:bg-slate-50 hover:text-[#2a3eb1]"
+                            ? "bg-[#284208] text-white shadow-sm"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-[#284208]"
                         }`}
                       >
                         {page}

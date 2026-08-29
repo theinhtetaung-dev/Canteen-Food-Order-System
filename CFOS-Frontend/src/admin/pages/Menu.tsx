@@ -4,6 +4,13 @@ import { fetchCategories, type Category } from "../../user/api/category.api";
 import { useAuth } from "@user/hooks/useAuth";
 import { fetchAllUsers } from "@user/api/user.api";
 import { fetchBranches } from "@user/api/branch.api";
+import Swal from "sweetalert2";
+
+const swalSuccessClass = {
+  popup: 'rounded-2xl border border-gray-100 p-6 shadow-xl bg-white font-sans',
+  title: 'text-lg font-bold text-gray-900',
+  htmlContainer: 'text-xs text-gray-500 mt-2 font-medium leading-relaxed',
+};
 import {
   Search,
   Plus,
@@ -300,8 +307,30 @@ export function Menu() {
       );
       setEditingItem(null);
       setEditImageFile(null);
+
+      Swal.fire({
+        title: 'Success!',
+        text: 'Menu item updated successfully!',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false,
+        buttonsStyling: false,
+        width: '360px',
+        customClass: swalSuccessClass
+      });
     } catch (error) {
       console.error("Failed to edit menu item", error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to update menu item',
+        icon: 'error',
+        buttonsStyling: false,
+        width: '360px',
+        customClass: {
+          ...swalSuccessClass,
+          confirmButton: 'px-5 py-2 bg-gray-900 text-white text-xs font-bold rounded-xl'
+        }
+      });
     }
   };
 
@@ -594,7 +623,7 @@ export function Menu() {
                     </td>
 
                     <td className="py-4 px-6 font-extrabold text-[#3a6810]">
-                      {item.price.toLocaleString()} KS
+                      {item.price.toLocaleString()} MMK
                     </td>
 
                     <td className="py-4 px-6 text-center">
@@ -705,8 +734,8 @@ export function Menu() {
                       onClick={() => setCurrentPage(Number(page))}
                       className={`w-8 h-8 rounded-full text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer ${
                         currentPage === page
-                          ? "bg-[#2a3eb1] text-white shadow-sm"
-                          : "text-slate-600 hover:bg-slate-50 hover:text-[#2a3eb1]"
+                          ? "bg-[#284208] text-white shadow-sm"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-[#284208]"
                       }`}
                     >
                       {page}
@@ -856,7 +885,7 @@ export function Menu() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1">
-                    Price (KS)
+                    Price (MMK)
                   </label>
                   <input
                     type="number"

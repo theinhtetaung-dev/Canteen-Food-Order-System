@@ -456,8 +456,8 @@ export function OrderHistory() {
                       onClick={() => setCurrentPage(Number(page))}
                       className={`w-8 h-8 rounded-full text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer ${
                         currentPage === page
-                          ? "bg-[#2a3eb1] text-white shadow-sm"
-                          : "text-slate-600 hover:bg-slate-50 hover:text-[#2a3eb1]"
+                          ? "bg-[#284208] text-white shadow-sm"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-[#284208]"
                       }`}
                     >
                       {page}
@@ -486,7 +486,7 @@ export function OrderHistory() {
             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-[#fbfdf8]">
               <div>
                 <h3 className="text-xl font-extrabold text-gray-900">Order Details</h3>
-                <p className="text-xs font-semibold text-gray-500 mt-1">ID: #{selectedOrder.id}</p>
+                <p className="text-xs font-semibold text-gray-500 mt-1">ID: {selectedOrder.id}</p>
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}

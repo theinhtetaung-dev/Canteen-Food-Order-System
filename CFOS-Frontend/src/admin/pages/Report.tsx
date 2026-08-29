@@ -9,7 +9,9 @@ import {
   FileSpreadsheet,
   Printer,
   PackageOpen,
-  Calendar
+  Calendar,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { fetchReport, type ReportResponseModel } from "../../user/api/report.api";
 import { fetchAllOrders } from "../../user/api/order.api";
@@ -28,6 +30,12 @@ export function Report() {
   const [stats, setStats] = useState<ReportResponseModel | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [orderStatus, startDate, endDate]);
 
 
 
@@ -190,10 +198,119 @@ export function Report() {
     <div id="printable-report" className="p-8 max-w-[1600px] mx-auto min-h-screen font-sans space-y-6 animate-in fade-in duration-300 bg-[#fdfefb]">
       <style>{`
         @media print {
-          body * { visibility: hidden; }
-          #printable-report, #printable-report * { visibility: visible; }
-          #printable-report { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; }
-          .no-print { display: none !important; }
+          /* Setup page size and margins for A4 */
+          @page {
+            size: A4 portrait;
+            margin: 12mm 10mm 12mm 10mm;
+          }
+
+          /* Hide everything outside of the printable report */
+          aside, 
+          nav, 
+          header, 
+          footer, 
+          .no-print {
+            display: none !important;
+          }
+
+          /* Reset layout wrapper of the dashboard to normal block flow */
+          .flex.min-h-screen {
+            display: block !important;
+            min-height: 0 !important;
+            background: transparent !important;
+          }
+
+          main {
+            padding: 0 !important;
+            margin: 0 !important;
+            display: block !important;
+            width: 100% !important;
+          }
+
+          /* Reset report container for printing */
+          #printable-report {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
+            position: relative !important;
+            left: auto !important;
+            top: auto !important;
+            display: block !important;
+          }
+
+          /* Make summary cards responsive/inline for print */
+          .grid.grid-cols-1.md\\:grid-cols-3 {
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            gap: 8px !important;
+          }
+
+          .grid.grid-cols-1.md\\:grid-cols-3 > div {
+            padding: 10px !important;
+            border-radius: 12px !important;
+            border: 1px solid #e2e8d5 !important;
+          }
+
+          .grid.grid-cols-1.md\\:grid-cols-3 p {
+            font-size: 7.5pt !important;
+            letter-spacing: 0.02em !important;
+          }
+
+          .grid.grid-cols-1.md\\:grid-cols-3 h3 {
+            font-size: 15pt !important;
+            white-space: nowrap !important;
+          }
+
+          .grid.grid-cols-1.md\\:grid-cols-3 h3 span {
+            font-size: 10pt !important;
+          }
+
+          .grid.grid-cols-1.md\\:grid-cols-3 .w-12.h-12 {
+            width: 32px !important;
+            height: 32px !important;
+            min-width: 32px !important;
+          }
+
+          .grid.grid-cols-1.md\\:grid-cols-3 .w-12.h-12 svg {
+            width: 16px !important;
+            height: 16px !important;
+          }
+
+          .grid.grid-cols-1.md\\:grid-cols-3 .flex.items-start {
+            gap: 8px !important;
+          }
+
+          #printable-report h1 {
+            font-size: 20pt !important;
+          }
+
+          /* Keep table neat on A4 */
+          table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            table-layout: auto !important;
+          }
+
+          th, td {
+            padding: 8px 10px !important;
+            font-size: 8.5pt !important;
+          }
+
+          /* Prevent page-breaks in the middle of card sections or rows */
+          tr {
+            page-break-inside: avoid !important;
+            page-break-after: auto !important;
+          }
+
+          /* Stop animations & transitions */
+          * {
+            animation: none !important;
+            transition: none !important;
+          }
         }
       `}</style>
       {/* Header */}
@@ -349,40 +466,42 @@ export function Report() {
                 <th className="py-4 px-6 text-[10px] font-extrabold text-[#5b7a42] uppercase tracking-widest w-20">NO</th>
                 <th className="py-4 px-6 text-[10px] font-extrabold text-[#5b7a42] uppercase tracking-widest">CUSTOMER</th>
                 <th className="py-4 px-6 text-[10px] font-extrabold text-[#5b7a42] uppercase tracking-widest text-right">TOTAL AMOUNT</th>
-                <th className="py-4 px-6 text-[10px] font-extrabold text-[#5b7a42] uppercase tracking-widest">PAYMENT METHOD</th>
                 <th className="py-4 px-6 text-[10px] font-extrabold text-[#5b7a42] uppercase tracking-widest">STATUS</th>
                 <th className="py-4 px-6 text-[10px] font-extrabold text-[#5b7a42] uppercase tracking-widest">ORDER DATE</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e2e8d5]">
-              {visibleOrders.map((order, idx) => (
-                <tr key={order.id} className="hover:bg-[#fcfdfa] transition-colors">
-                  <td className="py-4 px-6 text-sm font-bold text-gray-500 font-mono">
-                    {(idx + 1).toString().padStart(2, '0')}
-                  </td>
-                  <td className="py-4 px-6 text-sm font-bold text-[#1c2e0a]">
-                    {order.userId}
-                  </td>
-                  <td className="py-4 px-6 text-sm font-black text-[#3f5d13] text-right">
-                    {order.totalPrice.toLocaleString()} MMK
-                  </td>
-                  <td className="py-4 px-6 text-sm font-semibold text-gray-700">
-                    N/A
-                  </td>
-                  <td className="py-4 px-6">
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${getStatusStyle(order.status)}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${getStatusDot(order.status)}`} />
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6 text-sm font-semibold text-gray-600">
-                    {formatDateTime(order.createdAt)}
-                  </td>
-                </tr>
-              ))}
+              {visibleOrders.map((order, idx) => {
+                const isRowVisibleOnScreen = idx >= (currentPage - 1) * ITEMS_PER_PAGE && idx < currentPage * ITEMS_PER_PAGE;
+                return (
+                  <tr 
+                    key={order.id} 
+                    className={`hover:bg-[#fcfdfa] transition-colors ${isRowVisibleOnScreen ? '' : 'hidden print:table-row'}`}
+                  >
+                    <td className="py-4 px-6 text-sm font-bold text-gray-500 font-mono">
+                      {(idx + 1).toString().padStart(2, '0')}
+                    </td>
+                    <td className="py-4 px-6 text-sm font-bold text-[#1c2e0a]">
+                      {order.userId}
+                    </td>
+                    <td className="py-4 px-6 text-sm font-black text-[#3f5d13] text-right">
+                      {order.totalPrice.toLocaleString()} MMK
+                    </td>
+                    <td className="py-4 px-6">
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${getStatusStyle(order.status)}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${getStatusDot(order.status)}`} />
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-sm font-semibold text-gray-600">
+                      {formatDateTime(order.createdAt)}
+                    </td>
+                  </tr>
+                );
+              })}
               {visibleOrders.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-gray-500 font-semibold">
+                  <td colSpan={5} className="py-10 text-center text-gray-500 font-semibold">
                     No orders found matching the filters.
                   </td>
                 </tr>
@@ -390,6 +509,93 @@ export function Report() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Footer */}
+        {(() => {
+          const totalPages = Math.ceil(visibleOrders.length / ITEMS_PER_PAGE);
+          if (totalPages <= 1) return null;
+
+          return (
+            <div className="p-4 border-t border-[#e2e8d5] bg-[#FAFBF8] flex items-center justify-between text-xs text-gray-500 rounded-b-3xl no-print">
+              <div>
+                Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, visibleOrders.length)} of {visibleOrders.length}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-55 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                >
+                  <ChevronLeft className="w-4 h-4 stroke-[3]" />
+                </button>
+
+                <div className="flex items-center gap-1 bg-white border border-slate-150 rounded-full shadow-sm px-2.5 py-1">
+                  {(() => {
+                    const getPaginationRange = (current: number, total: number) => {
+                      const range: (number | string)[] = [];
+                      if (total <= 7) {
+                        for (let i = 1; i <= total; i++) range.push(i);
+                        return range;
+                      }
+                      range.push(1);
+                      const start = Math.max(2, current - 1);
+                      const end = Math.min(total - 1, current + 1);
+                      if (start > 2) {
+                        range.push("...");
+                      }
+                      for (let i = start; i <= end; i++) {
+                        range.push(i);
+                      }
+                      if (end < total - 1) {
+                        range.push("...");
+                      }
+                      range.push(total);
+                      return range;
+                    };
+
+                    return getPaginationRange(currentPage, totalPages).map((page, idx) => {
+                      if (page === "...") {
+                        return (
+                          <span
+                            key={`dots-${idx}`}
+                            className="w-8 h-8 flex items-center justify-center text-slate-400 font-bold text-xs select-none"
+                          >
+                            ...
+                          </span>
+                        );
+                      }
+                      return (
+                        <button
+                          key={`page-${page}`}
+                          type="button"
+                          onClick={() => setCurrentPage(Number(page))}
+                          className={`w-8 h-8 rounded-full text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer ${
+                            currentPage === page
+                              ? "bg-[#284208] text-white shadow-sm"
+                              : "text-slate-600 hover:bg-slate-55 hover:text-[#284208]"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                >
+                  <ChevronRight className="w-4 h-4 stroke-[3]" />
+                </button>
+              </div>
+            </div>
+          );
+        })()}
         
       </div>
     </div>

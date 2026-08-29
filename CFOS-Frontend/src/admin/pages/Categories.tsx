@@ -206,7 +206,6 @@ export const Categories: React.FC = () => {
                   <th className="py-3 px-4 rounded-l-md w-16">NO</th>
                   <th className="py-3 px-4">CATEGORY NAME</th>
                   <th className="py-3 px-4">DESCRIPTION</th>
-                  <th className="py-3 px-4">CREATED BY</th>
                   <th className="py-3 px-4 text-center rounded-r-md w-32">ACTIONS</th>
                 </tr>
               </thead>
@@ -230,9 +229,6 @@ export const Categories: React.FC = () => {
                       </td>
                       <td className="py-3 px-4 text-gray-600">
                         {cat.description || '-'}
-                      </td>
-                      <td className="py-3 px-4 text-gray-600 font-semibold">
-                        {cat.createdByName || '-'}
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-3">
@@ -327,8 +323,8 @@ export const Categories: React.FC = () => {
                         onClick={() => setCurrentPage(Number(page))}
                         className={`w-8 h-8 rounded-full text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer ${
                           currentPage === page
-                            ? "bg-[#2a3eb1] text-white shadow-sm"
-                            : "text-slate-600 hover:bg-slate-50 hover:text-[#2a3eb1]"
+                            ? "bg-[#284208] text-white shadow-sm"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-[#284208]"
                         }`}
                       >
                         {page}
@@ -442,10 +438,6 @@ export const Categories: React.FC = () => {
                   Delete
                 </button>
               </div>
-            </div>
-            <div className="bg-[#F3F4ED] py-2.5 px-4 flex items-center justify-center gap-1.5 text-[10px] font-extrabold uppercase text-gray-500 border-t border-gray-200/50">
-              <Info className="w-3.5 h-3.5" />
-              <span>THIS ACTION CAN'T BE UNDONE</span>
             </div>
           </div>
         </div>

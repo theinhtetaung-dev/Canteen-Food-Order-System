@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { fetchAllOrders, updateOrderStatus } from "@user/api/order.api";
-import { List, RefreshCw, ChevronLeft, ChevronRight, Eye, X, LayoutGrid } from "lucide-react";
+import { List, RefreshCw, ChevronLeft, ChevronRight, Eye, X, LayoutGrid, Clock } from "lucide-react";
 import { useAuth } from "@user/hooks/useAuth";
 import { fetchAllUsers } from "@user/api/user.api";
+import { useSearchParams } from "react-router-dom";
 
 type OrderStatus = "Pending" | "Preparing" | "Completed" | "Cancelled";
 
@@ -28,6 +29,24 @@ export function OrderLists() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [filterBox, setFilterBox] = useState<"ALL" | "PENDING" | "PREPARING">("ALL");
   const [viewStyle, setViewStyle] = useState<"card" | "table">("table");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const targetOrderId = searchParams.get("orderId");
+
+  useEffect(() => {
+    if (targetOrderId && orders.length > 0) {
+      const cleanTarget = targetOrderId.replace("ORD-", "");
+      const found = orders.find(
+        (o) =>
+          o.id === targetOrderId ||
+          o.id === `ORD-${targetOrderId}` ||
+          o.id.replace("ORD-", "") === cleanTarget
+      );
+      if (found) {
+        setSelectedOrder(found);
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [targetOrderId, orders, setSearchParams]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -482,7 +501,6 @@ export function OrderLists() {
             </table>
           </div>
         ) : (
-          /* Card Grid Container */
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-7">
             {visibleOrders.map((order, idx) => {
               const globalIndex = filteredOrders.length >= 10
@@ -491,39 +509,40 @@ export function OrderLists() {
               return (
                 <div
                   key={order.id}
-                  className={`rounded-2xl border p-6 bg-white shadow-sm flex flex-col justify-between transition-all hover:shadow-md ${
+                  className={`group rounded-2xl border p-5 bg-white shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between ${
                     order.status === "Preparing"
-                      ? "border-blue-200 bg-blue-50/10"
-                      : "border-gray-200"
+                      ? "border-blue-100 bg-blue-50/5"
+                      : "border-slate-100"
                   }`}
                 >
                   <div className="space-y-4">
                     {/* Card Header */}
-                    <div className="flex items-start justify-between border-b border-gray-100 pb-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-gray-400 font-mono">#{globalIndex}</span>
-                          <span className="text-sm font-black text-gray-800">{order.studentId}</span>
-                        </div>
-                        <span className="text-[10px] font-semibold text-gray-400 mt-0.5 block">
-                          Pickup: {order.pickupTime}
+                    <div className="flex items-start justify-between border-b border-slate-50 pb-4">
+                      <div className="flex items-start gap-3">
+                        <span className={`flex items-center justify-center w-6 h-6 rounded-lg text-[10px] font-extrabold font-mono transition-colors shrink-0 ${
+                          order.status === "Preparing"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-slate-50 text-slate-500 group-hover:bg-[#e2f0c2] group-hover:text-[#284208]"
+                        }`}>
+                          {globalIndex}
                         </span>
+                        <div>
+                          <span className="text-sm font-bold text-slate-800 block leading-tight">
+                            {order.studentId}
+                          </span>
+                          <span className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 mt-1">
+                            <Clock className="w-3.5 h-3.5 text-slate-400" />
+                            Pickup: {order.pickupTime}
+                          </span>
+                        </div>
                       </div>
                       <div className="flex flex-col items-end gap-1.5">
                         {renderStatusBadge(order.status)}
-                        <span className="text-sm font-black text-gray-900">
+                        <span className="text-xs font-black text-slate-700 bg-slate-50 px-2 py-0.5 rounded-lg font-mono">
                           {order.totalAmount.toLocaleString()} MMK
                         </span>
                       </div>
                     </div>
-
-                    {/* Order Items List (Simple representation for non-preparing) */}
-                    {order.status !== "Preparing" && (
-                      <div className="text-xs text-gray-500 font-medium leading-relaxed">
-                        <span className="font-bold text-gray-400 block mb-1">Items:</span>
-                        {order.items}
-                      </div>
-                    )}
 
                     {/* Preparing detail box: what is need to cook */}
                     {order.status === "Preparing" && (
@@ -552,8 +571,10 @@ export function OrderLists() {
                   </div>
 
                   {/* Actions footer */}
-                  <div className="flex items-center justify-end gap-3 mt-5 pt-3 border-t border-gray-100">
-                    {renderActionButton(order)}
+                  <div className="flex items-center justify-end mt-5 pt-3 border-t border-slate-50">
+                    <div className="flex items-center gap-2">
+                      {renderActionButton(order)}
+                    </div>
                   </div>
                 </div>
               );
@@ -562,39 +583,77 @@ export function OrderLists() {
         )}
 
         {/* Pagination Footer */}
-        {boxFilteredOrders.length >= 10 && (
+        {totalPages > 1 && (
           <div className="p-5 px-7 flex items-center justify-end gap-2 bg-[#fcfdfa]">
             <button
               type="button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="w-9 h-9 flex items-center justify-center text-[#555555] hover:text-black disabled:opacity-30 transition-colors"
+              className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
             >
-              <ChevronLeft className="w-6 h-6 stroke-[3]" />
+              <ChevronLeft className="w-4 h-4 stroke-[3]" />
             </button>
 
-            {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((page) => (
-              <button
-                key={page}
-                type="button"
-                onClick={() => setCurrentPage(page)}
-                className={`w-9 h-9 rounded-[14px] text-sm font-black flex items-center justify-center transition-colors ${
-                  currentPage === page
-                    ? "bg-[#dbebba] text-black"
-                    : "bg-[#eaeaea] text-[#8e8e8e] hover:bg-gray-300"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
+            <div className="flex items-center gap-1 bg-white border border-slate-150 rounded-full shadow-sm px-2.5 py-1">
+              {(() => {
+                const getPaginationRange = (current: number, total: number) => {
+                  const range: (number | string)[] = [];
+                  if (total <= 7) {
+                    for (let i = 1; i <= total; i++) range.push(i);
+                    return range;
+                  }
+                  range.push(1);
+                  const start = Math.max(2, current - 1);
+                  const end = Math.min(total - 1, current + 1);
+                  if (start > 2) {
+                    range.push("...");
+                  }
+                  for (let i = start; i <= end; i++) {
+                    range.push(i);
+                  }
+                  if (end < total - 1) {
+                    range.push("...");
+                  }
+                  range.push(total);
+                  return range;
+                };
+
+                return getPaginationRange(currentPage, totalPages).map((page, idx) => {
+                  if (page === "...") {
+                    return (
+                      <span
+                        key={`dots-${idx}`}
+                        className="w-8 h-8 flex items-center justify-center text-slate-400 font-bold text-xs select-none"
+                      >
+                        ...
+                      </span>
+                    );
+                  }
+                  return (
+                    <button
+                      key={`page-${page}`}
+                      type="button"
+                      onClick={() => setCurrentPage(Number(page))}
+                      className={`w-8 h-8 rounded-full text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer ${
+                        currentPage === page
+                          ? "bg-[#2a3eb1] text-white shadow-sm"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-[#2a3eb1]"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                });
+              })()}
+            </div>
 
             <button
               type="button"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="w-9 h-9 flex items-center justify-center text-[#8e8e8e] hover:text-black disabled:opacity-30 transition-colors"
+              className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
             >
-              <ChevronRight className="w-6 h-6 stroke-[3]" />
+              <ChevronRight className="w-4 h-4 stroke-[3]" />
             </button>
           </div>
         )}

@@ -652,39 +652,77 @@ export function Menu() {
         </div>
 
         {/* Pagination Footer */}
-        {processedItems.length >= 10 && (
+        {totalPages > 1 && (
           <div className="p-5 px-7 flex items-center justify-end gap-2 bg-[#fafcf7] border-t border-gray-100">
             <button
               type="button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="w-9 h-9 flex items-center justify-center text-[#555555] hover:text-black disabled:opacity-30 transition-colors"
+              className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
             >
-              <ChevronLeft className="w-6 h-6 stroke-[3]" />
+              <ChevronLeft className="w-4 h-4 stroke-[3]" />
             </button>
 
-            {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((page) => (
-              <button
-                key={page}
-                type="button"
-                onClick={() => setCurrentPage(page)}
-                className={`w-9 h-9 rounded-[14px] text-sm font-black flex items-center justify-center transition-colors ${
-                  currentPage === page
-                    ? "bg-[#dbebba] text-black"
-                    : "bg-[#eaeaea] text-[#8e8e8e] hover:bg-gray-300"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
+            <div className="flex items-center gap-1 bg-white border border-slate-150 rounded-full shadow-sm px-2.5 py-1">
+              {(() => {
+                const getPaginationRange = (current: number, total: number) => {
+                  const range: (number | string)[] = [];
+                  if (total <= 7) {
+                    for (let i = 1; i <= total; i++) range.push(i);
+                    return range;
+                  }
+                  range.push(1);
+                  const start = Math.max(2, current - 1);
+                  const end = Math.min(total - 1, current + 1);
+                  if (start > 2) {
+                    range.push("...");
+                  }
+                  for (let i = start; i <= end; i++) {
+                    range.push(i);
+                  }
+                  if (end < total - 1) {
+                    range.push("...");
+                  }
+                  range.push(total);
+                  return range;
+                };
+
+                return getPaginationRange(currentPage, totalPages).map((page, idx) => {
+                  if (page === "...") {
+                    return (
+                      <span
+                        key={`dots-${idx}`}
+                        className="w-8 h-8 flex items-center justify-center text-slate-400 font-bold text-xs select-none"
+                      >
+                        ...
+                      </span>
+                    );
+                  }
+                  return (
+                    <button
+                      key={`page-${page}`}
+                      type="button"
+                      onClick={() => setCurrentPage(Number(page))}
+                      className={`w-8 h-8 rounded-full text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer ${
+                        currentPage === page
+                          ? "bg-[#2a3eb1] text-white shadow-sm"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-[#2a3eb1]"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                });
+              })()}
+            </div>
 
             <button
               type="button"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="w-9 h-9 flex items-center justify-center text-[#8e8e8e] hover:text-black disabled:opacity-30 transition-colors"
+              className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
             >
-              <ChevronRight className="w-6 h-6 stroke-[3]" />
+              <ChevronRight className="w-4 h-4 stroke-[3]" />
             </button>
           </div>
         )}

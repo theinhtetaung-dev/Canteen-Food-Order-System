@@ -153,20 +153,7 @@ export default function Pos() {
             <h2 className="text-xl font-black text-[#1c2e0a]">Walk-in POS</h2>
             
             <div className="flex flex-wrap items-center gap-3">
-              {canteens.length > 0 && (
-                <div className="relative shrink-0">
-                  <select
-                    value={selectedShop ?? ""}
-                    onChange={(e) => setSelectedShop(Number(e.target.value))}
-                    className="w-48 appearance-none bg-gray-50 border border-gray-200 rounded-xl pl-4 pr-10 py-2 text-xs font-bold text-gray-750 focus:outline-none focus:ring-2 focus:ring-[#5b7a42]/20 focus:border-[#5b7a42] cursor-pointer"
-                  >
-                    {canteens.map((c) => (
-                      <option key={c.branchId} value={c.branchId}>{c.branchName}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-2.5 h-4 w-4 text-gray-400 pointer-events-none" />
-                </div>
-              )}
+
 
               {selectedShop && shopCategories.length > 0 && (
                 <div className="relative shrink-0">
@@ -216,12 +203,77 @@ export default function Pos() {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between mt-8 border-t border-gray-100 pt-6 text-xs px-2">
                   <span className="text-gray-500 font-medium">Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, filteredItems.length)} of {filteredItems.length} items</span>
-                  <div className="flex items-center gap-1">
-                    <button onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} className="w-8 h-8 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-50"><ChevronLeft className="w-4 h-4" /></button>
-                    {Array.from({ length: totalPages }).map((_, i) => (
-                      <button key={i} onClick={() => setCurrentPage(i + 1)} className={`w-8 h-8 rounded-xl text-xs font-bold ${currentPage === i + 1 ? "bg-[#5b7a42] text-white" : "text-gray-600 hover:bg-gray-100"}`}>{i + 1}</button>
-                    ))}
-                    <button onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} className="w-8 h-8 rounded-xl border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-50"><ChevronRight className="w-4 h-4" /></button>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4 stroke-[3]" />
+                    </button>
+
+                    <div className="flex items-center gap-1 bg-white border border-slate-150 rounded-full shadow-sm px-2.5 py-1">
+                      {(() => {
+                        const getPaginationRange = (current: number, total: number) => {
+                          const range: (number | string)[] = [];
+                          if (total <= 7) {
+                            for (let i = 1; i <= total; i++) range.push(i);
+                            return range;
+                          }
+                          range.push(1);
+                          const start = Math.max(2, current - 1);
+                          const end = Math.min(total - 1, current + 1);
+                          if (start > 2) {
+                            range.push("...");
+                          }
+                          for (let i = start; i <= end; i++) {
+                            range.push(i);
+                          }
+                          if (end < total - 1) {
+                            range.push("...");
+                          }
+                          range.push(total);
+                          return range;
+                        };
+
+                        return getPaginationRange(currentPage, totalPages).map((page, idx) => {
+                          if (page === "...") {
+                            return (
+                              <span
+                                key={`dots-${idx}`}
+                                className="w-8 h-8 flex items-center justify-center text-slate-400 font-bold text-xs select-none"
+                              >
+                                ...
+                              </span>
+                            );
+                          }
+                          return (
+                            <button
+                              key={`page-${page}`}
+                              type="button"
+                              onClick={() => setCurrentPage(Number(page))}
+                              className={`w-8 h-8 rounded-full text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer ${
+                                currentPage === page
+                                  ? "bg-[#2a3eb1] text-white shadow-sm"
+                                  : "text-slate-600 hover:bg-slate-50 hover:text-[#2a3eb1]"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          );
+                        });
+                      })()}
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
+                    >
+                      <ChevronRight className="w-4 h-4 stroke-[3]" />
+                    </button>
                   </div>
                 </div>
               )}

@@ -7,7 +7,9 @@ import {
   AlertTriangle,
   Info,
   CheckCircle2,
-  X
+  X,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import {
   fetchCategories,
@@ -278,33 +280,71 @@ export const Categories: React.FC = () => {
                 type="button"
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                className="px-2.5 py-1.5 hover:text-gray-900 disabled:opacity-30 transition-opacity font-bold"
+                className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
               >
-                ‹ Previous
+                <ChevronLeft className="w-4 h-4 stroke-[3]" />
               </button>
-              
-              {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((page) => (
-                <button
-                  key={page}
-                  type="button"
-                  onClick={() => setCurrentPage(page)}
-                  className={`w-7 h-7 rounded-lg text-xs font-bold flex items-center justify-center transition-colors ${
-                    currentPage === page
-                      ? "bg-[#284208] text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+
+              <div className="flex items-center gap-1 bg-white border border-slate-150 rounded-full shadow-sm px-2.5 py-1">
+                {(() => {
+                  const getPaginationRange = (current: number, total: number) => {
+                    const range: (number | string)[] = [];
+                    if (total <= 7) {
+                      for (let i = 1; i <= total; i++) range.push(i);
+                      return range;
+                    }
+                    range.push(1);
+                    const start = Math.max(2, current - 1);
+                    const end = Math.min(total - 1, current + 1);
+                    if (start > 2) {
+                      range.push("...");
+                    }
+                    for (let i = start; i <= end; i++) {
+                      range.push(i);
+                    }
+                    if (end < total - 1) {
+                      range.push("...");
+                    }
+                    range.push(total);
+                    return range;
+                  };
+
+                  return getPaginationRange(currentPage, totalPages).map((page, idx) => {
+                    if (page === "...") {
+                      return (
+                        <span
+                          key={`dots-${idx}`}
+                          className="w-8 h-8 flex items-center justify-center text-slate-400 font-bold text-xs select-none"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+                    return (
+                      <button
+                        key={`page-${page}`}
+                        type="button"
+                        onClick={() => setCurrentPage(Number(page))}
+                        className={`w-8 h-8 rounded-full text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer ${
+                          currentPage === page
+                            ? "bg-[#2a3eb1] text-white shadow-sm"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-[#2a3eb1]"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
 
               <button
                 type="button"
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                className="px-2.5 py-1.5 hover:text-gray-900 disabled:opacity-30 transition-opacity font-bold"
+                className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
               >
-                Next ›
+                <ChevronRight className="w-4 h-4 stroke-[3]" />
               </button>
             </div>
           </div>

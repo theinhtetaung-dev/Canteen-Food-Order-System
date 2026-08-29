@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   Store, 
   AlertCircle, 
@@ -67,6 +68,7 @@ const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#f97316"
 
 export const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [dbName, setDbName] = useState("");
   const [userCanteenId, setUserCanteenId] = useState<number | null>(null);
   const [userCanteenName, setUserCanteenName] = useState<string | null>(null);
@@ -472,7 +474,6 @@ export const Dashboard = () => {
                 <th className="py-3 px-4">ORDER ID</th>
                 <th className="py-3 px-4">CUSTOMER NAME</th>
                 <th className="py-3 px-4">TOTAL AMOUNT</th>
-                <th className="py-3 px-4">PAYMENT STATUS</th>
                 <th className="py-3 px-4 rounded-r-lg">ORDER STATUS</th>
               </tr>
             </thead>
@@ -485,22 +486,17 @@ export const Dashboard = () => {
                 else if (order.OrderStatus === 'COMPLETED') orderBadgeColor = 'bg-slate-100 text-slate-500';
                 else if (order.OrderStatus === 'CANCELLED') orderBadgeColor = 'bg-rose-50 text-rose-700';
 
-                const payBadgeColor = order.PaymentStatus === 'PAID' 
-                  ? 'bg-green-50 text-green-700 border border-green-100'
-                  : 'bg-amber-50 text-amber-700 border border-amber-100';
-
                 return (
-                  <tr key={order.OrderID} className="hover:bg-slate-50/40 transition-colors">
+                  <tr 
+                    key={order.OrderID} 
+                    onClick={() => navigate(`/orders?orderId=${order.OrderID}`)}
+                    className="hover:bg-slate-50/40 transition-colors cursor-pointer"
+                  >
                     <td className="py-3.5 px-4 font-semibold text-slate-800">{index + 1}</td>
                     <td className="py-3.5 px-4 font-extrabold text-slate-900 font-mono">{order.OrderID}</td>
                     <td className="py-3.5 px-4 font-semibold text-slate-800">{order.UserID}</td>
                     <td className="py-3.5 px-4 font-bold text-slate-900 font-mono">
                       {order.TotalAmount.toLocaleString()} MMK
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold ${payBadgeColor}`}>
-                        {order.PaymentStatus}
-                      </span>
                     </td>
                     <td className="py-3.5 px-4">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold ${orderBadgeColor}`}>
@@ -512,7 +508,7 @@ export const Dashboard = () => {
               })}
               {activeOrders.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                  <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
                     No active orders found in the selected canteen branch.
                   </td>
                 </tr>

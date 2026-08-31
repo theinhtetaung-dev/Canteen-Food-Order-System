@@ -108,10 +108,10 @@ public class DatabaseSeeder implements CommandLineRunner {
             rolePermissions.add(rpManager);
         }
         
-        // User and Professor get Read permissions for Food and FoodCategory
+        // User and Professor get Read permissions for Food Category & Menu
         for (Permission p : permissions) {
-            if ("Read".equals(p.getActionName()) && 
-                ("Food".equals(p.getMenuName()) || "FoodCategory".equals(p.getMenuName()))) {
+            if ("READ".equalsIgnoreCase(p.getActionName()) && 
+                "Food Category & Menu".equalsIgnoreCase(p.getMenuName())) {
                 RolePermission rp = new RolePermission();
                 rp.setRole(userRole);
                 rp.setPermission(p);
@@ -514,14 +514,40 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     private List<Permission> seedPermissions() {
         List<Permission> permissions = new ArrayList<>();
-        String[] menus = {"User", "Role", "Permission", "FoodCategory", "Food", "Order", "Payment"};
-        String[] actions = {"Create", "Read", "Update", "Delete"};
+        
+        // 1. Dashboard Module
+        permissions.add(createPermission("Dashboard", "READ")); // ID 1
+        
+        // 2. Canteen Management Module
+        permissions.add(createPermission("Canteen Management", "CREATE")); // ID 2
+        permissions.add(createPermission("Canteen Management", "READ"));   // ID 3
+        permissions.add(createPermission("Canteen Management", "UPDATE")); // ID 4
+        permissions.add(createPermission("Canteen Management", "DELETE")); // ID 5
 
-        for (String menu : menus) {
-            for (String action : actions) {
-                permissions.add(createPermission(menu, action));
-            }
-        }
+        // 3. Food Category & Menu Module
+        permissions.add(createPermission("Food Category & Menu", "CREATE")); // ID 6
+        permissions.add(createPermission("Food Category & Menu", "READ"));   // ID 7
+        permissions.add(createPermission("Food Category & Menu", "UPDATE")); // ID 8
+        permissions.add(createPermission("Food Category & Menu", "DELETE")); // ID 9
+
+        // 4. Orders & POS Module
+        permissions.add(createPermission("Orders & POS", "CREATE")); // ID 10
+        permissions.add(createPermission("Orders & POS", "READ"));   // ID 11
+        permissions.add(createPermission("Orders & POS", "UPDATE")); // ID 12
+        permissions.add(createPermission("Orders & POS", "DELETE")); // ID 13
+
+        // 5. User Management Module
+        permissions.add(createPermission("User Management", "CREATE")); // ID 14
+        permissions.add(createPermission("User Management", "READ"));   // ID 15
+        permissions.add(createPermission("User Management", "UPDATE")); // ID 16
+        permissions.add(createPermission("User Management", "DELETE")); // ID 17
+
+        // 6. Role & Permission System Module
+        permissions.add(createPermission("Role & Permission System", "CREATE")); // ID 18
+        permissions.add(createPermission("Role & Permission System", "READ"));   // ID 19
+        permissions.add(createPermission("Role & Permission System", "UPDATE")); // ID 20
+        permissions.add(createPermission("Role & Permission System", "DELETE")); // ID 21
+
         return permissionRepository.saveAll(permissions);
     }
 

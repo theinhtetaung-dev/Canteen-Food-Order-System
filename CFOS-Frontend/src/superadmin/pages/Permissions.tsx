@@ -38,6 +38,7 @@ interface RolePermission {
 
 // 1. Roles Seed Data (Tbl_Role)
 const ROLES: Role[] = [
+  { roleId: 2, roleName: 'Admin', description: 'System Administrator with full access options.' },
   { roleId: 3, roleName: 'Canteen Admin', description: 'Manage food menu items, categories, and process incoming canteen orders.' },
   { roleId: 4, roleName: 'Student / User', description: 'Browse menu categories, place orders, and review personal transaction logs.' },
   { roleId: 5, roleName: 'Professor', description: 'Browse menu categories and view personal transaction logs.' },

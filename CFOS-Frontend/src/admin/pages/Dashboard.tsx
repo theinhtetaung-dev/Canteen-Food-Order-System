@@ -85,6 +85,7 @@ export const Dashboard = () => {
   const [foodItems, setFoodItems] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
   const [pieData, setPieData] = useState<any[]>([]);
+  const [accessDenied, setAccessDenied] = useState<boolean>(false);
 
   // Map backend Order to Tbl_Order
   const mapToTblOrder = (apiOrder: any): Tbl_Order => {
@@ -124,6 +125,7 @@ export const Dashboard = () => {
     try {
       const canteenIdParam = selectedCanteen === "all" ? undefined : parseInt(selectedCanteen, 10);
       const res = await fetchAdminDashboard(dateRange, canteenIdParam);
+      setAccessDenied(false);
       setChartData(res.salesTrends || []);
       const mappedFoods = (res.topSellingFoods || []).map((f: any) => ({
         name: f.foodName || "Unknown",
@@ -131,8 +133,11 @@ export const Dashboard = () => {
         revenue: f.revenue
       }));
       setPieData(mappedFoods.length > 0 ? mappedFoods : [{ name: 'No sales', quantity: 0, revenue: 0 }]);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load chart data", err);
+      if (err?.response?.status === 403 || err?.status === 403) {
+        setAccessDenied(true);
+      }
     }
   };
 
@@ -291,6 +296,31 @@ export const Dashboard = () => {
 
   return (
     <div className="w-full space-y-6 font-sans text-gray-800">
+      {/* ACCESS DENIED ALERT BOX MODAL */}
+      {accessDenied && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl border border-red-100 shadow-2xl p-6 text-center space-y-4">
+            <div className="w-14 h-14 bg-red-50 text-rose-500 rounded-full flex items-center justify-center mx-auto border border-red-100">
+              <AlertCircle className="w-7 h-7 stroke-[2.2]" />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">Access Denied</h3>
+              <p className="text-xs text-slate-500 font-medium max-w-sm mx-auto mt-2 leading-relaxed">
+                Your account does not have the required permission (<span className="font-bold text-rose-600">Dashboard_READ</span>) to view the Dashboard metrics. Please contact your Super Administrator.
+              </p>
+            </div>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setAccessDenied(false)}
+                className="w-full bg-slate-900 text-white font-bold text-xs py-2.5 px-4 rounded-xl hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
+              >
+                Close Alert
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* 2. TOP BAR CONTROLS ROW */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>

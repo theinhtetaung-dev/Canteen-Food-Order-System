@@ -100,6 +100,28 @@ export function Sidebar() {
 
   const [dbName, setDbName] = useState("");
   const [dbRole, setDbRole] = useState("");
+  const [userPermissions, setUserPermissions] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function loadPermissions() {
+      if (!user) return;
+      try {
+        const { api } = await import("@user/api/axios");
+        const allUsers = await fetchAllUsers();
+        const found = allUsers.find(u => u.userName.toLowerCase() === user.rollNumber.toLowerCase());
+        const roleId = found ? found.roleId : (user.role === 'superadmin' ? 1 : 3);
+        
+        const { data } = await api.get(`/api/rbac/roles/${roleId}/permissions`);
+        if (data && data.permissions) {
+          const perms = data.permissions.map((p: any) => `${p.menuName}_${p.actionName}`);
+          setUserPermissions(perms);
+        }
+      } catch (err) {
+        console.error("Failed to load permissions in sidebar", err);
+      }
+    }
+    loadPermissions();
+  }, [user]);
 
   useEffect(() => {
     async function loadDbUser() {
@@ -177,14 +199,18 @@ export function Sidebar() {
   }, [userCanteenId]);
 
   const navItems = [
-    { label: translate("dashboard", lang), path: "/", icon: LayoutDashboard },
-    { label: translate("walkinPos", lang), path: "/pos", icon: UtensilsCrossed },
-    { label: translate("ordersManagement", lang), path: "/orders", icon: ShoppingBag },
-    { label: translate("orderHistory", lang), path: "/orders-history", icon: History },
-    { label: translate("menuItems", lang), path: "/menu", icon: Utensils },
-    { label: translate("categories", lang), path: "/categories", icon: Layers },
-    { label: translate("reports", lang), path: "/reports", icon: BarChart3 },
-  ];
+    { label: translate("dashboard", lang), path: "/", icon: LayoutDashboard, permission: "Dashboard_READ" },
+    { label: translate("walkinPos", lang), path: "/pos", icon: UtensilsCrossed, permission: "Orders & POS_READ" },
+    { label: translate("ordersManagement", lang), path: "/orders", icon: ShoppingBag, permission: "Orders & POS_READ" },
+    { label: translate("orderHistory", lang), path: "/orders-history", icon: History, permission: "Orders & POS_READ" },
+    { label: translate("menuItems", lang), path: "/menu", icon: Utensils, permission: "Food Category & Menu_READ" },
+    { label: translate("categories", lang), path: "/categories", icon: Layers, permission: "Food Category & Menu_READ" },
+    { label: translate("reports", lang), path: "/reports", icon: BarChart3, permission: "Orders & POS_READ" },
+  ].filter(item => {
+    if (user?.role === 'superadmin') return true;
+    if (userPermissions.length === 0) return true;
+    return userPermissions.includes(item.permission);
+  });
 
   const handleLogout = () => {
     logout();

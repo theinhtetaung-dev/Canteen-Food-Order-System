@@ -72,6 +72,24 @@ public class DynamicRbacService {
 
             rolePermissionRepository.saveAll(newRolePermissions);
         }
+
+        // Synchronize permissions for administrative roles (Admin ID 2 and Manager ID 3)
+        if (roleId == 2 || roleId == 3) {
+            Integer siblingRoleId = (roleId == 2) ? 3 : 2;
+            roleRepository.findById(siblingRoleId).ifPresent(siblingRole -> {
+                rolePermissionRepository.deleteByRole_RoleId(siblingRoleId);
+                if (permissionIds != null && !permissionIds.isEmpty()) {
+                    List<Permission> permissions = permissionRepository.findAllById(permissionIds);
+                    List<RolePermission> syncedRolePermissions = permissions.stream().map(permission -> {
+                        RolePermission rp = new RolePermission();
+                        rp.setRole(siblingRole);
+                        rp.setPermission(permission);
+                        return rp;
+                    }).collect(Collectors.toList());
+                    rolePermissionRepository.saveAll(syncedRolePermissions);
+                }
+            });
+        }
     }
 
     private PermissionResModel mapToPermissionResModel(Permission permission) {

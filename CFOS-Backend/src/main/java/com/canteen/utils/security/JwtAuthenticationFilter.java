@@ -16,30 +16,50 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final com.canteen.repository.RoleRepository roleRepository;
+    private final com.canteen.repository.RolePermissionRepository rolePermissionRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String jwt = null;
         final String authHeader = request.getHeader("Authorization");
+        final String token = (authHeader != null && authHeader.startsWith("Bearer "))
+                ? authHeader.substring(7)
+                : request.getParameter("token");
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            jwt = authHeader.substring(7);
-        } else {
-            jwt = request.getParameter("token");
-        }
-
-        if (jwt == null) {
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
         try {
-            if (jwtUtil.isTokenValid(jwt)) {
-                String username = jwtUtil.extractUsername(jwt);
-                java.util.List<String> permissions = jwtUtil.extractPermissions(jwt);
-                String role = jwtUtil.extractRole(jwt);
+            if (jwtUtil.isTokenValid(token)) {
+                String username = jwtUtil.extractUsername(token);
+                String role = jwtUtil.extractRole(token);
+                java.util.List<String> tokenPermissions = jwtUtil.extractPermissions(token);
+
+                java.util.List<String> permissions = tokenPermissions;
+                try {
+                    if (role != null) {
+                        var foundRole = roleRepository.findByRoleName(role);
+                        if (foundRole.isEmpty()) {
+                            foundRole = roleRepository.findAll().stream()
+                                    .filter(r -> r.getRoleName().equalsIgnoreCase(role) ||
+                                            (("Admin".equalsIgnoreCase(role) || "Manager".equalsIgnoreCase(role) || "Canteen Admin".equalsIgnoreCase(role)) &&
+                                             ("Admin".equalsIgnoreCase(r.getRoleName()) || "Manager".equalsIgnoreCase(r.getRoleName()))))
+                                    .findFirst();
+                        }
+                        if (foundRole.isPresent()) {
+                            permissions = rolePermissionRepository.findByRole_RoleId(foundRole.get().getRoleId())
+                                    .stream()
+                                    .map(rp -> rp.getPermission().getMenuName() + "_" + rp.getPermission().getActionName())
+                                    .toList();
+                        }
+                    }
+                } catch (Exception dbEx) {
+                    permissions = tokenPermissions;
+                }
 
                 request.setAttribute("username", username);
                 request.setAttribute("permissions", permissions);

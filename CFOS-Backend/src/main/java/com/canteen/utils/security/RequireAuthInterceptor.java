@@ -58,7 +58,7 @@ public class RequireAuthInterceptor implements HandlerInterceptor {
 
     private boolean hasPermission(HttpServletRequest request) {
         String role = (String) request.getAttribute("role");
-        if ("SuperAdmin".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role) || "Manager".equalsIgnoreCase(role)) {
+        if ("SuperAdmin".equalsIgnoreCase(role)) {
             return true;
         }
 

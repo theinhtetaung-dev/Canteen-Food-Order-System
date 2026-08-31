@@ -109,7 +109,7 @@ export const Professors: React.FC = () => {
       const allUsers = await fetchAllUsers();
       // Filter for users with role "User"
       const mapped = allUsers
-        .filter((u) => u.roleName && u.roleName.toLowerCase() === "user" && u.userName !== u.fullName && u.email && u.email.trim() !== "" && !u.email.endsWith("@student.local"))
+        .filter((u) => u.roleName && u.roleName.toLowerCase() === "professor")
         .map((u) => ({
           id: String(u.userId),
           username: u.userName,
@@ -426,20 +426,19 @@ export const Professors: React.FC = () => {
                   <th className="py-3 px-4">FULL NAME</th>
                   <th className="py-3 px-4">EMAIL</th>
                   <th className="py-3 px-4">PHONE</th>
-                  <th className="py-3 px-4">STATUS</th>
                   <th className="py-3 px-4 rounded-r-md text-center">ACTIONS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-xs font-medium text-gray-700">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-gray-500 font-bold">
+                    <td colSpan={6} className="py-8 text-center text-gray-500 font-bold">
                       Loading user accounts...
                     </td>
                   </tr>
                 ) : currentProfessors.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-gray-500 font-bold">
+                    <td colSpan={6} className="py-8 text-center text-gray-500 font-bold">
                       No accounts found.
                     </td>
                   </tr>
@@ -458,22 +457,6 @@ export const Professors: React.FC = () => {
                       <td className="py-3 px-4 font-semibold text-gray-800">{prof.fullName}</td>
                       <td className="py-3 px-4 text-gray-600">{prof.email}</td>
                       <td className="py-3 px-4 text-gray-600 font-mono text-[11px]">{prof.phone}</td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold ${
-                            prof.status === 'Active'
-                              ? 'bg-[#E1EEB4] text-[#3B5B11]'
-                              : 'bg-gray-200 text-gray-600'
-                          }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              prof.status === 'Active' ? 'bg-[#5B880A]' : 'bg-gray-500'
-                            }`}
-                          />
-                          {prof.status}
-                        </span>
-                      </td>
                       <td className="py-3 px-4 text-center">
                         <div className="flex items-center justify-center gap-3">
                           {/* Reset password */}
@@ -579,33 +562,76 @@ export const Professors: React.FC = () => {
             <span className="text-gray-500 font-medium">
               Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, filteredProfessors.length)} of {filteredProfessors.length} accounts
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                type="button"
                 disabled={currentPage === 1}
-                className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:hover:bg-white"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-4 h-4 stroke-[3]" />
               </button>
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
-                    currentPage === i + 1
-                      ? "bg-[#88C425] text-white shadow-sm"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+
+              <div className="flex items-center gap-1 bg-white border border-slate-150 rounded-full shadow-sm px-2.5 py-1">
+                {(() => {
+                  const getPaginationRange = (current: number, total: number) => {
+                    const range: (number | string)[] = [];
+                    if (total <= 7) {
+                      for (let i = 1; i <= total; i++) range.push(i);
+                      return range;
+                    }
+                    range.push(1);
+                    const start = Math.max(2, current - 1);
+                    const end = Math.min(total - 1, current + 1);
+                    if (start > 2) {
+                      range.push("...");
+                    }
+                    for (let i = start; i <= end; i++) {
+                      range.push(i);
+                    }
+                    if (end < total - 1) {
+                      range.push("...");
+                    }
+                    range.push(total);
+                    return range;
+                  };
+
+                  return getPaginationRange(currentPage, totalPages).map((page, idx) => {
+                    if (page === "...") {
+                      return (
+                        <span
+                          key={`dots-${idx}`}
+                          className="w-8 h-8 flex items-center justify-center text-slate-400 font-bold text-xs select-none"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+                    return (
+                      <button
+                        key={`page-${page}`}
+                        type="button"
+                        onClick={() => setCurrentPage(Number(page))}
+                        className={`w-8 h-8 rounded-full text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer ${
+                          currentPage === page
+                            ? "bg-[#284208] text-white shadow-sm"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-[#284208]"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+
               <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                type="button"
                 disabled={currentPage === totalPages}
-                className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:hover:bg-white"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4 stroke-[3]" />
               </button>
             </div>
           </div>

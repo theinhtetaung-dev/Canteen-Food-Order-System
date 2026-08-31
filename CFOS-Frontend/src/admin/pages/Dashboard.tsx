@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   Store, 
   AlertCircle, 
@@ -25,7 +26,7 @@ import {
 import { fetchBranches } from "@user/api/branch.api";
 import { useAuth } from "@user/hooks/useAuth";
 import { fetchAllUsers } from "@user/api/user.api";
-import { fetchAllOrders, updateOrderStatus } from "@user/api/order.api";
+import { fetchCanteenOrders, updateOrderStatus } from "@user/api/order.api";
 import { fetchMenuItems } from "@user/api/menu.api";
 import { fetchReport } from "@user/api/report.api";
 import { fetchAdminDashboard } from "@user/api/dashboard.api";
@@ -67,6 +68,7 @@ const COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#f97316"
 
 export const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [dbName, setDbName] = useState("");
   const [userCanteenId, setUserCanteenId] = useState<number | null>(null);
   const [userCanteenName, setUserCanteenName] = useState<string | null>(null);
@@ -83,6 +85,7 @@ export const Dashboard = () => {
   const [foodItems, setFoodItems] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
   const [pieData, setPieData] = useState<any[]>([]);
+  const [accessDenied, setAccessDenied] = useState<boolean>(false);
 
   // Map backend Order to Tbl_Order
   const mapToTblOrder = (apiOrder: any): Tbl_Order => {
@@ -110,7 +113,7 @@ export const Dashboard = () => {
   // Fetch all orders
   const loadDashboardData = async () => {
     try {
-      const apiOrders = await fetchAllOrders();
+      const apiOrders = await fetchCanteenOrders();
       setRawApiOrders(apiOrders);
       setOrders(apiOrders.map(mapToTblOrder));
     } catch (err) {
@@ -122,6 +125,7 @@ export const Dashboard = () => {
     try {
       const canteenIdParam = selectedCanteen === "all" ? undefined : parseInt(selectedCanteen, 10);
       const res = await fetchAdminDashboard(dateRange, canteenIdParam);
+      setAccessDenied(false);
       setChartData(res.salesTrends || []);
       const mappedFoods = (res.topSellingFoods || []).map((f: any) => ({
         name: f.foodName || "Unknown",
@@ -129,8 +133,11 @@ export const Dashboard = () => {
         revenue: f.revenue
       }));
       setPieData(mappedFoods.length > 0 ? mappedFoods : [{ name: 'No sales', quantity: 0, revenue: 0 }]);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load chart data", err);
+      if (err?.response?.status === 403 || err?.status === 403) {
+        setAccessDenied(true);
+      }
     }
   };
 
@@ -289,6 +296,31 @@ export const Dashboard = () => {
 
   return (
     <div className="w-full space-y-6 font-sans text-gray-800">
+      {/* ACCESS DENIED ALERT BOX MODAL */}
+      {accessDenied && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl border border-red-100 shadow-2xl p-6 text-center space-y-4">
+            <div className="w-14 h-14 bg-red-50 text-rose-500 rounded-full flex items-center justify-center mx-auto border border-red-100">
+              <AlertCircle className="w-7 h-7 stroke-[2.2]" />
+            </div>
+            <div>
+              <h3 className="text-xl font-black text-slate-900 tracking-tight">Access Denied</h3>
+              <p className="text-xs text-slate-500 font-medium max-w-sm mx-auto mt-2 leading-relaxed">
+                Your account does not have the required permission (<span className="font-bold text-rose-600">Dashboard_READ</span>) to view the Dashboard metrics. Please contact your Super Administrator.
+              </p>
+            </div>
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setAccessDenied(false)}
+                className="w-full bg-slate-900 text-white font-bold text-xs py-2.5 px-4 rounded-xl hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
+              >
+                Close Alert
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* 2. TOP BAR CONTROLS ROW */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
@@ -472,7 +504,6 @@ export const Dashboard = () => {
                 <th className="py-3 px-4">ORDER ID</th>
                 <th className="py-3 px-4">CUSTOMER NAME</th>
                 <th className="py-3 px-4">TOTAL AMOUNT</th>
-                <th className="py-3 px-4">PAYMENT STATUS</th>
                 <th className="py-3 px-4 rounded-r-lg">ORDER STATUS</th>
               </tr>
             </thead>
@@ -485,22 +516,17 @@ export const Dashboard = () => {
                 else if (order.OrderStatus === 'COMPLETED') orderBadgeColor = 'bg-slate-100 text-slate-500';
                 else if (order.OrderStatus === 'CANCELLED') orderBadgeColor = 'bg-rose-50 text-rose-700';
 
-                const payBadgeColor = order.PaymentStatus === 'PAID' 
-                  ? 'bg-green-50 text-green-700 border border-green-100'
-                  : 'bg-amber-50 text-amber-700 border border-amber-100';
-
                 return (
-                  <tr key={order.OrderID} className="hover:bg-slate-50/40 transition-colors">
+                  <tr 
+                    key={order.OrderID} 
+                    onClick={() => navigate(`/orders?orderId=${order.OrderID}`)}
+                    className="hover:bg-slate-50/40 transition-colors cursor-pointer"
+                  >
                     <td className="py-3.5 px-4 font-semibold text-slate-800">{index + 1}</td>
                     <td className="py-3.5 px-4 font-extrabold text-slate-900 font-mono">{order.OrderID}</td>
                     <td className="py-3.5 px-4 font-semibold text-slate-800">{order.UserID}</td>
                     <td className="py-3.5 px-4 font-bold text-slate-900 font-mono">
                       {order.TotalAmount.toLocaleString()} MMK
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold ${payBadgeColor}`}>
-                        {order.PaymentStatus}
-                      </span>
                     </td>
                     <td className="py-3.5 px-4">
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold ${orderBadgeColor}`}>
@@ -512,7 +538,7 @@ export const Dashboard = () => {
               })}
               {activeOrders.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                  <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
                     No active orders found in the selected canteen branch.
                   </td>
                 </tr>

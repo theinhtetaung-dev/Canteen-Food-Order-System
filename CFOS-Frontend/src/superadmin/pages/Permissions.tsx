@@ -38,8 +38,10 @@ interface RolePermission {
 
 // 1. Roles Seed Data (Tbl_Role)
 const ROLES: Role[] = [
-  { roleId: 2, roleName: 'Canteen Admin', description: 'Manage food menu items, categories, and process incoming canteen orders.' },
-  { roleId: 3, roleName: 'Student / User', description: 'Browse menu categories, place orders, and review personal transaction logs.' },
+  { roleId: 2, roleName: 'Admin', description: 'System Administrator with full access options.' },
+  { roleId: 3, roleName: 'Canteen Admin', description: 'Manage food menu items, categories, and process incoming canteen orders.' },
+  { roleId: 4, roleName: 'Student / User', description: 'Browse menu categories, place orders, and review personal transaction logs.' },
+  { roleId: 5, roleName: 'Professor', description: 'Browse menu categories and view personal transaction logs.' },
 ];
 
 // 2. Permissions Seed Data (Tbl_Permission)
@@ -81,28 +83,32 @@ const ALL_PERMISSIONS: Permission[] = [
 // Initial Junction Table mapping (Tbl_RolePermission seed)
 const INITIAL_ROLE_PERMISSIONS: RolePermission[] = [
   // Canteen Admin: Dashboard Read, Canteen Management Read & Update, Food Category & Menu All, Orders All, User Management Read & Update
-  { roleId: 2, permissionId: 1 },  // Dashboard READ
-  { roleId: 2, permissionId: 3 },  // Canteen READ
-  { roleId: 2, permissionId: 4 },  // Canteen UPDATE
-  { roleId: 2, permissionId: 6 },  // Food CREATE
-  { roleId: 2, permissionId: 7 },  // Food READ
-  { roleId: 2, permissionId: 8 },  // Food UPDATE
-  { roleId: 2, permissionId: 9 },  // Food DELETE
-  { roleId: 2, permissionId: 10 }, // Orders CREATE
-  { roleId: 2, permissionId: 11 }, // Orders READ
-  { roleId: 2, permissionId: 12 }, // Orders UPDATE
-  { roleId: 2, permissionId: 13 }, // Orders DELETE
-  { roleId: 2, permissionId: 15 }, // User READ
-  { roleId: 2, permissionId: 16 }, // User UPDATE
-  { roleId: 2, permissionId: 19 }, // Role READ
-
-  // Student / User: Dashboard Read, Canteen Read, Food Read, Orders Create & Read, User Read
   { roleId: 3, permissionId: 1 },  // Dashboard READ
   { roleId: 3, permissionId: 3 },  // Canteen READ
+  { roleId: 3, permissionId: 4 },  // Canteen UPDATE
+  { roleId: 3, permissionId: 6 },  // Food CREATE
   { roleId: 3, permissionId: 7 },  // Food READ
+  { roleId: 3, permissionId: 8 },  // Food UPDATE
+  { roleId: 3, permissionId: 9 },  // Food DELETE
   { roleId: 3, permissionId: 10 }, // Orders CREATE
   { roleId: 3, permissionId: 11 }, // Orders READ
+  { roleId: 3, permissionId: 12 }, // Orders UPDATE
+  { roleId: 3, permissionId: 13 }, // Orders DELETE
   { roleId: 3, permissionId: 15 }, // User READ
+  { roleId: 3, permissionId: 16 }, // User UPDATE
+  { roleId: 3, permissionId: 19 }, // Role READ
+
+  // Student / User: Dashboard Read, Canteen Read, Food Read, Orders Create & Read, User Read
+  { roleId: 4, permissionId: 1 },  // Dashboard READ
+  { roleId: 4, permissionId: 3 },  // Canteen READ
+  { roleId: 4, permissionId: 7 },  // Food READ
+  { roleId: 4, permissionId: 10 }, // Orders CREATE
+  { roleId: 4, permissionId: 11 }, // Orders READ
+  { roleId: 4, permissionId: 15 }, // User READ
+
+  // Professor: Dashboard Read, Food Read
+  { roleId: 5, permissionId: 1 },  // Dashboard READ
+  { roleId: 5, permissionId: 7 },  // Food READ
 ];
 
 const swalSuccessClass = {
@@ -149,7 +155,7 @@ const ToggleSwitch: React.FC<{
 };
 
 export const Permissions: React.FC = () => {
-  const [activeRoleId, setActiveRoleId] = useState<number>(2);
+  const [activeRoleId, setActiveRoleId] = useState<number>(3);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
@@ -157,6 +163,31 @@ export const Permissions: React.FC = () => {
   const [savedRolePermissions, setSavedRolePermissions] = useState<RolePermission[]>(INITIAL_ROLE_PERMISSIONS);
   // UI Draft State
   const [draftRolePermissions, setDraftRolePermissions] = useState<RolePermission[]>(INITIAL_ROLE_PERMISSIONS);
+
+  useEffect(() => {
+    const fetchAllRolePermissions = async () => {
+      setIsLoading(true);
+      try {
+        const { api } = await import('@user/api/axios');
+        const tempPermissions: RolePermission[] = [];
+        for (const r of ROLES) {
+          const { data } = await api.get(`/api/rbac/roles/${r.roleId}/permissions`);
+          if (data && data.permissions) {
+            data.permissions.forEach((p: any) => {
+              tempPermissions.push({ roleId: r.roleId, permissionId: p.permissionId });
+            });
+          }
+        }
+        setSavedRolePermissions(tempPermissions);
+        setDraftRolePermissions(tempPermissions);
+      } catch (err) {
+        console.error("Failed to load permissions from server", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchAllRolePermissions();
+  }, []);
 
   // Sync Draft State with active RoleID or database updates
   const activePermissions = useMemo(() => {
@@ -274,14 +305,21 @@ export const Permissions: React.FC = () => {
   // Save changes to database simulation
   const handleSaveMatrix = async () => {
     setIsSaving(true);
-    // Simulate API Network Delay
-    setTimeout(() => {
+    try {
+      const { api } = await import('@user/api/axios');
+      const activePermIds = draftRolePermissions
+        .filter((rp) => rp.roleId === activeRoleId)
+        .map((rp) => rp.permissionId);
+
+      await api.post(`/api/rbac/roles/${activeRoleId}/permissions`, {
+        permissionIds: activePermIds
+      });
+
       setSavedRolePermissions([...draftRolePermissions]);
-      setIsSaving(false);
       
       Swal.fire({
         title: 'Permissions Saved!',
-        text: `Access rights for role "${activeRoleName}" have been configured and stored inside Tbl_RolePermission successfully.`,
+        text: `Access rights for "${activeRoleName}" have been updated successfully.`,
         icon: 'success',
         timer: 2500,
         showConfirmButton: false,
@@ -289,7 +327,16 @@ export const Permissions: React.FC = () => {
         width: '420px',
         customClass: swalSuccessClass
       });
-    }, 800);
+    } catch (err) {
+      console.error("Failed to save permissions", err);
+      Swal.fire({
+        title: 'Save Failed',
+        text: 'An error occurred while saving the permissions.',
+        icon: 'error'
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -317,7 +364,7 @@ export const Permissions: React.FC = () => {
             >
               <span>{role.roleName}</span>
               <span className={`text-[10px] font-medium leading-none ${isActive ? 'text-[#7ca038]/70' : 'text-slate-400'}`}>
-                {role.roleId === 2 ? 'Canteen Only' : 'Student Tier'}
+                {role.roleId === 3 ? 'Canteen Only' : role.roleId === 4 ? 'Student Tier' : 'Professor Tier'}
               </span>
             </button>
           );
@@ -504,48 +551,49 @@ export const Permissions: React.FC = () => {
           );
         })}
       </div>
-
       {/* Floating Footer Save Bar */}
       {hasUnsavedChanges && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 bg-white border border-slate-200/80 rounded-2xl shadow-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 max-w-2xl w-[calc(100%-2rem)] transition-all duration-300 animate-in slide-in-from-bottom-5">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-amber-50 rounded-xl border border-amber-100 flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-4 h-4 text-amber-600" />
+        <div className="fixed bottom-6 left-4 md:left-[calc(256px+2.5rem)] right-4 md:right-[2.5rem] z-50 pointer-events-none flex justify-center">
+          <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 max-w-2xl w-full pointer-events-auto transition-all duration-300 animate-in slide-in-from-bottom-5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-amber-50 rounded-xl border border-amber-100 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-4 h-4 text-amber-600" />
+              </div>
+              <div>
+                <h5 className="text-xs font-bold text-slate-800">Unsaved Changes</h5>
+                <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                  You have changed the access matrix for "{activeRoleName}".
+                </p>
+              </div>
             </div>
-            <div>
-              <h5 className="text-xs font-bold text-slate-800">Unsaved Changes</h5>
-              <p className="text-[10px] font-semibold text-slate-400 mt-0.5">
-                You have changed the access matrix for "{activeRoleName}".
-              </p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
-            <button
-              onClick={handleReset}
-              disabled={isSaving}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors disabled:opacity-50"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Reset Changes
-            </button>
-            <button
-              onClick={handleSaveMatrix}
-              disabled={isSaving}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2.5 bg-[#7ca038] hover:bg-[#6a8b2e] text-white text-xs font-bold rounded-xl shadow-sm transition-colors disabled:opacity-75"
-            >
-              {isSaving ? (
-                <>
-                  <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Save Permission Matrix
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <button
+                onClick={handleReset}
+                disabled={isSaving}
+                className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors disabled:opacity-50"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                Reset Changes
+              </button>
+              <button
+                onClick={handleSaveMatrix}
+                disabled={isSaving}
+                className="flex-1 md:flex-none flex items-center justify-center gap-1.5 px-5 py-2.5 bg-[#7ca038] hover:bg-[#6a8b2e] text-white text-xs font-bold rounded-xl shadow-sm transition-colors disabled:opacity-75"
+              >
+                {isSaving ? (
+                  <>
+                    <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    Save Permission Matrix
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

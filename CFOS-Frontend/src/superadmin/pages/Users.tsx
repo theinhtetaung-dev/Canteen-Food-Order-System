@@ -157,7 +157,7 @@ export const Users: React.FC = () => {
             <div className="relative w-full sm:w-72">
               <input
                 type="text"
-                placeholder="Search user by username or roll no..."
+                placeholder="Search user by username or full name..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 className="w-full pl-4 pr-10 py-2 rounded-xl border border-gray-300 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#88C425]"
@@ -241,10 +241,9 @@ export const Users: React.FC = () => {
               <thead>
                 <tr className="bg-[#B2C5A3] text-gray-800 text-[11px] font-extrabold uppercase tracking-wider">
                   <th className="py-3 px-4 rounded-l-md">NO</th>
+                  <th className="py-3 px-4">FULL NAME</th>
                   <th className="py-3 px-4">USERNAME</th>
-                  <th className="py-3 px-4">ROLL NUMBER</th>
                   <th className="py-3 px-4">EMAIL</th>
-                  <th className="py-3 px-4">STATUS</th>
                   <th className="py-3 px-4">JOINED ON</th>
                   <th className="py-3 px-4 text-center rounded-r-md">ACTIONS</th>
                 </tr>
@@ -252,13 +251,13 @@ export const Users: React.FC = () => {
               <tbody className="divide-y divide-gray-100 text-xs font-medium text-gray-700">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-gray-500 font-bold">
+                    <td colSpan={6} className="py-8 text-center text-gray-500 font-bold">
                       Loading registered student users...
                     </td>
                   </tr>
                 ) : currentUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-gray-500 font-bold">
+                    <td colSpan={6} className="py-8 text-center text-gray-500 font-bold">
                       No student users found.
                     </td>
                   </tr>
@@ -284,23 +283,6 @@ export const Users: React.FC = () => {
 
                       <td className="py-3 px-4 text-gray-600">{user.email}</td>
 
-                      <td className="py-3 px-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold ${
-                            user.status === 'Active'
-                              ? 'bg-[#E1EEB4] text-[#3B5B11]'
-                              : 'bg-gray-200 text-gray-600'
-                          }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              user.status === 'Active' ? 'bg-[#5B880A]' : 'bg-gray-500'
-                            }`}
-                          />
-                          {user.status}
-                        </span>
-                      </td>
-
                       <td className="py-3 px-4 text-[11px] text-gray-500 leading-tight">
                         {user.joinedOn}
                       </td>
@@ -312,7 +294,7 @@ export const Users: React.FC = () => {
                             onClick={() => {
                               Swal.fire({
                                 title: 'Reset Password?',
-                                text: `Are you sure you want to reset the password for student "${user.userName}" (Roll No: ${user.rollNo})?`,
+                                text: `Are you sure you want to reset the password for student "${user.userName}" (Username: ${user.rollNo})?`,
                                 icon: 'question',
                                 showCancelButton: true,
                                 buttonsStyling: false,
@@ -361,7 +343,7 @@ export const Users: React.FC = () => {
                             onClick={() => {
                               Swal.fire({
                                 title: 'Delete User?',
-                                text: `Are you sure you want to delete student "${user.userName}" (Roll No: ${user.rollNo})? This action cannot be undone.`,
+                                text: `Are you sure you want to delete student "${user.userName}" (Username: ${user.rollNo})? This action cannot be undone.`,
                                 icon: 'warning',
                                 showCancelButton: true,
                                 buttonsStyling: false,
@@ -466,7 +448,7 @@ export const Users: React.FC = () => {
                       onClick={() => {
                         Swal.fire({
                           title: 'Reset Password?',
-                          text: `Are you sure you want to reset the password for student "${user.userName}" (Roll No: ${user.rollNo})?`,
+                          text: `Are you sure you want to reset the password for student "${user.userName}" (Username: ${user.rollNo})?`,
                           icon: 'question',
                           showCancelButton: true,
                           buttonsStyling: false,
@@ -514,7 +496,7 @@ export const Users: React.FC = () => {
                       onClick={() => {
                         Swal.fire({
                           title: 'Delete User?',
-                          text: `Are you sure you want to delete student "${user.userName}" (Roll No: ${user.rollNo})? This action cannot be undone.`,
+                          text: `Are you sure you want to delete student "${user.userName}" (Username: ${user.rollNo})? This action cannot be undone.`,
                           icon: 'warning',
                           showCancelButton: true,
                           buttonsStyling: false,
@@ -572,33 +554,76 @@ export const Users: React.FC = () => {
             <span className="text-gray-500 font-medium">
               Showing {startIndex + 1} to {Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)} of {filteredUsers.length} users
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                type="button"
                 disabled={currentPage === 1}
-                className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:hover:bg-white"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
               >
-                <ChevronLeft className="w-4 h-4" />
+                <ChevronLeft className="w-4 h-4 stroke-[3]" />
               </button>
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
-                    currentPage === i + 1
-                      ? "bg-[#88C425] text-white shadow-sm"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
+
+              <div className="flex items-center gap-1 bg-white border border-slate-150 rounded-full shadow-sm px-2.5 py-1">
+                {(() => {
+                  const getPaginationRange = (current: number, total: number) => {
+                    const range: (number | string)[] = [];
+                    if (total <= 7) {
+                      for (let i = 1; i <= total; i++) range.push(i);
+                      return range;
+                    }
+                    range.push(1);
+                    const start = Math.max(2, current - 1);
+                    const end = Math.min(total - 1, current + 1);
+                    if (start > 2) {
+                      range.push("...");
+                    }
+                    for (let i = start; i <= end; i++) {
+                      range.push(i);
+                    }
+                    if (end < total - 1) {
+                      range.push("...");
+                    }
+                    range.push(total);
+                    return range;
+                  };
+
+                  return getPaginationRange(currentPage, totalPages).map((page, idx) => {
+                    if (page === "...") {
+                      return (
+                        <span
+                          key={`dots-${idx}`}
+                          className="w-8 h-8 flex items-center justify-center text-slate-400 font-bold text-xs select-none"
+                        >
+                          ...
+                        </span>
+                      );
+                    }
+                    return (
+                      <button
+                        key={`page-${page}`}
+                        type="button"
+                        onClick={() => setCurrentPage(Number(page))}
+                        className={`w-8 h-8 rounded-full text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer ${
+                          currentPage === page
+                            ? "bg-[#284208] text-white shadow-sm"
+                            : "text-slate-600 hover:bg-slate-50 hover:text-[#284208]"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  });
+                })()}
+              </div>
+
               <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                type="button"
                 disabled={currentPage === totalPages}
-                className="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:text-gray-700 disabled:opacity-50 disabled:hover:bg-white"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
               >
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4 stroke-[3]" />
               </button>
             </div>
           </div>

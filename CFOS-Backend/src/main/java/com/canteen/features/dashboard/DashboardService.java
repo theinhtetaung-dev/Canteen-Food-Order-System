@@ -224,21 +224,12 @@ public class DashboardService {
             if (u.getCreatedAt() != null && !u.getCreatedAt().isBefore(start) && !u.getCreatedAt().isAfter(end)) {
                 String roleName = u.getRole() != null ? u.getRole().getRoleName().toLowerCase() : "user";
                 if ("user".equals(roleName)) {
-                    boolean isStudent = false;
-                    if (u.getUserName() != null && u.getFullName() != null && u.getUserName().equals(u.getFullName())) {
-                        isStudent = true;
-                    } else if (u.getEmail() == null || u.getEmail().trim().isEmpty() || u.getEmail().endsWith("@student.local")) {
-                        isStudent = true;
-                    }
-
-                    if (isStudent) {
-                        studentCount++;
-                    } else {
-                        professorCount++;
-                    }
+                    studentCount++;
+                } else if ("professor".equals(roleName)) {
+                    professorCount++;
                 } else if ("manager".equals(roleName)) {
                     canteenAdminCount++;
-                } else if ("superadmin".equals(roleName)) {
+                } else if ("superadmin".equals(roleName) || "admin".equals(roleName)) {
                     superAdminCount++;
                 }
             }

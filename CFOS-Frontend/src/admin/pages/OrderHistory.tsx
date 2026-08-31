@@ -351,32 +351,41 @@ export function OrderHistory() {
             {visibleOrders.map((order, idx) => {
               const globalIndex = (currentPage - 1) * ORDERS_PER_PAGE + idx + 1;
               return (
-                <div key={order.id} className="rounded-2xl border border-gray-200 p-6 bg-white shadow-sm flex flex-col justify-between transition-all hover:shadow-md">
+                <div 
+                  key={order.id} 
+                  className="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between"
+                >
                   <div className="space-y-4">
-                    <div className="flex items-start justify-between border-b border-gray-100 pb-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-gray-400 font-mono">#{globalIndex}</span>
-                          <span className="text-sm font-black text-gray-800">{order.studentId}</span>
-                        </div>
-                        <span className="text-[10px] font-semibold text-gray-400 mt-0.5 block">
-                          Date: {order.createdAt ? formatDate(new Date(order.createdAt)) : "N/A"}
+                    {/* Card Header */}
+                    <div className="flex items-start justify-between border-b border-slate-50 pb-4">
+                      <div className="flex items-start gap-3">
+                        <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-slate-50 text-[10px] font-extrabold text-slate-500 font-mono group-hover:bg-[#e2f0c2] group-hover:text-[#284208] transition-colors shrink-0">
+                          {globalIndex}
                         </span>
+                        <div>
+                          <span className="text-sm font-bold text-slate-800 block leading-tight">
+                            {order.studentId}
+                          </span>
+                          <span className="flex items-center gap-1 text-[10px] font-semibold text-slate-400 mt-1">
+                            <Calendar className="w-3 h-3 shrink-0 text-slate-400" />
+                            {order.createdAt ? formatDate(new Date(order.createdAt)) : "N/A"}
+                          </span>
+                        </div>
                       </div>
                       <div className="flex flex-col items-end gap-1.5">
                         {renderStatusBadge(order.status)}
-                        <span className="text-sm font-black text-gray-900">
+                        <span className="text-xs font-black text-slate-700 bg-slate-50 px-2 py-0.5 rounded-lg font-mono">
                           {order.totalAmount.toLocaleString()} MMK
                         </span>
                       </div>
                     </div>
-
                   </div>
 
-                  <div className="flex items-center justify-end gap-3 mt-5 pt-3 border-t border-gray-100">
+                  {/* Actions Footer */}
+                  <div className="flex items-center justify-end mt-5 pt-3 border-t border-slate-50">
                     <button 
                       onClick={() => setSelectedOrder(order)} 
-                      className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e2e7d8] hover:bg-[#d4dbc8] text-[#414b35] rounded-xl text-xs font-bold transition-all shadow-sm"
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e2e7d8] hover:bg-[#d4dbc8] text-[#414b35] rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" strokeWidth={2.5} />
                       <span>Details</span>
@@ -394,39 +403,77 @@ export function OrderHistory() {
         )}
 
         {/* Pagination Footer */}
-        {filteredOrders.length >= 10 && (
+        {totalPages > 1 && (
           <div className="p-5 px-7 flex items-center justify-end gap-2 bg-[#fcfdfa]">
             <button
               type="button"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="w-9 h-9 flex items-center justify-center text-[#555555] hover:text-black disabled:opacity-30 transition-colors"
+              className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
             >
-              <ChevronLeft className="w-6 h-6 stroke-[3]" />
+              <ChevronLeft className="w-4 h-4 stroke-[3]" />
             </button>
 
-            {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((page) => (
-              <button
-                key={page}
-                type="button"
-                onClick={() => setCurrentPage(page)}
-                className={`w-9 h-9 rounded-[14px] text-sm font-black flex items-center justify-center transition-colors ${
-                  currentPage === page
-                    ? "bg-[#dbebba] text-black"
-                    : "bg-[#eaeaea] text-[#8e8e8e] hover:bg-gray-300"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
+            <div className="flex items-center gap-1 bg-white border border-slate-150 rounded-full shadow-sm px-2.5 py-1">
+              {(() => {
+                const getPaginationRange = (current: number, total: number) => {
+                  const range: (number | string)[] = [];
+                  if (total <= 7) {
+                    for (let i = 1; i <= total; i++) range.push(i);
+                    return range;
+                  }
+                  range.push(1);
+                  const start = Math.max(2, current - 1);
+                  const end = Math.min(total - 1, current + 1);
+                  if (start > 2) {
+                    range.push("...");
+                  }
+                  for (let i = start; i <= end; i++) {
+                    range.push(i);
+                  }
+                  if (end < total - 1) {
+                    range.push("...");
+                  }
+                  range.push(total);
+                  return range;
+                };
+
+                return getPaginationRange(currentPage, totalPages).map((page, idx) => {
+                  if (page === "...") {
+                    return (
+                      <span
+                        key={`dots-${idx}`}
+                        className="w-8 h-8 flex items-center justify-center text-slate-400 font-bold text-xs select-none"
+                      >
+                        ...
+                      </span>
+                    );
+                  }
+                  return (
+                    <button
+                      key={`page-${page}`}
+                      type="button"
+                      onClick={() => setCurrentPage(Number(page))}
+                      className={`w-8 h-8 rounded-full text-xs font-extrabold flex items-center justify-center transition-all cursor-pointer ${
+                        currentPage === page
+                          ? "bg-[#284208] text-white shadow-sm"
+                          : "text-slate-600 hover:bg-slate-50 hover:text-[#284208]"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                });
+              })()}
+            </div>
 
             <button
               type="button"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="w-9 h-9 flex items-center justify-center text-[#8e8e8e] hover:text-black disabled:opacity-30 transition-colors"
+              className="w-9 h-9 flex items-center justify-center bg-white border border-slate-150 rounded-full shadow-sm text-slate-550 hover:bg-slate-50 disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer"
             >
-              <ChevronRight className="w-6 h-6 stroke-[3]" />
+              <ChevronRight className="w-4 h-4 stroke-[3]" />
             </button>
           </div>
         )}
@@ -439,7 +486,7 @@ export function OrderHistory() {
             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-[#fbfdf8]">
               <div>
                 <h3 className="text-xl font-extrabold text-gray-900">Order Details</h3>
-                <p className="text-xs font-semibold text-gray-500 mt-1">ID: #{selectedOrder.id}</p>
+                <p className="text-xs font-semibold text-gray-500 mt-1">ID: {selectedOrder.id}</p>
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}

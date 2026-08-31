@@ -104,7 +104,7 @@ export const UserReports: React.FC = () => {
         if (!matchesSearch) return false;
       }
 
-      // 2. Role Filter mapping: Canteen Admin -> Manager, Student -> User, Super Admin -> SuperAdmin/Admin
+      // 2. Role Filter mapping: Canteen Admin -> Manager, Student -> User, Super Admin -> SuperAdmin/Admin, Professor -> Professor
       if (roleFilter !== 'ALL') {
         const roleLower = u.roleName.toLowerCase();
         if (roleFilter === 'CANTEEN_ADMIN') {
@@ -113,6 +113,8 @@ export const UserReports: React.FC = () => {
           if (roleLower !== 'user') return false;
         } else if (roleFilter === 'SUPER_ADMIN') {
           if (roleLower !== 'superadmin' && roleLower !== 'admin') return false;
+        } else if (roleFilter === 'PROFESSOR') {
+          if (roleLower !== 'professor') return false;
         }
       }
 
@@ -203,7 +205,7 @@ export const UserReports: React.FC = () => {
         idx + 1,
         `@${u.userName}`,
         u.fullName,
-        u.roleName.toLowerCase() === 'manager' ? 'Canteen Admin' : (u.roleName.toLowerCase() === 'superadmin' || u.roleName.toLowerCase() === 'admin') ? 'Super Admin' : 'Student',
+        u.roleName.toLowerCase() === 'manager' ? 'Canteen Admin' : (u.roleName.toLowerCase() === 'superadmin' || u.roleName.toLowerCase() === 'admin') ? 'Super Admin' : u.roleName.toLowerCase() === 'professor' ? 'Professor' : 'Student',
         statusStr,
         u.canteenName || '—',
         u.email || '—',
@@ -251,7 +253,7 @@ export const UserReports: React.FC = () => {
         idx + 1,
         `@${u.userName}`,
         u.fullName,
-        u.roleName.toLowerCase() === 'manager' ? 'Canteen Admin' : (u.roleName.toLowerCase() === 'superadmin' || u.roleName.toLowerCase() === 'admin') ? 'Super Admin' : 'Student',
+        u.roleName.toLowerCase() === 'manager' ? 'Canteen Admin' : (u.roleName.toLowerCase() === 'superadmin' || u.roleName.toLowerCase() === 'admin') ? 'Super Admin' : u.roleName.toLowerCase() === 'professor' ? 'Professor' : 'Student',
         statusStr,
         u.canteenName || '—',
         u.email || '—',
@@ -327,6 +329,12 @@ export const UserReports: React.FC = () => {
           return (
             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#F2F7E6] text-[#3B5B11] border border-[#E1EEB4] shadow-sm">
               Canteen Admin
+            </span>
+          );
+        } else if (role === 'professor') {
+          return (
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 shadow-sm">
+              Professor
             </span>
           );
         } else {
@@ -500,6 +508,7 @@ export const UserReports: React.FC = () => {
               <option value="ALL">All Roles</option>
               <option value="CANTEEN_ADMIN">Canteen Admin</option>
               <option value="STUDENT">Student</option>
+              <option value="PROFESSOR">Professor</option>
               <option value="SUPER_ADMIN">Super Admin</option>
             </select>
           </div>

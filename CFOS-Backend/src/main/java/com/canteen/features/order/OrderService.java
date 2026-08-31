@@ -34,6 +34,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class OrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
@@ -150,4 +151,33 @@ public class OrderService {
     // order.setDeleteFlag(true);
     // orderRepository.save(order);
     // }
+
+    public Page<OrderResponseModel> getOrdersByCanteenId(Integer canteenId, int page, int size, String sortBy, String direction) {
+        PaginationValidator.validate(page, size, sortBy, direction,
+                Set.of("orderId", "totalAmount", "createdAt", "updatedAt", "orderStatus"));
+
+        Sort sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return orderRepository.findDistinctByOrderItems_Food_Branch_BranchId(canteenId, pageable).map(OrderMapper::toDto);
+    }
+
+    public Page<OrderResponseModel> getCanteenOrders(String username, String role, Integer canteenId, int page, int size, String sortBy, String direction) {
+        Integer resolvedCanteenId = canteenId;
+
+        if ("Manager".equalsIgnoreCase(role)) {
+            User user = userRepository.findByUserName(username)
+                    .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+            if (user.getCanteen() == null) {
+                throw new IllegalArgumentException("Manager is not assigned to any canteen.");
+            }
+            resolvedCanteenId = user.getCanteen().getBranchId();
+        }
+
+        if (resolvedCanteenId != null) {
+            return getOrdersByCanteenId(resolvedCanteenId, page, size, sortBy, direction);
+        } else {
+            return getAllOrders(page, size, sortBy, direction);
+        }
+    }
 }

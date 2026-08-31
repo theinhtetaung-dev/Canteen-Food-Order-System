@@ -25,4 +25,11 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
     @EntityGraph(attributePaths = { "orderItems", "orderItems.food" })
     Page<Order> findByUser_UserName(String userName, Pageable pageable);
+
+    @Override
+    @EntityGraph(attributePaths = { "user", "orderItems", "orderItems.food", "orderItems.food.branch" })
+    Page<Order> findAll(Pageable pageable);
+
+    @EntityGraph(attributePaths = { "user", "orderItems", "orderItems.food", "orderItems.food.branch" })
+    Page<Order> findDistinctByOrderItems_Food_Branch_BranchId(Integer branchId, Pageable pageable);
 }

@@ -56,7 +56,7 @@ export const Dashboard: React.FC = () => {
 
         // Fetch Professors
         const allUsers = await fetchAllUsers();
-        const professors = allUsers.filter((u) => u.roleName && u.roleName.toLowerCase() === "user" && u.email && u.email.trim() !== "");
+        const professors = allUsers.filter((u) => u.roleName && u.roleName.toLowerCase() === "professor");
         setTotalProfessors(professors.length);
 
         // Fetch Canteens/Branches

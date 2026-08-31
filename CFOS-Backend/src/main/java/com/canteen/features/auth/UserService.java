@@ -45,6 +45,11 @@ public class UserService {
 
     @Transactional
     public CreateUserResModel createUser(CreateUserReqModel request) {
+        return createUser(request, null);
+    }
+
+    @Transactional
+    public CreateUserResModel createUser(CreateUserReqModel request, String creatorRole) {
         if (userRepository.existsByUserName(request.getUserName())) {
             throw new DuplicateResourceException("Username already exists: " + request.getUserName());
         }
@@ -62,6 +67,12 @@ public class UserService {
         } else {
             role = roleRepository.findByRoleName("User")
                     .orElseThrow(() -> new ResourceNotFoundException("Default 'User' role not found"));
+        }
+
+        if ("Professor".equalsIgnoreCase(role.getRoleName())) {
+            if (creatorRole == null || !"SuperAdmin".equalsIgnoreCase(creatorRole)) {
+                throw new IllegalArgumentException("Only SuperAdmin can create Professor accounts");
+            }
         }
 
         User user = UserMapper.toEntity(request);

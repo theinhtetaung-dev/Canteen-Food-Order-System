@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { fetchAllOrders, updateOrderStatus } from "@user/api/order.api";
+import { fetchCanteenOrders, updateOrderStatus } from "@user/api/order.api";
 import { List, RefreshCw, ChevronLeft, ChevronRight, Eye, X, LayoutGrid, Clock } from "lucide-react";
 import { useAuth } from "@user/hooks/useAuth";
 import { fetchAllUsers } from "@user/api/user.api";
@@ -90,7 +90,7 @@ export function OrderLists() {
   async function loadOrders() {
     try {
       setIsLoading(true);
-      const data = await fetchAllOrders();
+      const data = await fetchCanteenOrders();
       const mapped = data.map((d: any) => {
         // Map backend status to superadmin status
         let mappedStatus: OrderStatus = "Pending";

@@ -318,7 +318,7 @@ export const Permissions: React.FC = () => {
       
       Swal.fire({
         title: 'Permissions Saved!',
-        text: `Access rights for role "${activeRoleName}" have been configured and stored inside Tbl_RolePermission successfully.`,
+        text: `Access rights for "${activeRoleName}" have been updated successfully.`,
         icon: 'success',
         timer: 2500,
         showConfirmButton: false,

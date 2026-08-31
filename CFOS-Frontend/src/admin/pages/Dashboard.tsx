@@ -26,7 +26,7 @@ import {
 import { fetchBranches } from "@user/api/branch.api";
 import { useAuth } from "@user/hooks/useAuth";
 import { fetchAllUsers } from "@user/api/user.api";
-import { fetchAllOrders, updateOrderStatus } from "@user/api/order.api";
+import { fetchCanteenOrders, updateOrderStatus } from "@user/api/order.api";
 import { fetchMenuItems } from "@user/api/menu.api";
 import { fetchReport } from "@user/api/report.api";
 import { fetchAdminDashboard } from "@user/api/dashboard.api";
@@ -112,7 +112,7 @@ export const Dashboard = () => {
   // Fetch all orders
   const loadDashboardData = async () => {
     try {
-      const apiOrders = await fetchAllOrders();
+      const apiOrders = await fetchCanteenOrders();
       setRawApiOrders(apiOrders);
       setOrders(apiOrders.map(mapToTblOrder));
     } catch (err) {

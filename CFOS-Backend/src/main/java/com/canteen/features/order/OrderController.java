@@ -61,6 +61,22 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/canteen")
+    public ResponseEntity<Page<OrderResponseModel>> getCanteenOrders(
+            HttpServletRequest httpRequest,
+            @RequestParam(required = false) Integer canteenId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        String username = (String) httpRequest.getAttribute("username");
+        String role = (String) httpRequest.getAttribute("role");
+        Page<OrderResponseModel> response = orderService.getCanteenOrders(
+                username, role, canteenId, page, size, sortBy, direction);
+        return ResponseEntity.ok(response);
+    }
+
     @PatchMapping("/{id}/status")
     public ResponseEntity<OrderResponseModel> updateOrderStatus(
             @PathVariable Integer id,

@@ -147,6 +147,41 @@ export async function fetchAllOrders(): Promise<Order[]> {
   }
 }
 
+export async function fetchCanteenOrders(canteenId?: number): Promise<Order[]> {
+  try {
+    const params: any = { size: 1000 };
+    if (canteenId !== undefined && canteenId !== null) {
+      params.canteenId = canteenId;
+    }
+    const { data } = await api.get<{ content: any[] }>("/api/orders/canteen", {
+      params
+    });
+
+    return data.content.map((order) => ({
+      id: `ORD-${order.orderId}`,
+      userId: order.userName,
+      items: order.orderItems.map((item: any) => ({
+        menuItemId: item.orderItemId,
+        name: item.foodName,
+        price: Number(item.snapPrice),
+        quantity: item.quantity,
+        image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000",
+        comment: item.comment,
+      })),
+      totalPrice: Number(order.totalAmount),
+      pickupTime: "12:00 PM",
+      status: mapBackendStatus(order.orderStatus),
+      createdAt: order.createdAt || new Date().toISOString(),
+      updatedAt: order.updatedAt || new Date().toISOString(),
+      canteenId: order.canteenId,
+      canteenName: order.canteenName,
+    }));
+  } catch (err) {
+    console.error("Error fetching canteen orders:", err);
+    return [];
+  }
+}
+
 export async function updateOrderStatus(orderId: string | number, status: string): Promise<void> {
   const numericId = typeof orderId === 'string' ? orderId.replace('ORD-', '') : orderId;
   const upperStatus = status.toUpperCase() === "COMPLETED" || status.toUpperCase() === "COMPLETE" ? "COMPLETE" : status.toUpperCase();

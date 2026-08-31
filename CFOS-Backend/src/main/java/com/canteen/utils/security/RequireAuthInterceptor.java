@@ -58,7 +58,7 @@ public class RequireAuthInterceptor implements HandlerInterceptor {
 
     private boolean hasPermission(HttpServletRequest request) {
         String role = (String) request.getAttribute("role");
-        if ("SuperAdmin".equalsIgnoreCase(role)) {
+        if ("SuperAdmin".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role) || "Manager".equalsIgnoreCase(role)) {
             return true;
         }
 
@@ -115,7 +115,7 @@ public class RequireAuthInterceptor implements HandlerInterceptor {
             return "READ";
         } else if ("POST".equalsIgnoreCase(method)) {
             return "CREATE";
-        } else if ("PUT".equalsIgnoreCase(method)) {
+        } else if ("PUT".equalsIgnoreCase(method) || "PATCH".equalsIgnoreCase(method)) {
             return "UPDATE";
         } else if ("DELETE".equalsIgnoreCase(method)) {
             return "DELETE";

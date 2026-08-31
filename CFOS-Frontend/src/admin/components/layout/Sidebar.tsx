@@ -111,7 +111,7 @@ export function Sidebar() {
           setDbName(found.fullName || found.userName);
           setDbRole(found.roleName.toLowerCase() === 'superadmin' || found.roleName.toLowerCase() === 'admin'
             ? 'Super Admin' 
-            : (found.roleName.toLowerCase() === 'manager' ? 'Canteen Manager' : 'Student'));
+            : (found.roleName.toLowerCase() === 'manager' ? 'Canteen Manager' : found.roleName.toLowerCase() === 'professor' ? 'Professor' : 'Student'));
           if (found.canteenId) {
             setUserCanteenId(found.canteenId);
           }

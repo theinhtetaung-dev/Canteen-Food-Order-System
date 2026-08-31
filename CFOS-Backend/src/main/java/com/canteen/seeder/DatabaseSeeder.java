@@ -78,8 +78,9 @@ public class DatabaseSeeder implements CommandLineRunner {
         Role adminRole = createRole("Admin");
         Role managerRole = createRole("Manager");
         Role userRole = createRole("User");
+        Role professorRole = createRole("Professor");
         
-        roleRepository.saveAll(List.of(superAdminRole, adminRole, managerRole, userRole));
+        roleRepository.saveAll(List.of(superAdminRole, adminRole, managerRole, userRole, professorRole));
 
         // 3. Seed Permissions
         log.info("Seeding Permissions...");
@@ -107,7 +108,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             rolePermissions.add(rpManager);
         }
         
-        // User gets Read permissions for Food and FoodCategory
+        // User and Professor get Read permissions for Food and FoodCategory
         for (Permission p : permissions) {
             if ("Read".equals(p.getActionName()) && 
                 ("Food".equals(p.getMenuName()) || "FoodCategory".equals(p.getMenuName()))) {
@@ -115,6 +116,11 @@ public class DatabaseSeeder implements CommandLineRunner {
                 rp.setRole(userRole);
                 rp.setPermission(p);
                 rolePermissions.add(rp);
+
+                RolePermission rpProf = new RolePermission();
+                rpProf.setRole(professorRole);
+                rpProf.setPermission(p);
+                rolePermissions.add(rpProf);
             }
         }
         rolePermissionRepository.saveAll(rolePermissions);
@@ -198,6 +204,21 @@ public class DatabaseSeeder implements CommandLineRunner {
             students.add(student);
         }
         userRepository.saveAll(students);
+
+        // 5 Professor Accounts
+        List<User> professors = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            User prof = new User();
+            prof.setUserName("professor" + i);
+            prof.setFullName("Professor " + i);
+            prof.setEmail("professor" + i + "@miit.edu.mm");
+            prof.setPasswordHash(passwordEncoder.encode("professor123"));
+            prof.setPhoneNumber("099" + String.format("%07d", 200 + i));
+            prof.setStatus(UserStatus.ACTIVE);
+            prof.setRole(professorRole);
+            professors.add(prof);
+        }
+        userRepository.saveAll(professors);
 
         // 6. Seed Food Categories
         log.info("Seeding Food Categories...");

@@ -109,7 +109,7 @@ export const Professors: React.FC = () => {
       const allUsers = await fetchAllUsers();
       // Filter for users with role "User"
       const mapped = allUsers
-        .filter((u) => u.roleName && u.roleName.toLowerCase() === "user" && u.userName !== u.fullName && u.email && u.email.trim() !== "" && !u.email.endsWith("@student.local"))
+        .filter((u) => u.roleName && u.roleName.toLowerCase() === "professor")
         .map((u) => ({
           id: String(u.userId),
           username: u.userName,
@@ -426,20 +426,19 @@ export const Professors: React.FC = () => {
                   <th className="py-3 px-4">FULL NAME</th>
                   <th className="py-3 px-4">EMAIL</th>
                   <th className="py-3 px-4">PHONE</th>
-                  <th className="py-3 px-4">STATUS</th>
                   <th className="py-3 px-4 rounded-r-md text-center">ACTIONS</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-xs font-medium text-gray-700">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-gray-500 font-bold">
+                    <td colSpan={6} className="py-8 text-center text-gray-500 font-bold">
                       Loading user accounts...
                     </td>
                   </tr>
                 ) : currentProfessors.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-gray-500 font-bold">
+                    <td colSpan={6} className="py-8 text-center text-gray-500 font-bold">
                       No accounts found.
                     </td>
                   </tr>
@@ -458,22 +457,6 @@ export const Professors: React.FC = () => {
                       <td className="py-3 px-4 font-semibold text-gray-800">{prof.fullName}</td>
                       <td className="py-3 px-4 text-gray-600">{prof.email}</td>
                       <td className="py-3 px-4 text-gray-600 font-mono text-[11px]">{prof.phone}</td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold ${
-                            prof.status === 'Active'
-                              ? 'bg-[#E1EEB4] text-[#3B5B11]'
-                              : 'bg-gray-200 text-gray-600'
-                          }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              prof.status === 'Active' ? 'bg-[#5B880A]' : 'bg-gray-500'
-                            }`}
-                          />
-                          {prof.status}
-                        </span>
-                      </td>
                       <td className="py-3 px-4 text-center">
                         <div className="flex items-center justify-center gap-3">
                           {/* Reset password */}

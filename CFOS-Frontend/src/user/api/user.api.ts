@@ -15,7 +15,7 @@ export async function fetchStudents(): Promise<StudentUser[]> {
   const { data } = await api.get<any>("/api/users?size=1000");
   const users = data.content || data;
   return users
-    .filter((u: any) => u.roleName && u.roleName.toLowerCase() === "user" && (u.userName === u.fullName || !u.email || u.email.trim() === "" || u.email.endsWith("@student.local")))
+    .filter((u: any) => u.roleName && u.roleName.toLowerCase() === "user")
     .map((u: any) => ({
       id: String(u.userId),
       rollNo: u.userName,
@@ -112,7 +112,7 @@ export async function createProfessor(payload: {
     email: payload.email,
     password: "1234567890a",
     phoneNumber: payload.phone,
-    roleName: "User",
+    roleName: "Professor",
   });
 }
 

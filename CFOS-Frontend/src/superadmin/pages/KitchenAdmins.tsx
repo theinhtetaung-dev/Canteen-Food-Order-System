@@ -457,10 +457,9 @@ export const KitchenAdmins: React.FC = () => {
               <thead>
                 <tr className="bg-[#B2C5A3] text-gray-800 text-[11px] font-extrabold uppercase tracking-wider">
                   <th className="py-3 px-4 rounded-l-md">NO</th>
-                  <th className="py-3 px-4">ADMIN ID</th>
+                  <th className="py-3 px-4">USERNAME</th>
                   <th className="py-3 px-4">CANTEEN</th>
                   <th className="py-3 px-4">PHONE</th>
-                  <th className="py-3 px-4">STATUS</th>
                   <th className="py-3 px-4">JOINED ON</th>
                   <th className="py-3 px-4 text-center rounded-r-md">ACTIONS</th>
                 </tr>
@@ -476,40 +475,12 @@ export const KitchenAdmins: React.FC = () => {
                     <td className="py-3 px-4 font-bold text-gray-500 font-mono text-[11px]">
                       {startIndex + idx + 1}
                     </td>
-                    <td className="py-3 px-4 flex items-center gap-3 font-semibold text-gray-900">
-                      {admin.isAvatarText ? (
-                        <div className="w-7 h-7 rounded-full bg-[#88C425] text-white text-[10px] font-bold flex items-center justify-center shrink-0">
-                          {admin.avatar}
-                        </div>
-                      ) : (
-                        <img
-                          src={admin.avatar}
-                          alt={admin.adminId}
-                          className="w-7 h-7 rounded-full object-cover shrink-0"
-                        />
-                      )}
+                    <td className="py-3 px-4 font-semibold text-gray-900">
                       <span>{admin.adminId}</span>
                     </td>
 
                     <td className="py-3 px-4 font-semibold text-gray-800">{admin.restaurant}</td>
                     <td className="py-3 px-4 text-gray-600 font-mono text-[11px]">{admin.phone}</td>
-
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold ${
-                          admin.status === 'Active'
-                            ? 'bg-[#E1EEB4] text-[#3B5B11]'
-                            : 'bg-gray-200 text-gray-600'
-                        }`}
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            admin.status === 'Active' ? 'bg-[#5B880A]' : 'bg-gray-500'
-                          }`}
-                        />
-                        {admin.status}
-                      </span>
-                    </td>
 
                     <td className="py-3 px-4 text-[11px] text-gray-500 whitespace-pre-line leading-tight">
                       {admin.joinedOn}

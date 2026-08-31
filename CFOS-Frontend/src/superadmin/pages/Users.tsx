@@ -157,7 +157,7 @@ export const Users: React.FC = () => {
             <div className="relative w-full sm:w-72">
               <input
                 type="text"
-                placeholder="Search user by username or roll no..."
+                placeholder="Search user by username or full name..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 className="w-full pl-4 pr-10 py-2 rounded-xl border border-gray-300 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#88C425]"
@@ -241,10 +241,9 @@ export const Users: React.FC = () => {
               <thead>
                 <tr className="bg-[#B2C5A3] text-gray-800 text-[11px] font-extrabold uppercase tracking-wider">
                   <th className="py-3 px-4 rounded-l-md">NO</th>
+                  <th className="py-3 px-4">FULL NAME</th>
                   <th className="py-3 px-4">USERNAME</th>
-                  <th className="py-3 px-4">ROLL NUMBER</th>
                   <th className="py-3 px-4">EMAIL</th>
-                  <th className="py-3 px-4">STATUS</th>
                   <th className="py-3 px-4">JOINED ON</th>
                   <th className="py-3 px-4 text-center rounded-r-md">ACTIONS</th>
                 </tr>
@@ -252,13 +251,13 @@ export const Users: React.FC = () => {
               <tbody className="divide-y divide-gray-100 text-xs font-medium text-gray-700">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-gray-500 font-bold">
+                    <td colSpan={6} className="py-8 text-center text-gray-500 font-bold">
                       Loading registered student users...
                     </td>
                   </tr>
                 ) : currentUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-gray-500 font-bold">
+                    <td colSpan={6} className="py-8 text-center text-gray-500 font-bold">
                       No student users found.
                     </td>
                   </tr>
@@ -284,23 +283,6 @@ export const Users: React.FC = () => {
 
                       <td className="py-3 px-4 text-gray-600">{user.email}</td>
 
-                      <td className="py-3 px-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold ${
-                            user.status === 'Active'
-                              ? 'bg-[#E1EEB4] text-[#3B5B11]'
-                              : 'bg-gray-200 text-gray-600'
-                          }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              user.status === 'Active' ? 'bg-[#5B880A]' : 'bg-gray-500'
-                            }`}
-                          />
-                          {user.status}
-                        </span>
-                      </td>
-
                       <td className="py-3 px-4 text-[11px] text-gray-500 leading-tight">
                         {user.joinedOn}
                       </td>
@@ -312,7 +294,7 @@ export const Users: React.FC = () => {
                             onClick={() => {
                               Swal.fire({
                                 title: 'Reset Password?',
-                                text: `Are you sure you want to reset the password for student "${user.userName}" (Roll No: ${user.rollNo})?`,
+                                text: `Are you sure you want to reset the password for student "${user.userName}" (Username: ${user.rollNo})?`,
                                 icon: 'question',
                                 showCancelButton: true,
                                 buttonsStyling: false,
@@ -361,7 +343,7 @@ export const Users: React.FC = () => {
                             onClick={() => {
                               Swal.fire({
                                 title: 'Delete User?',
-                                text: `Are you sure you want to delete student "${user.userName}" (Roll No: ${user.rollNo})? This action cannot be undone.`,
+                                text: `Are you sure you want to delete student "${user.userName}" (Username: ${user.rollNo})? This action cannot be undone.`,
                                 icon: 'warning',
                                 showCancelButton: true,
                                 buttonsStyling: false,
@@ -466,7 +448,7 @@ export const Users: React.FC = () => {
                       onClick={() => {
                         Swal.fire({
                           title: 'Reset Password?',
-                          text: `Are you sure you want to reset the password for student "${user.userName}" (Roll No: ${user.rollNo})?`,
+                          text: `Are you sure you want to reset the password for student "${user.userName}" (Username: ${user.rollNo})?`,
                           icon: 'question',
                           showCancelButton: true,
                           buttonsStyling: false,
@@ -514,7 +496,7 @@ export const Users: React.FC = () => {
                       onClick={() => {
                         Swal.fire({
                           title: 'Delete User?',
-                          text: `Are you sure you want to delete student "${user.userName}" (Roll No: ${user.rollNo})? This action cannot be undone.`,
+                          text: `Are you sure you want to delete student "${user.userName}" (Username: ${user.rollNo})? This action cannot be undone.`,
                           icon: 'warning',
                           showCancelButton: true,
                           buttonsStyling: false,

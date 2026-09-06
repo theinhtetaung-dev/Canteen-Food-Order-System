@@ -101,6 +101,7 @@ export function Sidebar() {
   const [dbName, setDbName] = useState("");
   const [dbRole, setDbRole] = useState("");
   const [userPermissions, setUserPermissions] = useState<string[]>([]);
+  const [permissionsLoaded, setPermissionsLoaded] = useState(false);
 
   useEffect(() => {
     async function loadPermissions() {
@@ -116,6 +117,7 @@ export function Sidebar() {
           const perms = data.permissions.map((p: any) => `${p.menuName}_${p.actionName}`);
           setUserPermissions(perms);
         }
+        setPermissionsLoaded(true);
       } catch (err) {
         console.error("Failed to load permissions in sidebar", err);
       }
@@ -208,7 +210,7 @@ export function Sidebar() {
     { label: translate("reports", lang), path: "/reports", icon: BarChart3, permission: "Orders & POS_READ" },
   ].filter(item => {
     if (user?.role === 'superadmin') return true;
-    if (userPermissions.length === 0) return true;
+    if (!permissionsLoaded) return true;
     return userPermissions.includes(item.permission);
   });
 

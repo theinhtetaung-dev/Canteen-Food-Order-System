@@ -43,15 +43,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 try {
                     if (role != null) {
                         var foundRole = roleRepository.findByRoleName(role);
-                        if (foundRole.isEmpty()) {
-                            foundRole = roleRepository.findAll().stream()
-                                    .filter(r -> r.getRoleName().equalsIgnoreCase(role) ||
-                                            (("Admin".equalsIgnoreCase(role) || "Manager".equalsIgnoreCase(role) || "Canteen Admin".equalsIgnoreCase(role)) &&
-                                             ("Admin".equalsIgnoreCase(r.getRoleName()) || "Manager".equalsIgnoreCase(r.getRoleName()))))
-                                    .findFirst();
-                        }
                         if (foundRole.isPresent()) {
-                            permissions = rolePermissionRepository.findByRole_RoleId(foundRole.get().getRoleId())
+                            permissions = rolePermissionRepository.findByRoleIdWithPermissions(foundRole.get().getRoleId())
                                     .stream()
                                     .map(rp -> rp.getPermission().getMenuName() + "_" + rp.getPermission().getActionName())
                                     .toList();

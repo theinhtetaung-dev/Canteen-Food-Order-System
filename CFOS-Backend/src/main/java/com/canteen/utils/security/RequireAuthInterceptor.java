@@ -80,7 +80,9 @@ public class RequireAuthInterceptor implements HandlerInterceptor {
 
         // Special exceptions: profile operations
         if (uri.startsWith("/api/users")) {
-            if (uri.equals("/api/users/me") || uri.equals("/api/users/change-password")) {
+            // Allow profile related endpoints, handling optional trailing slash
+            if (uri.equals("/api/users/me") || uri.equals("/api/users/me/") ||
+                uri.equals("/api/users/change-password") || uri.equals("/api/users/change-password/")) {
                 return true;
             }
         }

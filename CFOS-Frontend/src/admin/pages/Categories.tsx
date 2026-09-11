@@ -30,16 +30,13 @@ export const Categories: React.FC = () => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  // Modals state
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
-  // Form inputs state
   const [categoryName, setCategoryName] = useState('');
   const [description, setDescription] = useState('');
 
-  // Toast Notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const loadCategories = async () => {
@@ -88,7 +85,7 @@ export const Categories: React.FC = () => {
 
     try {
       if (categoryToEdit) {
-        // Edit flow
+
         const updated = await updateCategory(categoryToEdit.categoryId, {
           categoryName,
           description
@@ -96,7 +93,7 @@ export const Categories: React.FC = () => {
         setCategories(categories.map(c => c.categoryId === categoryToEdit.categoryId ? updated : c));
         triggerToast(`Category "${categoryName}" updated successfully!`);
       } else {
-        // Create flow
+
         const created = await createCategory({
           categoryName,
           description
@@ -126,7 +123,6 @@ export const Categories: React.FC = () => {
     }
   };
 
-  // Filtered categories
   const filteredCategories = categories.filter(c =>
     c.categoryName.toLowerCase().includes(activeSearchTerm.toLowerCase()) ||
     (c.description || '').toLowerCase().includes(activeSearchTerm.toLowerCase())
@@ -140,7 +136,7 @@ export const Categories: React.FC = () => {
 
   return (
     <div className="max-w-6xl space-y-6 relative font-sans">
-      {/* Header section */}
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-black text-gray-900 tracking-tight">Categories</h2>
@@ -157,9 +153,8 @@ export const Categories: React.FC = () => {
         </button>
       </div>
 
-      {/* Main Table Card */}
       <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-sm space-y-4">
-        {/* Search bar */}
+
         <div className="flex items-center gap-3">
           <div className="relative w-full sm:w-80">
             <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -184,7 +179,7 @@ export const Categories: React.FC = () => {
           >
             Search
           </button>
-          
+
           <button
             onClick={() => { setSearchTerm(""); setActiveSearchTerm(""); setCurrentPage(1); }}
             className="px-4 py-2 bg-[#e2e7d8] text-[#414b35] rounded-xl text-xs font-bold hover:bg-[#d4dbc8] transition-colors shadow-sm"
@@ -193,7 +188,6 @@ export const Categories: React.FC = () => {
           </button>
         </div>
 
-        {/* Categories Table */}
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="text-center py-10 text-sm font-semibold text-gray-400">
@@ -264,7 +258,6 @@ export const Categories: React.FC = () => {
           )}
         </div>
 
-        {/* Pagination Footer */}
         {filteredCategories.length >= 10 && (
           <div className="p-4 border-t border-gray-100 bg-[#FAFBF8] flex items-center justify-between text-xs text-gray-500 rounded-b-2xl">
             <div>
@@ -347,7 +340,6 @@ export const Categories: React.FC = () => {
         )}
       </div>
 
-      {/* CREATE / EDIT MODAL */}
       {isFormOpen && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -362,7 +354,7 @@ export const Categories: React.FC = () => {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            
+
             <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
               <div className="space-y-1">
                 <label className="text-[10px] font-extrabold text-gray-400 uppercase">
@@ -411,7 +403,6 @@ export const Categories: React.FC = () => {
         </div>
       )}
 
-      {/* DELETE CONFIRMATION MODAL */}
       {categoryToDelete && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
@@ -443,7 +434,6 @@ export const Categories: React.FC = () => {
         </div>
       )}
 
-      {/* TOAST NOTIFICATION */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-white border border-gray-200 px-5 py-3 rounded-2xl shadow-lg flex items-center gap-2.5 animate-in slide-in-from-bottom-5 duration-200">
           <span className="font-bold text-xs text-gray-900">{toastMessage}</span>

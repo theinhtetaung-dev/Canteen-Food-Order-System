@@ -44,13 +44,13 @@ export function LoginForm({
     setError(null);
     try {
       const user = await login(data);
-      // Redirect based on role
+
       if (user.role === "superadmin") {
-        window.location.href = "/superadmin"; // Platform admin / SuperAdmin
+        window.location.href = "/superadmin";
       } else if (user.role === "admin" || user.role === "manager") {
-        window.location.href = "/admin"; // Kitchen/Canteen manager
+        window.location.href = "/admin";
       } else {
-        // Regular user stays in user
+
         const from = (location.state as { from?: string } | null)?.from ?? "/user";
         navigate(from, { replace: true });
       }

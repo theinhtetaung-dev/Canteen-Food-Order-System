@@ -14,22 +14,18 @@ public class RequireAuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // Allow guest to register (POST /api/users)
         if ("/api/users".equals(request.getRequestURI()) && "POST".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
 
-        // Allow guest to browse menu (GET /api/foods/**)
         if (request.getRequestURI().startsWith("/api/foods") && "GET".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
 
-        // Allow guest to fetch canteen list (GET /api/branches)
         if (request.getRequestURI().startsWith("/api/branches") && "GET".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
 
-        // Allow guest to view reviews (GET /api/reviews)
         if (request.getRequestURI().startsWith("/api/reviews") && "GET".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
@@ -78,9 +74,8 @@ public class RequireAuthInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        // Special exceptions: profile operations
         if (uri.startsWith("/api/users")) {
-            // Allow profile related endpoints, handling optional trailing slash
+
             if (uri.equals("/api/users/me") || uri.equals("/api/users/me/") ||
                 uri.equals("/api/users/change-password") || uri.equals("/api/users/change-password/")) {
                 return true;
@@ -88,7 +83,7 @@ public class RequireAuthInterceptor implements HandlerInterceptor {
         }
 
         if (requiredMenu == null) {
-            return true; // if endpoint is not explicitly mapped, permit it by default
+            return true;
         }
 
         String requiredPermission = requiredMenu + "_" + requiredAction;

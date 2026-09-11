@@ -1,22 +1,22 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Store, 
-  AlertCircle, 
-  DollarSign, 
+import {
+  Store,
+  AlertCircle,
+  DollarSign,
   ShoppingBag,
   Activity,
   Calendar,
   Utensils,
   ChevronDown,
 } from "lucide-react";
-import { 
-  ResponsiveContainer, 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   Tooltip,
   PieChart,
   Pie,
@@ -31,7 +31,6 @@ import { fetchMenuItems } from "@user/api/menu.api";
 import { fetchReport } from "@user/api/report.api";
 import { fetchAdminDashboard } from "@user/api/dashboard.api";
 
-// --- Database Schema Alignment Interfaces ---
 interface Tbl_User {
   FullName: string;
   RoleID: number;
@@ -45,12 +44,12 @@ interface Tbl_Canteen {
 
 interface Tbl_Order {
   OrderID: string;
-  UserID: string; // references Tbl_User.FullName
+  UserID: string;
   TotalAmount: number;
   OrderStatus: 'PENDING' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANCELLED';
   CreatedAt: string;
-  CanteenID: number; // references Tbl_Canteen.BranchID
-  itemsSummary: string; // e.g. "Chicken Fried Rice x2, Soda x1"
+  CanteenID: number;
+  itemsSummary: string;
   PaymentMethod: string;
   PaymentStatus: 'PAID' | 'UNPAID';
   items?: any[];
@@ -87,12 +86,11 @@ export const Dashboard = () => {
   const [pieData, setPieData] = useState<any[]>([]);
   const [accessDenied, setAccessDenied] = useState<boolean>(false);
 
-  // Map backend Order to Tbl_Order
   const mapToTblOrder = (apiOrder: any): Tbl_Order => {
     const formattedTime = apiOrder.createdAt
       ? new Date(apiOrder.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       : "12:00 PM";
-      
+
     return {
       OrderID: apiOrder.id,
       UserID: apiOrder.userId || "Student",
@@ -110,7 +108,6 @@ export const Dashboard = () => {
     };
   };
 
-  // Fetch all orders
   const loadDashboardData = async () => {
     try {
       const apiOrders = await fetchCanteenOrders();
@@ -166,7 +163,6 @@ export const Dashboard = () => {
     loadDbUser();
   }, [user]);
 
-  // Load canteens and foods dropdown list on mount
   useEffect(() => {
     async function loadCanteensAndFoods() {
       try {
@@ -177,7 +173,7 @@ export const Dashboard = () => {
             BranchName: b.branchName
           })));
         }
-        
+
         const items = await fetchMenuItems();
         setFoodItems(items);
       } catch (err) {
@@ -188,17 +184,14 @@ export const Dashboard = () => {
     loadDashboardData();
   }, []);
 
-  // Filter orders by canteen and date range dropdowns
   const filteredOrders = useMemo(() => {
     let result = orders;
-    
-    // Filter by canteen
+
     if (selectedCanteen !== "all") {
       const canteenIdNum = parseInt(selectedCanteen, 10);
       result = result.filter(o => o.CanteenID === canteenIdNum);
     }
-    
-    // Filter by date range
+
     const today = new Date();
     if (dateRange === "Today") {
       result = result.filter(o => {
@@ -208,7 +201,7 @@ export const Dashboard = () => {
                o.RawDate.getFullYear() === today.getFullYear();
       });
     } else if (dateRange === "This Week") {
-      // Current calendar week (since Sunday)
+
       const startOfWeek = new Date(today);
       startOfWeek.setDate(today.getDate() - today.getDay());
       startOfWeek.setHours(0, 0, 0, 0);
@@ -228,7 +221,7 @@ export const Dashboard = () => {
         return o.RawDate.getFullYear() === today.getFullYear();
       });
     }
-    
+
     return result;
   }, [orders, selectedCanteen, dateRange]);
 
@@ -236,7 +229,6 @@ export const Dashboard = () => {
     return filteredOrders.filter(o => o.OrderStatus !== "COMPLETED" && o.OrderStatus !== "CANCELLED");
   }, [filteredOrders]);
 
-  // Compute stats metrics dynamically
   const stats = useMemo(() => {
     const totalRevenue = filteredOrders
       .filter(o => o.OrderStatus === "COMPLETED")
@@ -248,7 +240,6 @@ export const Dashboard = () => {
       o => o.OrderStatus === "PENDING" || o.OrderStatus === "PREPARING"
     ).length;
 
-    // Filter foods by selected canteen
     const canteenFoods = selectedCanteen === "all"
       ? foodItems
       : foodItems.filter(f => f.canteen === parseInt(selectedCanteen, 10));
@@ -265,7 +256,6 @@ export const Dashboard = () => {
     };
   }, [filteredOrders, foodItems, selectedCanteen]);
 
-  // Transition status logic
   const transitionOrderStatus = async (orderId: string, currentStatus: Tbl_Order["OrderStatus"]) => {
     let nextStatus: string = "";
     if (currentStatus === "PENDING") nextStatus = "preparing";
@@ -282,7 +272,6 @@ export const Dashboard = () => {
     }
   };
 
-  // Option change from status dropdown select
   const handleSelectStatus = async (orderId: string, val: Tbl_Order["OrderStatus"]) => {
     try {
       await updateOrderStatus(orderId, val.toLowerCase());
@@ -292,11 +281,9 @@ export const Dashboard = () => {
     }
   };
 
-
-
   return (
     <div className="w-full space-y-6 font-sans text-gray-800">
-      {/* ACCESS DENIED ALERT BOX MODAL */}
+
       {accessDenied && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white w-full max-w-md rounded-2xl border border-red-100 shadow-2xl p-6 text-center space-y-4">
@@ -321,14 +308,14 @@ export const Dashboard = () => {
           </div>
         </div>
       )}
-      {/* 2. TOP BAR CONTROLS ROW */}
+
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">{userCanteenName || "Canteen Admin"}</h2>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Date Range Filter */}
+
           <div className="relative">
             <select
               value={dateRange}
@@ -345,9 +332,8 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* 3. TOP SUMMARY CARDS (4 Cards Grid) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Revenue */}
+
         <div className="bg-white p-4.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
             <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">TOTAL REVENUE</span>
@@ -358,7 +344,6 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Card 2: Total Orders */}
         <div className="bg-white p-4.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
             <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">TOTAL ORDERS</span>
@@ -369,7 +354,6 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Card 3: Pending Kitchen Queue */}
         <div className="bg-white p-4.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
             <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">PENDING QUEUE</span>
@@ -380,7 +364,6 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Card 4: Active Menu Items vs Out-of-Stock */}
         <div className="bg-white p-4.5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
             <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">MENU SUMMARY</span>
@@ -392,9 +375,8 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* 4. MIDDLE ANALYTICS SECTION (2-Column Grid) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Left (70%): Sales & Revenue Trends Chart */}
+
         <div className="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-extrabold text-slate-900">Sales & Revenue Trends</h3>
@@ -413,10 +395,10 @@ export const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
                 <XAxis dataKey="label" stroke="#94A3B8" fontSize={9} tickLine={false} axisLine={false} />
                 <YAxis stroke="#94A3B8" fontSize={9} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  contentStyle={{ 
-                    background: '#ffffff', 
-                    border: '1px solid #E2E8F0', 
+                <Tooltip
+                  contentStyle={{
+                    background: '#ffffff',
+                    border: '1px solid #E2E8F0',
                     borderRadius: '12px',
                     fontSize: '11px',
                   }}
@@ -428,7 +410,6 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Right (30%): Top Selling Food Items */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between h-full">
           <div>
             <h3 className="text-sm font-extrabold text-slate-900">Top Selling Food Items</h3>
@@ -455,10 +436,10 @@ export const Dashboard = () => {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{ 
-                      background: '#ffffff', 
-                      border: '1px solid #E2E8F0', 
+                  <Tooltip
+                    contentStyle={{
+                      background: '#ffffff',
+                      border: '1px solid #E2E8F0',
                       borderRadius: '12px',
                       fontSize: '11px',
                     }}
@@ -467,9 +448,9 @@ export const Dashboard = () => {
                       return [`${value} sold (${item.revenue.toLocaleString()} MMK)`, name];
                     }}
                   />
-                  <Legend 
-                    verticalAlign="bottom" 
-                    height={36} 
+                  <Legend
+                    verticalAlign="bottom"
+                    height={36}
                     iconType="circle"
                     iconSize={8}
                     wrapperStyle={{ fontSize: '10px', fontWeight: 'bold' }}
@@ -481,7 +462,6 @@ export const Dashboard = () => {
         </div>
       </div>
 
-      {/* 5. BOTTOM LIVE ORDER QUEUE TABLE (Actionable) */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-4">
         <div className="flex items-center justify-between pb-2">
           <div className="flex items-center gap-2">
@@ -517,8 +497,8 @@ export const Dashboard = () => {
                 else if (order.OrderStatus === 'CANCELLED') orderBadgeColor = 'bg-rose-50 text-rose-700';
 
                 return (
-                  <tr 
-                    key={order.OrderID} 
+                  <tr
+                    key={order.OrderID}
                     onClick={() => navigate(`/orders?orderId=${order.OrderID}`)}
                     className="hover:bg-slate-50/40 transition-colors cursor-pointer"
                   >

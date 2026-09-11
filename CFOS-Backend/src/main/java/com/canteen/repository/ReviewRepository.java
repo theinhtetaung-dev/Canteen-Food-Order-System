@@ -10,10 +10,10 @@ import java.util.List;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Integer> {
-    
+
     @Query("SELECT r FROM Review r WHERE r.deleteFlag = false ORDER BY r.createdAt DESC")
     List<Review> findAllActive();
-    
+
     @Query("SELECT r FROM Review r WHERE r.deleteFlag = false ORDER BY r.createdAt DESC")
     Page<Review> findAllActive(Pageable pageable);
 }

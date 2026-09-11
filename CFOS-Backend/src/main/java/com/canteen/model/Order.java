@@ -15,7 +15,7 @@ import org.hibernate.annotations.SQLRestriction;
 @Table(name = "Tbl_Order")
 @Data
 @NoArgsConstructor
-@SQLRestriction("delete_flag = 0") 
+@SQLRestriction("delete_flag = 0")
 public class Order {
 
     @Id

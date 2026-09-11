@@ -1,8 +1,6 @@
--- 1. Create and select the database
 CREATE DATABASE IF NOT EXISTS CFOSDB;
 USE CFOSDB;
 
--- 2. Drop tables in reverse order of dependencies to avoid constraint issues
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS Tbl_Branch;
 DROP TABLE IF EXISTS Tbl_Notification;
@@ -18,7 +16,6 @@ DROP TABLE IF EXISTS Tbl_User;
 DROP TABLE IF EXISTS Tbl_Role;
 SET FOREIGN_KEY_CHECKS = 1;
 
--- 3. Create Tables
 CREATE TABLE Tbl_Role (
     RoleID INT PRIMARY KEY AUTO_INCREMENT,
     RoleName VARCHAR(50) NOT NULL UNIQUE,

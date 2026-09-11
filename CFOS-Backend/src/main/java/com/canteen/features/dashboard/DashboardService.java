@@ -41,7 +41,7 @@ public class DashboardService {
             start = now.with(TemporalAdjusters.firstDayOfMonth()).with(LocalTime.MIN);
         } else if ("week".equals(timeRange) || "this week".equals(timeRange)) {
             start = now.with(DayOfWeek.MONDAY).with(LocalTime.MIN);
-        } else { // today
+        } else {
             start = now.with(LocalTime.MIN);
         }
 
@@ -55,7 +55,6 @@ public class DashboardService {
 
         AdminDashboardResModel response = new AdminDashboardResModel();
 
-        // Top Foods
         Map<String, FoodSalesBreakdown> foodSalesMap = new HashMap<>();
         for (Order order : orders) {
             for (OrderItem item : order.getOrderItems()) {
@@ -73,7 +72,6 @@ public class DashboardService {
         }
         response.setTopSellingFoods(topFoods);
 
-        // Sales Trends Chart
         Map<String, BigDecimal> salesMap = new LinkedHashMap<>();
 
         if ("year".equals(timeRange) || "yearly".equals(timeRange)) {
@@ -101,7 +99,7 @@ public class DashboardService {
                 String key = o.getCreatedAt().getDayOfWeek().name().substring(0, 3);
                 salesMap.put(key, salesMap.getOrDefault(key, BigDecimal.ZERO).add(o.getTotalAmount()));
             }
-        } else { // today
+        } else {
             String[] hours = {"08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"};
             for (String h : hours) {
                 salesMap.put(h, BigDecimal.ZERO);
@@ -146,7 +144,7 @@ public class DashboardService {
             start = now.with(TemporalAdjusters.firstDayOfMonth()).with(LocalTime.MIN);
         } else if ("week".equals(timeRange) || "this week".equals(timeRange)) {
             start = now.with(DayOfWeek.MONDAY).with(LocalTime.MIN);
-        } else { // today
+        } else {
             start = now.with(LocalTime.MIN);
         }
 
@@ -154,7 +152,6 @@ public class DashboardService {
 
         SuperadminDashboardResModel response = new SuperadminDashboardResModel();
 
-        // Registration Growth
         Map<String, Long> growthMap = new LinkedHashMap<>();
 
         if ("year".equals(timeRange) || "yearly".equals(timeRange)) {
@@ -188,7 +185,7 @@ public class DashboardService {
                     growthMap.put(key, growthMap.getOrDefault(key, 0L) + 1);
                 }
             }
-        } else { // today
+        } else {
             String[] hours = {"08:00 AM", "10:00 AM", "12:00 PM", "02:00 PM", "04:00 PM", "06:00 PM"};
             for (String h : hours) {
                 growthMap.put(h, 0L);
@@ -214,7 +211,6 @@ public class DashboardService {
         }
         response.setRegistrationGrowth(growth);
 
-        // Role Distribution (all time, or based on timeRange? Typically role distribution is all time, but user said "fix to work the today, this week... for chart and pi". I'll filter pie by timeRange too.)
         long studentCount = 0;
         long professorCount = 0;
         long canteenAdminCount = 0;

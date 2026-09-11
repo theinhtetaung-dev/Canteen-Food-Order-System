@@ -14,7 +14,7 @@ public class CanteenApplication {
 	@EventListener(ApplicationReadyEvent.class)
 	public void openBrowser() {
 		try {
-			// Change this URL if the port or context path is different
+
 			new ProcessBuilder("cmd", "/c", "start", "http://localhost:8081/scalar.html")
 					.inheritIO()
 					.start();

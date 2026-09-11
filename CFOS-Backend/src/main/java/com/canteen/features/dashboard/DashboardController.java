@@ -20,7 +20,7 @@ public class DashboardController {
     public ResponseEntity<AdminDashboardResModel> getAdminDashboard(
             @RequestParam(required = false, defaultValue = "today") String timeRange,
             @RequestParam(required = false) Integer canteenId) {
-        
+
         AdminDashboardResModel response = dashboardService.getAdminDashboard(timeRange, canteenId);
         return ResponseEntity.ok(response);
     }
@@ -28,7 +28,7 @@ public class DashboardController {
     @GetMapping("/superadmin")
     public ResponseEntity<SuperadminDashboardResModel> getSuperadminDashboard(
             @RequestParam(required = false, defaultValue = "today") String timeRange) {
-        
+
         SuperadminDashboardResModel response = dashboardService.getSuperadminDashboard(timeRange);
         return ResponseEntity.ok(response);
     }

@@ -79,7 +79,6 @@ public class UserService {
         user.setRole(role);
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
 
-        // Link canteen if canteenId is provided (for Canteen Admin creation)
         if (request.getCanteenId() != null) {
             Branch canteen = branchRepository.findById(request.getCanteenId())
                     .orElseThrow(() -> new ResourceNotFoundException("Canteen not found: " + request.getCanteenId()));
@@ -108,7 +107,7 @@ public class UserService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new ResourceNotFoundException("Invalid username or password");
         }
-        
+
         if (Boolean.TRUE.equals(user.getDeleteFlag())) {
             throw new ResourceNotFoundException("Account is disabled");
         }
@@ -118,7 +117,7 @@ public class UserService {
         }
 
         String roleName = user.getRole() != null ? user.getRole().getRoleName() : "USER";
-        
+
         java.util.List<String> permissions = new java.util.ArrayList<>();
         if (user.getRole() != null) {
             permissions = rolePermissionRepository.findByRole_RoleId(user.getRole().getRoleId())
@@ -146,7 +145,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Page<UserResModel> getAllUsers(int page, int size, String sortBy, String direction) {
-        PaginationValidator.validate(page, size, sortBy, direction, 
+        PaginationValidator.validate(page, size, sortBy, direction,
                 Set.of("userId", "userName", "fullName", "email", "status", "createdAt", "updatedAt"));
 
         Sort sort = direction.equalsIgnoreCase("asc") ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
@@ -163,7 +162,7 @@ public class UserService {
         if (!user.getUserName().equals(request.getUserName()) && userRepository.existsByUserName(request.getUserName())) {
             throw new DuplicateResourceException("Username already exists: " + request.getUserName());
         }
-        
+
         if (request.getEmail() != null && !request.getEmail().equals(user.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateResourceException("Email already exists: " + request.getEmail());
         }

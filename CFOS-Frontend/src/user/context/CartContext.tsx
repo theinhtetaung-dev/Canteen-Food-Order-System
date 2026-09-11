@@ -91,7 +91,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       .catch((err) => {
         console.error("CartProvider: Error loading menu items:", err);
       });
-  }, [state.isOpen]); // Refresh menu item lookup when cart is opened or on initial load
+  }, [state.isOpen]);
 
   const menuById = useMemo(() => {
     return new Map(menuItemsList.map((item) => [item.id, item]));

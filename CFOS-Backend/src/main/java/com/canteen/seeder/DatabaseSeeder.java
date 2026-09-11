@@ -50,12 +50,8 @@ public class DatabaseSeeder implements CommandLineRunner {
     private void seedDatabase() {
         log.info("Starting database seeding process...");
 
-        // Copy food photos to uploads/food-images directory
         copyFoodPhotosToUploads();
 
-
-
-        // 1. Clear existing data in correct order to avoid foreign key constraints
         log.info("Clearing existing data...");
         jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
         jdbcTemplate.execute("TRUNCATE TABLE tbl_notification");
@@ -72,25 +68,21 @@ public class DatabaseSeeder implements CommandLineRunner {
         jdbcTemplate.execute("TRUNCATE TABLE tbl_review");
         jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
 
-        // 2. Seed Roles
         log.info("Seeding Roles...");
         Role superAdminRole = createRole("SuperAdmin");
         Role adminRole = createRole("Admin");
         Role managerRole = createRole("Manager");
         Role userRole = createRole("User");
         Role professorRole = createRole("Professor");
-        
+
         roleRepository.saveAll(List.of(superAdminRole, adminRole, managerRole, userRole, professorRole));
 
-        // 3. Seed Permissions
         log.info("Seeding Permissions...");
         List<Permission> permissions = seedPermissions();
 
-        // 4. Seed Role Permissions
         log.info("Seeding Role Permissions...");
         List<RolePermission> rolePermissions = new ArrayList<>();
-        
-        // SuperAdmin, Admin and Manager get all permissions
+
         for (Permission p : permissions) {
             RolePermission rpSuperAdmin = new RolePermission();
             rpSuperAdmin.setRole(superAdminRole);
@@ -107,10 +99,9 @@ public class DatabaseSeeder implements CommandLineRunner {
             rpManager.setPermission(p);
             rolePermissions.add(rpManager);
         }
-        
-        // User and Professor get Read permissions for Food Category & Menu
+
         for (Permission p : permissions) {
-            if ("READ".equalsIgnoreCase(p.getActionName()) && 
+            if ("READ".equalsIgnoreCase(p.getActionName()) &&
                 "Food Category & Menu".equalsIgnoreCase(p.getMenuName())) {
                 RolePermission rp = new RolePermission();
                 rp.setRole(userRole);
@@ -125,11 +116,10 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
         rolePermissionRepository.saveAll(rolePermissions);
 
-        // 5. Seed Canteens/Branches (6 canteens)
         log.info("Seeding Canteens...");
         List<Branch> branches = new ArrayList<>();
         String[] branchNames = {
-            "Main Canteen", "North Canteen", "South Canteen", 
+            "Main Canteen", "North Canteen", "South Canteen",
             "East Canteen", "West Canteen", "Central Cafeteria"
         };
         String[] locations = {
@@ -145,10 +135,8 @@ public class DatabaseSeeder implements CommandLineRunner {
         branchRepository.saveAll(branches);
         branchRepository.flush();
 
-        // 5.5 Seed Users (Superadmin 2, CanteenAdmin 12, Users 20)
         log.info("Seeding Users...");
-        
-        // 2 SuperAdmin Accounts
+
         User superAdminUser1 = new User();
         superAdminUser1.setUserName("superadmin");
         superAdminUser1.setFullName("Super Admin One");
@@ -169,7 +157,6 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         userRepository.saveAll(List.of(superAdminUser1, superAdminUser2));
 
-        // 12 CanteenAdmin Accounts (2 for each canteen)
         List<User> canteenAdmins = new ArrayList<>();
         for (int i = 0; i < 6; i++) {
             Branch branch = branches.get(i);
@@ -189,7 +176,6 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
         userRepository.saveAll(canteenAdmins);
 
-        // 20 Users (username must be 2024-miit-cse-001 to 020)
         List<User> students = new ArrayList<>();
         for (int i = 1; i <= 20; i++) {
             String username = String.format("2024-miit-cse-%03d", i);
@@ -205,7 +191,6 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
         userRepository.saveAll(students);
 
-        // 5 Professor Accounts
         List<User> professors = new ArrayList<>();
         for (int i = 1; i <= 5; i++) {
             User prof = new User();
@@ -220,18 +205,16 @@ public class DatabaseSeeder implements CommandLineRunner {
         }
         userRepository.saveAll(professors);
 
-        // 6. Seed Food Categories
         log.info("Seeding Food Categories...");
         FoodCategory mainCourse = createCategory("Main Course", "Heavy meals for lunch or dinner", superAdminUser1);
         FoodCategory dessert = createCategory("Dessert", "Sweet treats after meals", superAdminUser1);
         FoodCategory beverage = createCategory("Beverage", "Drinks and refreshments", superAdminUser1);
         FoodCategory snacks = createCategory("Snacks", "Quick bites and light food", superAdminUser1);
-        
+
         foodCategoryRepository.saveAll(List.of(mainCourse, dessert, beverage, snacks));
 
-        // 7. Seed Food Items (20 food for each canteen)
         log.info("Seeding Food Items...");
-        
+
         class FoodTemplate {
             String name;
             String desc;
@@ -293,20 +276,18 @@ public class DatabaseSeeder implements CommandLineRunner {
             branchFoodMap.put(branch.getBranchId(), branchFoods);
         }
 
-        // 8. Seed Orders (each user have 10 orders spread across 1 year)
         log.info("Seeding Orders (each user gets 10 orders)...");
         java.util.Random random = new java.util.Random();
-        
+
         for (User student : students) {
             for (int oIdx = 0; oIdx < 10; oIdx++) {
-                // Pick a random canteen
+
                 Branch branch = branches.get(random.nextInt(branches.size()));
                 List<Food> branchFoods = branchFoodMap.get(branch.getBranchId());
 
                 Order order = new Order();
                 order.setUser(student);
-                
-                // Status distribution (8 COMPLETE, 1 PREPARING, 1 CANCEL)
+
                 Status status;
                 if (oIdx < 8) {
                     status = Status.COMPLETE;
@@ -317,11 +298,10 @@ public class DatabaseSeeder implements CommandLineRunner {
                 }
                 order.setOrderStatus(status);
 
-                // Select 1 to 3 random items from this branch
                 int numItems = random.nextInt(3) + 1;
                 List<OrderItem> items = new ArrayList<>();
                 BigDecimal total = BigDecimal.ZERO;
-                
+
                 java.util.Set<Integer> pickedIndices = new java.util.HashSet<>();
                 for (int itemIdx = 0; itemIdx < numItems; itemIdx++) {
                     int foodIdx = random.nextInt(branchFoods.size());
@@ -341,17 +321,15 @@ public class DatabaseSeeder implements CommandLineRunner {
                     orderItem.setComment(random.nextBoolean() ? "Extra spicy" : null);
                     orderItem.setOrder(order);
                     items.add(orderItem);
-                    
+
                     total = total.add(subTotal);
                 }
-                
+
                 order.setOrderItems(items);
                 order.setTotalAmount(total);
 
-                // Save order & items
                 Order savedOrder = orderRepository.save(order);
 
-                // Distribute date over the past 365 days
                 int baseDaysAgo = (9 - oIdx) * 36;
                 int randomOffset = random.nextInt(30);
                 LocalDateTime orderDate = LocalDateTime.now()
@@ -360,33 +338,30 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .minusMinutes(random.nextInt(60));
 
                 java.sql.Timestamp sqlOrderDate = java.sql.Timestamp.valueOf(orderDate);
-                
-                // Update Order and OrderItems timestamps in DB via JDBC
-                jdbcTemplate.update("UPDATE tbl_order SET created_at = ?, updated_at = ? WHERE orderid = ?", 
+
+                jdbcTemplate.update("UPDATE tbl_order SET created_at = ?, updated_at = ? WHERE orderid = ?",
                     sqlOrderDate, sqlOrderDate, savedOrder.getOrderId());
 
                 for (OrderItem item : savedOrder.getOrderItems()) {
-                    jdbcTemplate.update("UPDATE tbl_order_item SET created_at = ?, updated_at = ? WHERE order_itemid = ?", 
+                    jdbcTemplate.update("UPDATE tbl_order_item SET created_at = ?, updated_at = ? WHERE order_itemid = ?",
                         sqlOrderDate, sqlOrderDate, item.getOrderItemId());
                 }
 
-                // Seed Payment
                 if (status == Status.COMPLETE || status == Status.PREPARING) {
                     Payment payment = new Payment();
                     payment.setOrder(savedOrder);
                     payment.setAmount(total);
-                    
+
                     String[] methods = {"KPay", "WavePay", "AYAPay", "Cash", "Card"};
                     payment.setPaymentMethod(methods[random.nextInt(methods.length)]);
                     payment.setPaidAt(orderDate.plusMinutes(random.nextInt(5) + 1));
                     Payment savedPayment = paymentRepository.save(payment);
 
                     java.sql.Timestamp sqlPaidAt = java.sql.Timestamp.valueOf(payment.getPaidAt());
-                    jdbcTemplate.update("UPDATE tbl_payment SET created_at = ?, paid_at = ? WHERE paymentid = ?", 
+                    jdbcTemplate.update("UPDATE tbl_payment SET created_at = ?, paid_at = ? WHERE paymentid = ?",
                         sqlOrderDate, sqlPaidAt, savedPayment.getPaymentId());
                 }
 
-                // Seed Notifications
                 Notification placeNotification = new Notification();
                 placeNotification.setUser(student);
                 placeNotification.setOrder(savedOrder);
@@ -394,7 +369,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                 placeNotification.setMessage("Your order of " + total + " MMK has been received.");
                 placeNotification.setIsRead(true);
                 Notification savedPlaceNotif = notificationRepository.save(placeNotification);
-                jdbcTemplate.update("UPDATE tbl_notification SET created_at = ? WHERE notificationid = ?", 
+                jdbcTemplate.update("UPDATE tbl_notification SET created_at = ? WHERE notificationid = ?",
                     sqlOrderDate, savedPlaceNotif.getNotificationId());
 
                 if (status == Status.COMPLETE) {
@@ -406,7 +381,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                     readyNotification.setIsRead(true);
                     Notification savedReadyNotif = notificationRepository.save(readyNotification);
                     LocalDateTime completedDate = orderDate.plusMinutes(15 + random.nextInt(10));
-                    jdbcTemplate.update("UPDATE tbl_notification SET created_at = ? WHERE notificationid = ?", 
+                    jdbcTemplate.update("UPDATE tbl_notification SET created_at = ? WHERE notificationid = ?",
                         java.sql.Timestamp.valueOf(completedDate), savedReadyNotif.getNotificationId());
                 } else if (status == Status.CANCEL) {
                     Notification cancelNotification = new Notification();
@@ -417,13 +392,12 @@ public class DatabaseSeeder implements CommandLineRunner {
                     cancelNotification.setIsRead(true);
                     Notification savedCancelNotif = notificationRepository.save(cancelNotification);
                     LocalDateTime cancelledDate = orderDate.plusMinutes(5 + random.nextInt(5));
-                    jdbcTemplate.update("UPDATE tbl_notification SET created_at = ? WHERE notificationid = ?", 
+                    jdbcTemplate.update("UPDATE tbl_notification SET created_at = ? WHERE notificationid = ?",
                         java.sql.Timestamp.valueOf(cancelledDate), savedCancelNotif.getNotificationId());
                 }
             }
         }
 
-        // 9. Seed Reviews (suitable mock data)
         log.info("Seeding Reviews...");
         String[] reviewTexts = {
             "Excellent food quality, especially the fried rice!",
@@ -452,15 +426,15 @@ public class DatabaseSeeder implements CommandLineRunner {
             User student = students.get(i);
             Review review = new Review();
             review.setUser(student);
-            
+
             double rating = 3.5 + (random.nextDouble() * 1.5);
             rating = Math.round(rating * 10.0) / 10.0;
             review.setRating(rating);
             review.setReviewText(reviewTexts[i]);
             Review savedReview = reviewRepository.save(review);
-            
+
             LocalDateTime reviewDate = LocalDateTime.now().minusDays(random.nextInt(365)).minusHours(random.nextInt(24));
-            jdbcTemplate.update("UPDATE tbl_review SET created_at = ?, updated_at = ? WHERE reviewid = ?", 
+            jdbcTemplate.update("UPDATE tbl_review SET created_at = ?, updated_at = ? WHERE reviewid = ?",
                 java.sql.Timestamp.valueOf(reviewDate), java.sql.Timestamp.valueOf(reviewDate), savedReview.getReviewId());
         }
 
@@ -475,12 +449,12 @@ public class DatabaseSeeder implements CommandLineRunner {
                 log.warn("Source directory for photos not found at path: " + sourceDir);
                 return;
             }
-            
+
             Path targetDir = Paths.get(System.getProperty("user.dir"), "uploads", "food-images");
             if (!Files.exists(targetDir)) {
                 Files.createDirectories(targetDir);
             }
-            
+
             try (var stream = Files.list(sourceDir)) {
                 stream.forEach(sourcePath -> {
                     if (Files.isRegularFile(sourcePath)) {
@@ -514,39 +488,33 @@ public class DatabaseSeeder implements CommandLineRunner {
 
     private List<Permission> seedPermissions() {
         List<Permission> permissions = new ArrayList<>();
-        
-        // 1. Dashboard Module
-        permissions.add(createPermission("Dashboard", "READ")); // ID 1
-        
-        // 2. Canteen Management Module
-        permissions.add(createPermission("Canteen Management", "CREATE")); // ID 2
-        permissions.add(createPermission("Canteen Management", "READ"));   // ID 3
-        permissions.add(createPermission("Canteen Management", "UPDATE")); // ID 4
-        permissions.add(createPermission("Canteen Management", "DELETE")); // ID 5
 
-        // 3. Food Category & Menu Module
-        permissions.add(createPermission("Food Category & Menu", "CREATE")); // ID 6
-        permissions.add(createPermission("Food Category & Menu", "READ"));   // ID 7
-        permissions.add(createPermission("Food Category & Menu", "UPDATE")); // ID 8
-        permissions.add(createPermission("Food Category & Menu", "DELETE")); // ID 9
+        permissions.add(createPermission("Dashboard", "READ"));
 
-        // 4. Orders & POS Module
-        permissions.add(createPermission("Orders & POS", "CREATE")); // ID 10
-        permissions.add(createPermission("Orders & POS", "READ"));   // ID 11
-        permissions.add(createPermission("Orders & POS", "UPDATE")); // ID 12
-        permissions.add(createPermission("Orders & POS", "DELETE")); // ID 13
+        permissions.add(createPermission("Canteen Management", "CREATE"));
+        permissions.add(createPermission("Canteen Management", "READ"));
+        permissions.add(createPermission("Canteen Management", "UPDATE"));
+        permissions.add(createPermission("Canteen Management", "DELETE"));
 
-        // 5. User Management Module
-        permissions.add(createPermission("User Management", "CREATE")); // ID 14
-        permissions.add(createPermission("User Management", "READ"));   // ID 15
-        permissions.add(createPermission("User Management", "UPDATE")); // ID 16
-        permissions.add(createPermission("User Management", "DELETE")); // ID 17
+        permissions.add(createPermission("Food Category & Menu", "CREATE"));
+        permissions.add(createPermission("Food Category & Menu", "READ"));
+        permissions.add(createPermission("Food Category & Menu", "UPDATE"));
+        permissions.add(createPermission("Food Category & Menu", "DELETE"));
 
-        // 6. Role & Permission System Module
-        permissions.add(createPermission("Role & Permission System", "CREATE")); // ID 18
-        permissions.add(createPermission("Role & Permission System", "READ"));   // ID 19
-        permissions.add(createPermission("Role & Permission System", "UPDATE")); // ID 20
-        permissions.add(createPermission("Role & Permission System", "DELETE")); // ID 21
+        permissions.add(createPermission("Orders & POS", "CREATE"));
+        permissions.add(createPermission("Orders & POS", "READ"));
+        permissions.add(createPermission("Orders & POS", "UPDATE"));
+        permissions.add(createPermission("Orders & POS", "DELETE"));
+
+        permissions.add(createPermission("User Management", "CREATE"));
+        permissions.add(createPermission("User Management", "READ"));
+        permissions.add(createPermission("User Management", "UPDATE"));
+        permissions.add(createPermission("User Management", "DELETE"));
+
+        permissions.add(createPermission("Role & Permission System", "CREATE"));
+        permissions.add(createPermission("Role & Permission System", "READ"));
+        permissions.add(createPermission("Role & Permission System", "UPDATE"));
+        permissions.add(createPermission("Role & Permission System", "DELETE"));
 
         return permissionRepository.saveAll(permissions);
     }

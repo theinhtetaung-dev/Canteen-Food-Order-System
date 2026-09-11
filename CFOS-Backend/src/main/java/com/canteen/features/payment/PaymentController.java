@@ -34,7 +34,7 @@ public class PaymentController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String direction) {
-        
+
         Page<PaymentResponseModel> response = paymentService.getAllPayment(page, size, sortBy, direction);
         return ResponseEntity.ok(response);
     }

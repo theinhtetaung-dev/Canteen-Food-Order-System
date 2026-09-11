@@ -25,4 +25,3 @@ public enum UserStatus {
         return this.name();
     }
 }
-

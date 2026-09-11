@@ -23,7 +23,7 @@ public class UserMapper {
 
     public static void updateEntity(User user, UpdateUserReqModel request) {
         if (user == null || request == null) return;
-        
+
         user.setUserName(request.getUserName());
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());

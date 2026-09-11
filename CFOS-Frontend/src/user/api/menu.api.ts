@@ -5,13 +5,13 @@ const baseUrl = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8081";
 
 export async function fetchMenuItems(): Promise<MenuItem[]> {
   const { data } = await api.get<any[]>("/api/foods");
-  
+
   return data.map((item) => {
     return {
       id: item.foodId,
       name: item.foodName,
       price: Number(item.price),
-      rating: 0.0, // default rating
+      rating: 0.0,
       image: item.imageUrl ? (item.imageUrl.startsWith("http") ? item.imageUrl : `${baseUrl}${item.imageUrl}`) : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000",
       canteen: item.branchId ?? 1,
       category: item.categoryName || "Snacks",
@@ -37,7 +37,7 @@ export async function createMenuItem(payload: {
   branchId?: number;
 }): Promise<any> {
   const formData = new FormData();
-  
+
   const jsonBlob = new Blob([JSON.stringify({
     foodName: payload.foodName,
     price: payload.price,
@@ -46,9 +46,9 @@ export async function createMenuItem(payload: {
     isAvailable: payload.isAvailable,
     branchId: payload.branchId
   })], { type: "application/json" });
-  
+
   formData.append("data", jsonBlob);
-  
+
   if (payload.imageFile) {
     formData.append("image", payload.imageFile);
   }
@@ -74,7 +74,7 @@ export async function updateMenuItem(
   }
 ): Promise<any> {
   const formData = new FormData();
-  
+
   const jsonBlob = new Blob([JSON.stringify({
     foodName: payload.foodName,
     price: payload.price,
@@ -83,9 +83,9 @@ export async function updateMenuItem(
     isAvailable: payload.isAvailable,
     branchId: payload.branchId
   })], { type: "application/json" });
-  
+
   formData.append("data", jsonBlob);
-  
+
   if (payload.imageFile) {
     formData.append("image", payload.imageFile);
   }

@@ -92,12 +92,12 @@ export function OrderLists() {
       setIsLoading(true);
       const data = await fetchCanteenOrders();
       const mapped = data.map((d: any) => {
-        // Map backend status to superadmin status
+
         let mappedStatus: OrderStatus = "Pending";
         if (d.status === "completed") mappedStatus = "Completed";
         if (d.status === "cancelled") mappedStatus = "Cancelled";
         if (d.status === "preparing") mappedStatus = "Preparing";
-        
+
         return {
           id: String(d.id),
           studentId: d.userId,
@@ -131,14 +131,14 @@ export function OrderLists() {
     eventSource.addEventListener("new-order", (event) => {
       try {
         const d = JSON.parse(event.data);
-        
+
         const backendStatus = (d.orderStatus || d.status || "").toLowerCase();
         let mappedStatus: OrderStatus = "Pending";
         if (backendStatus === "completed" || backendStatus === "complete") mappedStatus = "Completed";
         if (backendStatus === "cancelled" || backendStatus === "cancel") mappedStatus = "Cancelled";
         if (backendStatus === "preparing") mappedStatus = "Preparing";
 
-        const rawItemsList = d.orderItems 
+        const rawItemsList = d.orderItems
           ? d.orderItems.map((i: any) => ({
               menuItemId: i.orderItemId,
               name: i.foodName,
@@ -189,10 +189,10 @@ export function OrderLists() {
 
   const filteredOrders = React.useMemo(() => {
     const baseOrders = userCanteenId === null ? orders : orders.filter(o => o.canteenId === userCanteenId);
-    // Only display not completed/cancelled orders in the queue
+
     const activeOrders = baseOrders.filter(o => o.status !== "Completed" && o.status !== "Cancelled");
     return [...activeOrders].sort((a, b) => {
-      // FIFO: Oldest orders first
+
       const timeA = a.createdAt ? new Date(a.createdAt).getTime() : parseInt(a.id.replace(/\\D/g, '')) || 0;
       const timeB = b.createdAt ? new Date(b.createdAt).getTime() : parseInt(b.id.replace(/\\D/g, '')) || 0;
       return timeA - timeB;
@@ -200,7 +200,7 @@ export function OrderLists() {
   }, [orders, userCanteenId]);
 
   const ORDERS_PER_PAGE = 10;
-  
+
   const boxFilteredOrders = filteredOrders.filter((o) => {
     if (filterBox === "PENDING") return o.status === "Pending";
     if (filterBox === "PREPARING") return o.status === "Preparing";
@@ -212,7 +212,6 @@ export function OrderLists() {
     ? boxFilteredOrders.slice((currentPage - 1) * ORDERS_PER_PAGE, currentPage * ORDERS_PER_PAGE)
     : boxFilteredOrders;
 
-  // Stats Counters
   const activeOrdersCount = filteredOrders.length;
   const pendingCount = filteredOrders.filter((o) => o.status === "Pending").length;
   const readyCount = filteredOrders.filter((o) => o.status === "Preparing").length;
@@ -236,7 +235,6 @@ export function OrderLists() {
     }
   };
 
-  // Custom Status Badges
   const renderStatusBadge = (status: OrderStatus) => {
     switch (status) {
       case "Pending":
@@ -269,7 +267,6 @@ export function OrderLists() {
     }
   };
 
-  // Action Buttons
   const renderActionButton = (order: Order) => {
     return (
       <div className="flex items-center justify-center gap-2">
@@ -298,8 +295,8 @@ export function OrderLists() {
           </div>
         )}
 
-        <button 
-          onClick={() => setSelectedOrder(order)} 
+        <button
+          onClick={() => setSelectedOrder(order)}
           className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e2e7d8] hover:bg-[#d4dbc8] text-[#414b35] rounded-xl text-xs font-bold transition-all shadow-sm"
           title="View Details"
         >
@@ -312,7 +309,7 @@ export function OrderLists() {
 
   return (
     <div className="w-full p-10 space-y-7 bg-[#f6f8f2] min-h-screen text-[#1a1a1a] font-sans">
-      {/* Page Header */}
+
       <div>
         <h1 className="text-4xl font-extrabold tracking-tight text-[#111111]">
           Today’s Orders
@@ -322,10 +319,9 @@ export function OrderLists() {
         </p>
       </div>
 
-      {/* Top Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* PENDING ORDERS */}
-        <div 
+
+        <div
           onClick={() => setFilterBox(filterBox === "PENDING" ? "ALL" : "PENDING")}
           className={`rounded-[26px] p-6 border flex items-center gap-5 shadow-sm cursor-pointer transition-all ${filterBox === "PENDING" ? "bg-[#dbebba] border-[#8ba168]" : "bg-[#fcfdfa] border-[#8ba168]/40 hover:bg-[#f6f8f2]"}`}
         >
@@ -342,8 +338,7 @@ export function OrderLists() {
           </div>
         </div>
 
-        {/* READY FOR PICKUP */}
-        <div 
+        <div
           onClick={() => setFilterBox(filterBox === "PREPARING" ? "ALL" : "PREPARING")}
           className={`rounded-[26px] p-6 border flex items-center gap-5 shadow-sm cursor-pointer transition-all ${filterBox === "PREPARING" ? "bg-[#dbebba] border-[#8ba168]" : "bg-[#fcfdfa] border-[#8ba168]/40 hover:bg-[#f6f8f2]"}`}
         >
@@ -374,8 +369,7 @@ export function OrderLists() {
           </div>
         </div>
 
-        {/* TOTAL ACTIVE */}
-        <div 
+        <div
           onClick={() => setFilterBox("ALL")}
           className={`rounded-[26px] p-6 border flex items-center gap-5 shadow-sm cursor-pointer transition-all ${filterBox === "ALL" ? "bg-[#dbebba] border-[#8ba168]" : "bg-[#fcfdfa] border-[#8ba168]/40 hover:bg-[#f6f8f2]"}`}
         >
@@ -393,15 +387,14 @@ export function OrderLists() {
         </div>
       </div>
 
-      {/* Active Queue Card */}
       <div className="bg-[#fcfdfa] rounded-[22px] border border-[#b8c5a4] shadow-sm overflow-visible">
-        {/* Header Controls */}
+
         <div className="p-5 px-7 flex items-center justify-between border-b border-[#e2e7d8]/60">
           <h2 className="text-xl font-extrabold text-[#111111] tracking-tight">
             Active Queue
           </h2>
           <div className="flex items-center gap-3">
-            {/* View Toggle */}
+
             <div className="flex bg-[#eaeaea]/60 rounded-xl p-1 border border-gray-200">
               <button
                 type="button"
@@ -434,9 +427,8 @@ export function OrderLists() {
           </div>
         </div>
 
-        {/* Conditional Rendering of Views */}
         {viewStyle === "table" ? (
-          /* Table Container */
+
           <div className="overflow-visible">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -516,7 +508,7 @@ export function OrderLists() {
                   }`}
                 >
                   <div className="space-y-4">
-                    {/* Card Header */}
+
                     <div className="flex items-start justify-between border-b border-slate-50 pb-4">
                       <div className="flex items-start gap-3">
                         <span className={`flex items-center justify-center w-6 h-6 rounded-lg text-[10px] font-extrabold font-mono transition-colors shrink-0 ${
@@ -544,7 +536,6 @@ export function OrderLists() {
                       </div>
                     </div>
 
-                    {/* Preparing detail box: what is need to cook */}
                     {order.status === "Preparing" && (
                       <div className="rounded-xl border border-blue-200 bg-blue-50/35 p-4 space-y-2.5">
                         <span className="text-[10px] font-extrabold tracking-wider text-blue-700 uppercase block text-left">
@@ -570,7 +561,6 @@ export function OrderLists() {
                     )}
                   </div>
 
-                  {/* Actions footer */}
                   <div className="flex items-center justify-end mt-5 pt-3 border-t border-slate-50">
                     <div className="flex items-center gap-2">
                       {renderActionButton(order)}
@@ -582,7 +572,6 @@ export function OrderLists() {
           </div>
         )}
 
-        {/* Pagination Footer */}
         {totalPages > 1 && (
           <div className="p-5 px-7 flex items-center justify-end gap-2 bg-[#fcfdfa]">
             <button
@@ -659,7 +648,6 @@ export function OrderLists() {
         )}
       </div>
 
-      {/* Order Details Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
@@ -675,7 +663,7 @@ export function OrderLists() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 gap-4 text-sm">
                 <div>
@@ -703,7 +691,7 @@ export function OrderLists() {
                   ))}
                 </div>
               </div>
-              
+
               <div className="pt-4 border-t border-dashed border-gray-200 flex justify-between items-center">
                 <span className="font-extrabold text-gray-600 uppercase tracking-wider text-sm">Total</span>
                 <span className="text-2xl font-black text-[#2a3022]">{selectedOrder.totalAmount.toLocaleString()} MMK</span>

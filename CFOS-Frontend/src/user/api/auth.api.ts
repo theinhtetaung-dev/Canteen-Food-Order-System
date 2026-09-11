@@ -19,7 +19,7 @@ export function clearSession(): void {
 }
 
 export async function registerUser(payload: RegisterPayload): Promise<User> {
-  // Call the real backend to register a user.
+
   await api.post("/api/users", {
     userName: payload.rollNumber,
     fullName: payload.rollNumber,
@@ -27,7 +27,6 @@ export async function registerUser(payload: RegisterPayload): Promise<User> {
     password: payload.password,
   });
 
-  // After registration, log the user in automatically to get the token
   return loginUser(payload);
 }
 
@@ -72,7 +71,6 @@ export async function updateUserProfile(
     throw new Error("User not logged in");
   }
 
-  // Call the backend to update profile
   await api.put("/api/users/me", {
     fullName: payload.name,
     email: payload.email,

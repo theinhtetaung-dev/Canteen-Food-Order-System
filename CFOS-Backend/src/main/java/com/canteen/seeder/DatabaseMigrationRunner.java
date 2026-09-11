@@ -8,7 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 @Component
-@Order(1) // Run before other CommandLineRunners (like DatabaseSeeder)
+@Order(1)
 @RequiredArgsConstructor
 @Slf4j
 public class DatabaseMigrationRunner implements CommandLineRunner {
@@ -19,7 +19,7 @@ public class DatabaseMigrationRunner implements CommandLineRunner {
     public void run(String... args) {
         log.info("Starting database status migration check...");
         try {
-            // Update Tbl_User statuses to uppercase to match UserStatus enum
+
             int updatedUsersActive = jdbcTemplate.update(
                 "UPDATE Tbl_User SET Status = 'ACTIVE' WHERE LOWER(Status) = 'active' AND Status != 'ACTIVE'"
             );
@@ -28,7 +28,6 @@ public class DatabaseMigrationRunner implements CommandLineRunner {
             );
             log.info("Migrated User statuses: ACTIVE={}, INACTIVE={}", updatedUsersActive, updatedUsersInactive);
 
-            // Update Tbl_Order statuses to uppercase to match Status enum
             int updatedOrdersPending = jdbcTemplate.update(
                 "UPDATE Tbl_Order SET order_status = 'PENDING' WHERE LOWER(order_status) = 'pending' AND order_status != 'PENDING'"
             );
@@ -38,7 +37,7 @@ public class DatabaseMigrationRunner implements CommandLineRunner {
             int updatedOrdersCancel = jdbcTemplate.update(
                 "UPDATE Tbl_Order SET order_status = 'CANCEL' WHERE LOWER(order_status) = 'cancel' AND order_status != 'CANCEL'"
             );
-            log.info("Migrated Order statuses: PENDING={}, COMPLETE={}, CANCEL={}", 
+            log.info("Migrated Order statuses: PENDING={}, COMPLETE={}, CANCEL={}",
                 updatedOrdersPending, updatedOrdersComplete, updatedOrdersCancel);
 
         } catch (Exception e) {

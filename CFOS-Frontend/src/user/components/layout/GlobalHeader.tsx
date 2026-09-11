@@ -14,7 +14,7 @@ export function GlobalHeader() {
   if (!isAuthenticated) {
     return (
       <header className="flex h-20 w-full items-center justify-between bg-brand-light px-8 lg:px-12 shrink-0">
-        {/* Logo */}
+
         <div className="flex items-center">
           <Link to="/user" className="flex items-center gap-2 rounded-full bg-white px-3 py-2 shadow-sm">
             <div className="h-6 w-6 rounded-full overflow-hidden shrink-0 shadow-sm border border-gray-200">
@@ -24,7 +24,6 @@ export function GlobalHeader() {
           </Link>
         </div>
 
-        {/* Center Nav */}
         <nav className="hidden items-center gap-8 md:flex">
           <Link to="/user" className={`text-sm font-bold ${isHomePage ? 'text-brand underline decoration-brand decoration-2 underline-offset-8' : 'text-gray-600 hover:text-brand transition-colors'}`}>
             Home
@@ -37,7 +36,6 @@ export function GlobalHeader() {
           </Link>
         </nav>
 
-        {/* Right Actions */}
         <div className="flex items-center gap-6">
 
           {!user ? (
@@ -61,7 +59,6 @@ export function GlobalHeader() {
     );
   }
 
-  // Authenticated users logic
   if (isHomePage) return null;
 
   return (

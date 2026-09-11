@@ -1,20 +1,15 @@
 import { RouterProvider, createBrowserRouter, Navigate } from "react-router-dom";
 import { getSessionUser, clearSession } from "@user/api/auth.api";
 
-// User
 import { AppProviders as UserProviders } from "@user/app/providers";
 import { userRoutes as UserRoutes } from "@user/app/router";
 
-// Admin
 import { router as AdminRouter } from "@admin/route/router";
 
-// Super Admin
 import { router as SuperAdminRouter } from "@superadmin/routes/router";
 
-// Redirect / to /user
 const RedirectTouser = () => <Navigate to="/user" replace />;
 
-// Root router - / redirects to /user by default
 const rootRouter = createBrowserRouter([
   {
     path: "/",
@@ -110,7 +105,6 @@ export function App() {
     }
   }
 
-  // Admin panel - separate router with basename '/admin'
   if (path.startsWith("/admin")) {
     return (
       <UserProviders>
@@ -119,7 +113,6 @@ export function App() {
     );
   }
 
-  // SuperAdmin panel - separate router with basename '/superadmin'
   if (path.startsWith("/superadmin")) {
     return (
       <UserProviders>
@@ -128,6 +121,5 @@ export function App() {
     );
   }
 
-  // Root and user
   return <RouterProvider router={rootRouter} />;
 }

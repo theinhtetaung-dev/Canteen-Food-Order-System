@@ -35,4 +35,3 @@ public enum Status {
         return this.name();
     }
 }
-

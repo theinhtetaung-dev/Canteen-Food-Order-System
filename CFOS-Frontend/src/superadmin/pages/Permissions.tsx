@@ -16,7 +16,6 @@ import {
   AlertTriangle
 } from 'lucide-react';
 
-// Database Schema mappings
 interface Role {
   roleId: number;
   roleName: string;
@@ -36,7 +35,6 @@ interface RolePermission {
   permissionId: number;
 }
 
-// 1. Roles Seed Data (Tbl_Role)
 const ROLES: Role[] = [
   { roleId: 2, roleName: 'Admin', description: 'System Administrator with full access options.' },
   { roleId: 3, roleName: 'Canteen Admin', description: 'Manage food menu items, categories, and process incoming canteen orders.' },
@@ -44,71 +42,62 @@ const ROLES: Role[] = [
   { roleId: 5, roleName: 'Professor', description: 'Browse menu categories and view personal transaction logs.' },
 ];
 
-// 2. Permissions Seed Data (Tbl_Permission)
 const ALL_PERMISSIONS: Permission[] = [
-  // Dashboard Module
+
   { permissionId: 1, menuName: 'Dashboard', actionName: 'READ', label: 'View Dashboard', description: 'Access dashboard metrics and summary cards' },
-  
-  // Canteen Management Module
+
   { permissionId: 2, menuName: 'Canteen Management', actionName: 'CREATE', label: 'Create Canteen', description: 'Add new canteens/branches' },
   { permissionId: 3, menuName: 'Canteen Management', actionName: 'READ', label: 'Read Canteen', description: 'View canteens and locations' },
   { permissionId: 4, menuName: 'Canteen Management', actionName: 'UPDATE', label: 'Update Canteen', description: 'Edit canteen details' },
   { permissionId: 5, menuName: 'Canteen Management', actionName: 'DELETE', label: 'Delete Canteen', description: 'Remove canteens from system' },
 
-  // Food Category & Menu Module
   { permissionId: 6, menuName: 'Food Category & Menu', actionName: 'CREATE', label: 'Create Menu', description: 'Create food categories and menu items' },
   { permissionId: 7, menuName: 'Food Category & Menu', actionName: 'READ', label: 'Read Menu', description: 'View menu catalog and category listings' },
   { permissionId: 8, menuName: 'Food Category & Menu', actionName: 'UPDATE', label: 'Update Menu', description: 'Edit item prices, descriptions and availability' },
   { permissionId: 9, menuName: 'Food Category & Menu', actionName: 'DELETE', label: 'Delete Menu', description: 'Remove menu categories and food items' },
 
-  // Orders & POS Module
   { permissionId: 10, menuName: 'Orders & POS', actionName: 'CREATE', label: 'Create Order', description: 'Create and place new orders' },
   { permissionId: 11, menuName: 'Orders & POS', actionName: 'READ', label: 'View Orders', description: 'Access transaction lists and order logs' },
   { permissionId: 12, menuName: 'Orders & POS', actionName: 'UPDATE', label: 'Process/Update Order', description: 'Update order status and handle refunds' },
   { permissionId: 13, menuName: 'Orders & POS', actionName: 'DELETE', label: 'Delete Order', description: 'Cancel and hard-delete orders' },
 
-  // User Management Module
   { permissionId: 14, menuName: 'User Management', actionName: 'CREATE', label: 'Add User/Admin', description: 'Add new kitchen admins and student accounts' },
   { permissionId: 15, menuName: 'User Management', actionName: 'READ', label: 'View Users', description: 'Read student and admin details and status' },
   { permissionId: 16, menuName: 'User Management', actionName: 'UPDATE', label: 'Update User/Reset', description: 'Edit user accounts and reset passwords' },
   { permissionId: 17, menuName: 'User Management', actionName: 'DELETE', label: 'Delete User', description: 'Remove users from system' },
 
-  // Role & Permission System Module
   { permissionId: 18, menuName: 'Role & Permission System', actionName: 'CREATE', label: 'Create Roles', description: 'Create new user system roles' },
   { permissionId: 19, menuName: 'Role & Permission System', actionName: 'READ', label: 'Read Roles & Perms', description: 'View system permissions and roles matrix' },
   { permissionId: 20, menuName: 'Role & Permission System', actionName: 'UPDATE', label: 'Edit Permissions', description: 'Toggle permissions for specific roles' },
   { permissionId: 21, menuName: 'Role & Permission System', actionName: 'DELETE', label: 'Delete Roles', description: 'Delete user system roles' },
 ];
 
-// Initial Junction Table mapping (Tbl_RolePermission seed)
 const INITIAL_ROLE_PERMISSIONS: RolePermission[] = [
-  // Canteen Admin: Dashboard Read, Canteen Management Read & Update, Food Category & Menu All, Orders All, User Management Read & Update
-  { roleId: 3, permissionId: 1 },  // Dashboard READ
-  { roleId: 3, permissionId: 3 },  // Canteen READ
-  { roleId: 3, permissionId: 4 },  // Canteen UPDATE
-  { roleId: 3, permissionId: 6 },  // Food CREATE
-  { roleId: 3, permissionId: 7 },  // Food READ
-  { roleId: 3, permissionId: 8 },  // Food UPDATE
-  { roleId: 3, permissionId: 9 },  // Food DELETE
-  { roleId: 3, permissionId: 10 }, // Orders CREATE
-  { roleId: 3, permissionId: 11 }, // Orders READ
-  { roleId: 3, permissionId: 12 }, // Orders UPDATE
-  { roleId: 3, permissionId: 13 }, // Orders DELETE
-  { roleId: 3, permissionId: 15 }, // User READ
-  { roleId: 3, permissionId: 16 }, // User UPDATE
-  { roleId: 3, permissionId: 19 }, // Role READ
 
-  // Student / User: Dashboard Read, Canteen Read, Food Read, Orders Create & Read, User Read
-  { roleId: 4, permissionId: 1 },  // Dashboard READ
-  { roleId: 4, permissionId: 3 },  // Canteen READ
-  { roleId: 4, permissionId: 7 },  // Food READ
-  { roleId: 4, permissionId: 10 }, // Orders CREATE
-  { roleId: 4, permissionId: 11 }, // Orders READ
-  { roleId: 4, permissionId: 15 }, // User READ
+  { roleId: 3, permissionId: 1 },
+  { roleId: 3, permissionId: 3 },
+  { roleId: 3, permissionId: 4 },
+  { roleId: 3, permissionId: 6 },
+  { roleId: 3, permissionId: 7 },
+  { roleId: 3, permissionId: 8 },
+  { roleId: 3, permissionId: 9 },
+  { roleId: 3, permissionId: 10 },
+  { roleId: 3, permissionId: 11 },
+  { roleId: 3, permissionId: 12 },
+  { roleId: 3, permissionId: 13 },
+  { roleId: 3, permissionId: 15 },
+  { roleId: 3, permissionId: 16 },
+  { roleId: 3, permissionId: 19 },
 
-  // Professor: Dashboard Read, Food Read
-  { roleId: 5, permissionId: 1 },  // Dashboard READ
-  { roleId: 5, permissionId: 7 },  // Food READ
+  { roleId: 4, permissionId: 1 },
+  { roleId: 4, permissionId: 3 },
+  { roleId: 4, permissionId: 7 },
+  { roleId: 4, permissionId: 10 },
+  { roleId: 4, permissionId: 11 },
+  { roleId: 4, permissionId: 15 },
+
+  { roleId: 5, permissionId: 1 },
+  { roleId: 5, permissionId: 7 },
 ];
 
 const swalSuccessClass = {
@@ -117,7 +106,6 @@ const swalSuccessClass = {
   htmlContainer: 'text-xs text-gray-500 mt-2 font-medium leading-relaxed',
 };
 
-// Custom iOS style Toggle Switch Component
 const ToggleSwitch: React.FC<{
   checked: boolean;
   onChange: (val: boolean) => void;
@@ -125,7 +113,7 @@ const ToggleSwitch: React.FC<{
   disabled?: boolean;
 }> = ({ checked, onChange, label, disabled = false }) => {
   return (
-    <label 
+    <label
       className={`flex items-center gap-3 cursor-pointer select-none transition-opacity ${
         disabled ? 'opacity-40 cursor-not-allowed' : 'hover:opacity-90'
       }`}
@@ -159,9 +147,8 @@ export const Permissions: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
-  // DB States
   const [savedRolePermissions, setSavedRolePermissions] = useState<RolePermission[]>(INITIAL_ROLE_PERMISSIONS);
-  // UI Draft State
+
   const [draftRolePermissions, setDraftRolePermissions] = useState<RolePermission[]>(INITIAL_ROLE_PERMISSIONS);
 
   useEffect(() => {
@@ -189,28 +176,24 @@ export const Permissions: React.FC = () => {
     fetchAllRolePermissions();
   }, []);
 
-  // Sync Draft State with active RoleID or database updates
   const activePermissions = useMemo(() => {
     return draftRolePermissions
       .filter((rp) => rp.roleId === activeRoleId)
       .map((rp) => rp.permissionId);
   }, [draftRolePermissions, activeRoleId]);
 
-  // Compute Unsaved Changes by comparing Saved vs Draft
   const hasUnsavedChanges = useMemo(() => {
     if (draftRolePermissions.length !== savedRolePermissions.length) return true;
-    
-    // Sort & Check if every draft element is present in saved
+
     const draftKeys = draftRolePermissions.map(rp => `${rp.roleId}-${rp.permissionId}`).sort();
     const savedKeys = savedRolePermissions.map(rp => `${rp.roleId}-${rp.permissionId}`).sort();
-    
+
     return !draftKeys.every((val, index) => val === savedKeys[index]);
   }, [draftRolePermissions, savedRolePermissions]);
 
-  // Modules Grouping Helper
   const modulesList = useMemo(() => {
     const uniqueMenuNames = Array.from(new Set(ALL_PERMISSIONS.map(p => p.menuName)));
-    
+
     const iconMap: Record<string, React.ReactNode> = {
       'Dashboard': <LayoutDashboard className="w-5 h-5 text-indigo-500" />,
       'Canteen Management': <Store className="w-5 h-5 text-emerald-500" />,
@@ -240,7 +223,6 @@ export const Permissions: React.FC = () => {
     });
   }, []);
 
-  // Compute KPI Statistics
   const activeRoleName = useMemo(() => {
     return ROLES.find(r => r.roleId === activeRoleId)?.roleName || 'Role';
   }, [activeRoleId]);
@@ -248,8 +230,7 @@ export const Permissions: React.FC = () => {
   const stats = useMemo(() => {
     const roleDraftPerms = draftRolePermissions.filter(rp => rp.roleId === activeRoleId);
     const totalActiveCount = roleDraftPerms.length;
-    
-    // Modules count where at least one permission ID is checked
+
     const enabledModulesCount = modulesList.filter(mod => {
       return mod.permissions.some(p => roleDraftPerms.some(rp => rp.permissionId === p.permissionId));
     }).length;
@@ -260,11 +241,10 @@ export const Permissions: React.FC = () => {
     };
   }, [draftRolePermissions, activeRoleId, modulesList]);
 
-  // Master Toggles
   const handleGrantAll = () => {
     const otherRoles = draftRolePermissions.filter(rp => rp.roleId !== activeRoleId);
     const allActivePermissions = ALL_PERMISSIONS.map(p => ({ roleId: activeRoleId, permissionId: p.permissionId }));
-    
+
     setDraftRolePermissions([...otherRoles, ...allActivePermissions]);
   };
 
@@ -273,22 +253,20 @@ export const Permissions: React.FC = () => {
     setDraftRolePermissions(otherRoles);
   };
 
-  // Switch Toggles
   const handleTogglePermission = (permissionId: number, isChecked: boolean) => {
     if (isChecked) {
-      // Toggle ON: Add a simulated junction row Tbl_RolePermission
+
       setDraftRolePermissions(prev => [...prev, { roleId: activeRoleId, permissionId }]);
     } else {
-      // Toggle OFF: Remove row from junction table Tbl_RolePermission
+
       setDraftRolePermissions(prev => prev.filter(rp => !(rp.roleId === activeRoleId && rp.permissionId === permissionId)));
     }
   };
 
-  // Module Level "Select All"
   const handleModuleSelectAll = (menuName: string, checked: boolean) => {
     const modPermIds = ALL_PERMISSIONS.filter(p => p.menuName === menuName).map(p => p.permissionId);
     const otherPerms = draftRolePermissions.filter(rp => !(rp.roleId === activeRoleId && modPermIds.includes(rp.permissionId)));
-    
+
     if (checked) {
       const addedPerms = modPermIds.map(id => ({ roleId: activeRoleId, permissionId: id }));
       setDraftRolePermissions([...otherPerms, ...addedPerms]);
@@ -297,12 +275,10 @@ export const Permissions: React.FC = () => {
     }
   };
 
-  // Reset Changes
   const handleReset = () => {
     setDraftRolePermissions([...savedRolePermissions]);
   };
 
-  // Save changes to database simulation
   const handleSaveMatrix = async () => {
     setIsSaving(true);
     try {
@@ -316,7 +292,7 @@ export const Permissions: React.FC = () => {
       });
 
       setSavedRolePermissions([...draftRolePermissions]);
-      
+
       Swal.fire({
         title: 'Permissions Saved!',
         text: `Access rights for "${activeRoleName}" have been updated successfully.`,
@@ -341,14 +317,13 @@ export const Permissions: React.FC = () => {
 
   return (
     <div className="max-w-6xl space-y-6 relative pb-28 font-sans">
-      {/* Title & Subtitle */}
+
       <div>
         <h2 className="text-3xl font-black text-gray-900 tracking-tight">
           Role Permission & Access Control
         </h2>
       </div>
 
-      {/* Role Selector Segmented Control / Tabs */}
       <div className="bg-slate-100/80 border border-slate-200/40 p-1.5 rounded-2xl flex flex-col sm:flex-row gap-1">
         {ROLES.map((role) => {
           const isActive = role.roleId === activeRoleId;
@@ -371,7 +346,6 @@ export const Permissions: React.FC = () => {
         })}
       </div>
 
-      {/* Active Role Description Banner */}
       <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4.5 flex gap-3.5 items-start">
         <div className="p-2 bg-white rounded-xl border border-slate-100 shadow-sm shrink-0">
           <Info className="w-5 h-5 text-slate-500" />
@@ -386,7 +360,6 @@ export const Permissions: React.FC = () => {
         </div>
       </div>
 
-      {/* Summary KPI Dashboard */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <div className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center shrink-0">
@@ -427,20 +400,19 @@ export const Permissions: React.FC = () => {
         </div>
       </div>
 
-      {/* Permissions Matrix grouped by MenuName */}
       <div className="space-y-5">
         {modulesList.map((module) => {
-          // Check if all available actions in this module are checked
+
           const modActivePerms = module.permissions.map(p => p.permissionId);
           const isAllChecked = modActivePerms.every(id => activePermissions.includes(id));
           const isSomeChecked = modActivePerms.some(id => activePermissions.includes(id)) && !isAllChecked;
 
           return (
-            <div 
+            <div
               key={module.menuName}
               className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm hover:border-slate-300/80 transition-all duration-200"
             >
-              {/* Module Header Card */}
+
               <div className="p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/40 border-b border-slate-100">
                 <div className="flex gap-3.5 items-start">
                   <div className="p-2 bg-white rounded-xl border border-slate-100 shadow-sm shrink-0 mt-0.5">
@@ -456,7 +428,6 @@ export const Permissions: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Local select all toggles */}
                 <div className="self-end sm:self-center">
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
@@ -475,10 +446,9 @@ export const Permissions: React.FC = () => {
                 </div>
               </div>
 
-              {/* Toggles switches grid */}
               <div className="p-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 bg-slate-50/50 p-5 rounded-2xl border border-slate-100/80">
-                  {/* CREATE ACTION */}
+
                   {(() => {
                     const perm = module.permissions.find(p => p.actionName === 'CREATE');
                     return perm ? (
@@ -495,7 +465,6 @@ export const Permissions: React.FC = () => {
                     );
                   })()}
 
-                  {/* READ ACTION */}
                   {(() => {
                     const perm = module.permissions.find(p => p.actionName === 'READ');
                     return perm ? (
@@ -512,7 +481,6 @@ export const Permissions: React.FC = () => {
                     );
                   })()}
 
-                  {/* UPDATE ACTION */}
                   {(() => {
                     const perm = module.permissions.find(p => p.actionName === 'UPDATE');
                     return perm ? (
@@ -529,7 +497,6 @@ export const Permissions: React.FC = () => {
                     );
                   })()}
 
-                  {/* DELETE ACTION */}
                   {(() => {
                     const perm = module.permissions.find(p => p.actionName === 'DELETE');
                     return perm ? (
@@ -551,7 +518,7 @@ export const Permissions: React.FC = () => {
           );
         })}
       </div>
-      {/* Floating Footer Save Bar */}
+
       {hasUnsavedChanges && (
         <div className="fixed bottom-6 left-4 md:left-[calc(256px+2.5rem)] right-4 md:right-[2.5rem] z-50 pointer-events-none flex justify-center">
           <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 max-w-2xl w-full pointer-events-auto transition-all duration-300 animate-in slide-in-from-bottom-5">

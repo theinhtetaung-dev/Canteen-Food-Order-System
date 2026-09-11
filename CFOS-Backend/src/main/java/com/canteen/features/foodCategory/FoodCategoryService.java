@@ -26,10 +26,8 @@ public class FoodCategoryService {
     private final FoodCategoryMapper foodCategoryMapper;
     private final BranchRepository branchRepository;
 
-    // CREATE
     public FoodCategoryResponse create(FoodCategoryRequest request, String username) {
 
-        //  check duplicate
         boolean exists = foodCategoryRepository
                 .existsByCategoryNameIgnoreCaseAndDeleteFlagFalse(request.getCategoryName());
 
@@ -38,11 +36,10 @@ public class FoodCategoryService {
                     request.getCategoryName());
         }
 
-        //  find user by username from JWT
         User user = userRepository.findByUserName(username)
                 .orElseThrow(() ->
                         new UserNotFoundException(username));
-        //  map DTO -> Entity
+
         FoodCategory category = foodCategoryMapper.toEntity(request, user);
 
         if (request.getBranchId() != null) {
@@ -51,21 +48,17 @@ public class FoodCategoryService {
             category.setBranch(branch);
         }
 
-        //  save
         category = foodCategoryRepository.save(category);
 
-        // map Entity -> Response DTO
         return foodCategoryMapper.toDTO(category);
     }
 
-    // UPDATE
     public FoodCategoryResponse update(Integer id, FoodCategoryRequest request) {
 
         FoodCategory category = foodCategoryRepository.findById(id)
                 .orElseThrow(() ->
                         new CategoryNotFoundException(id));
 
-        // update fields only
         foodCategoryMapper.updateEntity(request, category);
 
         if (request.getBranchId() != null) {
@@ -79,7 +72,6 @@ public class FoodCategoryService {
         return foodCategoryMapper.toDTO(category);
     }
 
-    // GET ALL
     public List<FoodCategoryResponse> getAll() {
 
         return foodCategoryRepository.findByDeleteFlagFalse()
@@ -88,7 +80,6 @@ public class FoodCategoryService {
                 .toList();
     }
 
-    // GET BY ID
     public FoodCategoryResponse getById(Integer id) {
 
         FoodCategory category = foodCategoryRepository.findById(id)
@@ -98,7 +89,6 @@ public class FoodCategoryService {
         return foodCategoryMapper.toDTO(category);
     }
 
-    // DELETE (SOFT DELETE)
     public void delete(Integer id) {
 
         FoodCategory category = foodCategoryRepository.findById(id)

@@ -59,7 +59,7 @@ public class UserController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String direction) {
-        
+
         Page<UserResModel> response = userService.getAllUsers(page, size, sortBy, direction);
         return ResponseEntity.ok(response);
     }

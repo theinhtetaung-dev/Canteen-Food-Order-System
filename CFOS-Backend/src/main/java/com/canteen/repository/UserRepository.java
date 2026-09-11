@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
-    
+
     @Override
     @EntityGraph(attributePaths = {"role"})
     Page<User> findAll(Pageable pageable);

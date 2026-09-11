@@ -14,47 +14,29 @@ import { useAuth } from "@user/context/AuthContext";
 import { fetchAllUsers } from "@user/api/user.api";
 import { changePassword } from "@user/api/auth.api";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
 export interface ProfileSideCard {
-  /** Card heading icon */
+
   icon?: LucideIcon;
-  /** Card title (default: "Role & Access") */
+
   title?: string;
-  /** Primary role display text (default: "Super Administrator") */
+
   primaryRole?: string;
-  /** List of permission strings to render with checkmarks */
+
   permissions: string[];
 }
 
 export interface ProfileLayoutProps {
-  /**
-   * Human-readable label shown in the role pill beneath the name.
-   * e.g. "Student", "Canteen Manager", "Super Admin"
-   */
+
   roleBadgeLabel: string;
-  /**
-   * Label for the ID field in the Personal Information grid.
-   * e.g. "User ID", "Staff ID"
-   */
+
   idFieldLabel: string;
-  /**
-   * Optional side panel card config.
-   * When provided, the layout switches to a 2/3 + 1/3 grid.
-   * When omitted, Personal Information fills the full width.
-   */
+
   sideCard?: ProfileSideCard;
-  /** Show the Critical Action logout banner at the bottom (default: true) */
+
   showLogoutBanner?: boolean;
-  /** Custom logout callback – falls back to useAuth().logout if omitted */
+
   onLogout?: () => void;
 }
-
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
 
 function getInitials(name?: string, fallback = "U"): string {
   if (!name) return fallback;
@@ -66,7 +48,6 @@ function getInitials(name?: string, fallback = "U"): string {
     .slice(0, 2);
 }
 
-// Consistent field classes
 const fieldBase =
   "w-full px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all outline-none";
 const fieldView = "bg-gray-50 border border-gray-100 text-gray-800";
@@ -81,10 +62,6 @@ const textareaView = "bg-gray-50 border border-gray-100 text-gray-700";
 const textareaEdit =
   "bg-white border-2 border-gray-200 focus:border-brand text-gray-900";
 
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
-
 export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
   roleBadgeLabel,
   idFieldLabel,
@@ -94,11 +71,9 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
 }) => {
   const { user, logout, updateProfile } = useAuth();
 
-  // ---- State ---------------------------------------------------------------
   const [isEditing, setIsEditing] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
 
-  // Preferences state
   const [preferences, setPreferences] = useState(() => {
     try {
       const saved = localStorage.getItem("campus_bites_preferences");
@@ -134,16 +109,16 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
       console.error(e);
     }
 
-    const isManagerOrAdmin = 
-      roleBadgeLabel?.toLowerCase().includes("manager") || 
+    const isManagerOrAdmin =
+      roleBadgeLabel?.toLowerCase().includes("manager") ||
       roleBadgeLabel?.toLowerCase().includes("admin");
-    
+
     return {
       fullName: user?.name || user?.rollNumber || "",
       email: user?.email || (user?.rollNumber ? `${user.rollNumber}@miit.edu.mm` : ""),
       phone: user?.phone || "",
       staffId: user?.rollNumber || "",
-      bio: savedBio || (isManagerOrAdmin 
+      bio: savedBio || (isManagerOrAdmin
         ? "Managing kitchen operations and menu planning for the Central Campus Dining Hall."
         : ""),
     };
@@ -152,7 +127,6 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
   const [profile, setProfile] = useState(buildInitialProfile);
   const [formData, setFormData] = useState(profile);
 
-  // Password change state
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -196,7 +170,6 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
     }
   };
 
-  // Hydrate from DB (same pattern as existing Admin/SuperAdmin pages)
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
@@ -223,10 +196,9 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
     }
     loadFromDb();
     return () => { cancelled = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [user]);
 
-  // Re-sync when auth context user object updates (e.g. after updateProfile)
   useEffect(() => {
     if (user && !isEditing) {
       setProfile((prev) => ({
@@ -237,10 +209,9 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
         staffId: user.rollNumber || prev.staffId,
       }));
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [user]);
 
-  // ---- Handlers ------------------------------------------------------------
   const handleEditClick = () => {
     setFormData(profile);
     setIsEditing(true);
@@ -271,7 +242,7 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
       setProfile(formData);
       setIsEditing(false);
       setSaveStatus("success");
-      // Notify admin sidebar (if present) of profile change
+
       window.dispatchEvent(new Event("profileUpdated"));
       localStorage.setItem(
         "campus_bites_profile",
@@ -310,14 +281,11 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
     ]
   });
 
-  // ---- Render --------------------------------------------------------------
   return (
     <div className="space-y-6">
-      {/* ================================================================ */}
-      {/* 1. Profile Header                                                  */}
-      {/* ================================================================ */}
+
       <header className="flex items-center justify-between gap-4">
-        {/* Left: Avatar + Name + Badge */}
+
         <div className="flex items-center gap-5">
           <div className="w-20 h-20 rounded-full bg-brand-light text-brand-dark border-2 border-brand shrink-0 text-xl font-black select-none shadow-sm flex items-center justify-center">
             {initials}
@@ -332,7 +300,6 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
           </div>
         </div>
 
-        {/* Right: Action Buttons */}
         <div className="shrink-0 flex items-center gap-3">
           {!isEditing && (
             <button
@@ -375,7 +342,6 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
         </div>
       </header>
 
-      {/* Save status feedback */}
       {saveStatus === "success" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white w-full max-w-sm rounded-2xl border border-gray-100 shadow-xl p-6 space-y-6 animate-slideUp text-center">
@@ -399,11 +365,8 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
         </div>
       )}
 
-      {/* ================================================================ */}
-      {/* 2. Personal Information                                            */}
-      {/* ================================================================ */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6 w-full">
-        {/* Card header */}
+
         <div className="flex items-center justify-between border-b border-gray-100 pb-3">
           <div className="flex items-center gap-2 text-gray-900 font-bold">
             <User className="w-4 h-4 text-gray-500" />
@@ -411,13 +374,12 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
           </div>
         </div>
 
-        {/* 2-column field grid */}
         <form
           className="space-y-6"
           onSubmit={(e) => { e.preventDefault(); handleSave(); }}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Full Name */}
+
             <div>
               <label className="block text-[11px] font-bold text-gray-500 mb-1">
                 Full Name
@@ -432,7 +394,6 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
               />
             </div>
 
-            {/* Email */}
             <div>
               <label className="block text-[11px] font-bold text-gray-500 mb-1">
                 Email Address
@@ -447,7 +408,6 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
               />
             </div>
 
-            {/* Phone */}
             <div>
               <label className="block text-[11px] font-bold text-gray-500 mb-1">
                 Phone Number
@@ -462,10 +422,8 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
               />
             </div>
 
-
           </div>
 
-          {/* Short Bio – full width */}
           <div className="space-y-2">
             <label className="block text-[11px] font-bold text-gray-500">
               Short Bio
@@ -488,9 +446,6 @@ export const ProfileLayout: React.FC<ProfileLayoutProps> = ({
         </form>
       </div>
 
-
-
-      {/* Change Password Modal */}
       {isPasswordModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fadeIn">
           <div className="bg-white w-full max-w-md rounded-2xl border border-gray-100 shadow-xl p-6 space-y-6 animate-slideUp">

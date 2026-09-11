@@ -28,7 +28,7 @@ export default function MenuPage() {
 
   useEffect(() => {
     const baseUrl = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:8081";
-    // Fetch canteens from tbl_canteen
+
     fetchBranches()
       .then((branches) => {
         setCanteens(branches);
@@ -37,7 +37,7 @@ export default function MenuPage() {
         }
       })
       .catch((err) => console.error("Error loading canteens:", err));
-    // Fetch food items
+
     api.get<any[]>("/api/foods")
       .then(({ data }) => {
         const availableItems = data
@@ -66,8 +66,6 @@ export default function MenuPage() {
         setIsLoading(false);
       });
   }, []);
-
-
 
   const shopCategories = useMemo(() => {
     if (!selectedShop) return [];
@@ -122,10 +120,10 @@ export default function MenuPage() {
 
   return (
     <div className="min-h-screen bg-bg-main flex flex-col relative pb-24">
-      {/* Consolidated Filter & Search Bar */}
+
       <div className="bg-white border-b border-gray-200/80 py-4 shadow-sm">
         <div className="mx-auto max-w-7xl px-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          {/* Canteen Switcher (Dropdown - populated from tbl_canteen) */}
+
           {canteens.length > 0 && (
             <div className="relative shrink-0 w-full md:w-auto">
               <select
@@ -145,7 +143,6 @@ export default function MenuPage() {
             </div>
           )}
 
-          {/* Search Bar with Search & Clear Buttons */}
           {selectedShop && (
             <div className="flex items-center gap-2 w-full md:max-w-md flex-1">
               <div className="relative flex-grow">
@@ -183,7 +180,6 @@ export default function MenuPage() {
             </div>
           )}
 
-          {/* Category Switcher (Dropdown for multiple categories) */}
           {selectedShop && shopCategories.length > 0 && (
             <div className="relative shrink-0 w-full md:w-auto">
               <select
@@ -209,7 +205,6 @@ export default function MenuPage() {
         </div>
       </div>
 
-      {/* Main Grid Content */}
       <main className="flex-grow mx-auto max-w-7xl w-full px-6 py-8">
         {selectedShop && (
           <>
@@ -294,7 +289,6 @@ export default function MenuPage() {
           </>
         )}
       </main>
-
 
       <FoodDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} onAddToCart={addToCart} />
     </div>

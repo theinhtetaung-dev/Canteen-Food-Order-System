@@ -42,17 +42,14 @@ export const KitchenAdmins: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
-  
-  // Page Mode: 'list' | 'create'
+
   const [viewMode, setViewMode] = useState<'list' | 'create'>('list');
 
-  // View Toggle State
   const [viewType, setViewType] = useState<'table' | 'card'>('table');
 
-  // Form State
   const [formData, setFormData] = useState({
-    canteenId: '',      // stores the selected Branch's branchId as string
-    canteenName: '',    // display name (optional, for optimistic UI)
+    canteenId: '',
+    canteenName: '',
     username: '',
     email: '',
     phone: '',
@@ -69,7 +66,7 @@ export const KitchenAdmins: React.FC = () => {
     try {
       setIsLoading(true);
       const data = await fetchKitchenAdmins();
-      // fetchKitchenAdmins now returns the fully-mapped shape from user.api.ts
+
       setAdmins(data);
     } catch (err) {
       console.error("Failed to fetch canteen admins", err);
@@ -198,18 +195,16 @@ export const KitchenAdmins: React.FC = () => {
     }
   };
 
-  // ---------------- VIEW 1: CREATE NEW CANTEEN ADMIN FORM ----------------
   if (viewMode === 'create') {
     return (
       <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 md:p-8 space-y-6">
-        {/* Breadcrumb Navigation */}
+
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
           <span>Admins</span>
           <span>/</span>
           <span className="text-slate-700">Create New Canteen Admin</span>
         </div>
 
-        {/* Back Link & Header Title */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setViewMode('list')}
@@ -222,7 +217,6 @@ export const KitchenAdmins: React.FC = () => {
           </h2>
         </div>
 
-        {/* Form Container */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 md:p-8">
           <div className="mb-6">
             <h3 className="text-sm font-bold text-slate-900">Canteen Details</h3>
@@ -233,7 +227,7 @@ export const KitchenAdmins: React.FC = () => {
 
           <form onSubmit={handleCreateSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
-              {/* Row 1: Canteen Name Dropdown -> md:col-span-2 (Full width across top) */}
+
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Canteen Name
@@ -260,7 +254,6 @@ export const KitchenAdmins: React.FC = () => {
                 </select>
               </div>
 
-              {/* Row 2: Username (Left column) | Email Address (Right column) */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Username
@@ -289,8 +282,6 @@ export const KitchenAdmins: React.FC = () => {
                 />
               </div>
 
-              {/* Row 3: Phone Number (Left column) | Status/Role (Right column, or span full if alone) */}
-              {/* Since Phone Number is alone on this row, it spans full width */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Phone Number
@@ -304,7 +295,6 @@ export const KitchenAdmins: React.FC = () => {
                 />
               </div>
 
-              {/* Row 4: Password (Left column) | Confirm Password (Right column) */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Password <span className="text-slate-400 font-normal text-xs">(8 or more characters)</span>
@@ -350,7 +340,6 @@ export const KitchenAdmins: React.FC = () => {
               </div>
             </div>
 
-            {/* Footer: Action buttons right-aligned on desktop, full-width on mobile */}
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-slate-100">
               <button
                 type="button"
@@ -372,19 +361,17 @@ export const KitchenAdmins: React.FC = () => {
     );
   }
 
-  // ---------------- VIEW 2: CANTEEN ADMINS LIST TABLE ----------------
   return (
     <div className="max-w-6xl space-y-6 relative">
-      {/* Title & Subtitle */}
+
       <div>
         <h2 className="text-3xl font-black text-gray-900 tracking-tight">
           Canteen Admins
         </h2>
       </div>
 
-      {/* Main Container */}
       <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-sm space-y-4">
-        {/* Top Controls Bar */}
+
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="relative w-full sm:w-72">
@@ -412,7 +399,7 @@ export const KitchenAdmins: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-            {/* View Toggle */}
+
             <div className="flex items-center border border-slate-200 rounded-xl p-0.5 bg-slate-50">
               <button
                 type="button"
@@ -450,7 +437,6 @@ export const KitchenAdmins: React.FC = () => {
           </div>
         </div>
 
-        {/* Admins Table / Card View */}
         {viewType === 'table' ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -488,7 +474,7 @@ export const KitchenAdmins: React.FC = () => {
 
                     <td className="py-3 px-4">
                       <div className="flex items-center justify-center gap-3">
-                        {/* RESET PASSWORD BUTTON */}
+
                         <button
                           onClick={() => setAdminToReset(admin)}
                           title="Reset Credentials"
@@ -497,7 +483,6 @@ export const KitchenAdmins: React.FC = () => {
                           <RotateCw className="w-4 h-4 stroke-[2.5]" />
                         </button>
 
-                        {/* DELETE ADMIN BUTTON */}
                         <button
                           onClick={() => setAdminToDelete(admin)}
                           title="Delete Canteen Admin"
@@ -558,7 +543,7 @@ export const KitchenAdmins: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="space-y-1.5 mt-4 pt-3 border-t border-slate-100 text-xs text-slate-600">
                       <div className="flex justify-between">
                         <span className="font-medium text-slate-400">Canteen:</span>
@@ -597,7 +582,6 @@ export const KitchenAdmins: React.FC = () => {
           </div>
         )}
 
-        {/* Pagination Logic */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-4 text-xs">
             <span className="text-gray-500 font-medium">
@@ -679,7 +663,6 @@ export const KitchenAdmins: React.FC = () => {
         )}
       </div>
 
-      {/* RENDER CUSTOM DELETE CONFIRMATION MODAL */}
       {adminToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-md mx-4 p-6 bg-white rounded-2xl shadow-xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
@@ -697,7 +680,6 @@ export const KitchenAdmins: React.FC = () => {
               </div>
             </div>
 
-            {/* Target Summary Box */}
             <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 my-4 text-sm space-y-1">
               <div className="flex justify-between">
                 <span className="text-slate-500 font-medium">Username:</span>
@@ -709,7 +691,6 @@ export const KitchenAdmins: React.FC = () => {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6">
               <button
                 type="button"
@@ -760,7 +741,6 @@ export const KitchenAdmins: React.FC = () => {
         </div>
       )}
 
-      {/* RENDER CUSTOM RESET PASSWORD CONFIRMATION MODAL */}
       {adminToReset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-md mx-4 p-6 bg-white rounded-2xl shadow-xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
@@ -778,7 +758,6 @@ export const KitchenAdmins: React.FC = () => {
               </div>
             </div>
 
-            {/* Target Summary Box */}
             <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 my-4 text-sm space-y-1">
               <div className="flex justify-between">
                 <span className="text-slate-500 font-medium">Username:</span>
@@ -790,7 +769,6 @@ export const KitchenAdmins: React.FC = () => {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 mt-6">
               <button
                 type="button"

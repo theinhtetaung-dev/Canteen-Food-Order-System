@@ -1,7 +1,5 @@
 package com.canteen.features.foodCategory.dto;
 
-
-
 import lombok.Data;
 
 @Data

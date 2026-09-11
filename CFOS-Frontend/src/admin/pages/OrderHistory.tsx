@@ -64,7 +64,7 @@ export function OrderHistory() {
         if (d.status === "completed") mappedStatus = "Completed";
         if (d.status === "cancelled") mappedStatus = "Cancelled";
         if (d.status === "preparing") mappedStatus = "Preparing";
-        
+
         return {
           id: String(d.id),
           studentId: d.userId,
@@ -93,7 +93,6 @@ export function OrderHistory() {
   const filteredOrders = React.useMemo(() => {
     let result = userCanteenId === null ? orders : orders.filter(o => o.canteenId === userCanteenId);
 
-    // Filter by Date
     if (startDate || endDate) {
       result = result.filter((order) => {
         if (!order.createdAt) return false;
@@ -114,12 +113,10 @@ export function OrderHistory() {
       });
     }
 
-    // Filter by Status
     if (selectedStatus !== "ALL") {
       result = result.filter((o) => o.status === selectedStatus);
     }
 
-    // Sort: Newest orders first
     return [...result].sort((a, b) => {
       const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
       const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -167,7 +164,7 @@ export function OrderHistory() {
 
   return (
     <div className="w-full p-10 space-y-7 bg-[#f6f8f2] min-h-screen text-[#1a1a1a] font-sans">
-      {/* Page Header */}
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-4xl font-extrabold tracking-tight text-[#111111]">
@@ -184,13 +181,12 @@ export function OrderHistory() {
         </button>
       </div>
 
-      {/* Date Filter & Search Controls */}
       <div className="bg-[#fcfdfa] p-5 rounded-[22px] border border-[#b8c5a4] shadow-sm flex flex-col lg:flex-row items-center gap-4">
-        {/* Date Inputs */}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full lg:w-auto">
           <div className="relative">
             <label className="block text-[9px] font-black text-[#5b7a42] uppercase tracking-wider mb-1">Start Date</label>
-            <div 
+            <div
               onClick={() => startDateRef.current?.showPicker()}
               className="relative h-[38px] w-full lg:w-44 bg-white border border-[#dce5c7] rounded-xl flex items-center justify-between px-3 hover:border-[#8db552] transition-colors focus-within:ring-2 focus-within:ring-[#8db552]/10 focus-within:border-transparent cursor-pointer"
             >
@@ -198,7 +194,7 @@ export function OrderHistory() {
                 {startDate ? formatDate(new Date(startDate)) : 'Select date'}
               </span>
               <Calendar className="w-4 h-4 text-gray-450 pointer-events-none" />
-              <input 
+              <input
                 ref={startDateRef}
                 type="date"
                 value={startDate}
@@ -211,7 +207,7 @@ export function OrderHistory() {
 
           <div className="relative">
             <label className="block text-[9px] font-black text-[#5b7a42] uppercase tracking-wider mb-1">End Date</label>
-            <div 
+            <div
               onClick={() => endDateRef.current?.showPicker()}
               className="relative h-[38px] w-full lg:w-44 bg-white border border-[#dce5c7] rounded-xl flex items-center justify-between px-3 hover:border-[#8db552] transition-colors focus-within:ring-2 focus-within:ring-[#8db552]/10 focus-within:border-transparent cursor-pointer"
             >
@@ -219,7 +215,7 @@ export function OrderHistory() {
                 {endDate ? formatDate(new Date(endDate)) : 'Select date'}
               </span>
               <Calendar className="w-4 h-4 text-gray-450 pointer-events-none" />
-              <input 
+              <input
                 ref={endDateRef}
                 type="date"
                 value={endDate}
@@ -231,7 +227,6 @@ export function OrderHistory() {
           </div>
         </div>
 
-        {/* Status Filter */}
         <div className="w-full lg:w-48 relative">
           <label className="block text-[9px] font-black text-[#5b7a42] uppercase tracking-wider mb-1">Filter by Status</label>
           <div className="relative">
@@ -250,7 +245,6 @@ export function OrderHistory() {
           </div>
         </div>
 
-        {/* Action Controls */}
         <div className="flex items-end gap-2 self-end lg:self-auto w-full lg:w-auto pt-4 lg:pt-0 lg:ml-auto">
           {(startDate || endDate || selectedStatus !== "ALL") && (
             <button
@@ -265,7 +259,6 @@ export function OrderHistory() {
             </button>
           )}
 
-          {/* View Toggle */}
           <div className="flex bg-[#eaeaea]/60 rounded-xl p-1 border border-gray-200 h-[38px] items-center">
             <button
               type="button"
@@ -289,7 +282,6 @@ export function OrderHistory() {
         </div>
       </div>
 
-      {/* Main Order History Table/Grid */}
       <div className="bg-[#fcfdfa] rounded-[22px] border border-[#b8c5a4] shadow-sm overflow-visible">
         {viewStyle === "table" ? (
           <div className="overflow-visible">
@@ -325,8 +317,8 @@ export function OrderHistory() {
                         {order.createdAt ? formatDate(new Date(order.createdAt)) : "N/A"}
                       </td>
                       <td className="py-4 px-7 text-center">
-                        <button 
-                          onClick={() => setSelectedOrder(order)} 
+                        <button
+                          onClick={() => setSelectedOrder(order)}
                           className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e2e7d8] hover:bg-[#d4dbc8] text-[#414b35] rounded-xl text-xs font-bold transition-all shadow-sm"
                         >
                           <Eye className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -351,12 +343,12 @@ export function OrderHistory() {
             {visibleOrders.map((order, idx) => {
               const globalIndex = (currentPage - 1) * ORDERS_PER_PAGE + idx + 1;
               return (
-                <div 
-                  key={order.id} 
+                <div
+                  key={order.id}
                   className="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 flex flex-col justify-between"
                 >
                   <div className="space-y-4">
-                    {/* Card Header */}
+
                     <div className="flex items-start justify-between border-b border-slate-50 pb-4">
                       <div className="flex items-start gap-3">
                         <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-slate-50 text-[10px] font-extrabold text-slate-500 font-mono group-hover:bg-[#e2f0c2] group-hover:text-[#284208] transition-colors shrink-0">
@@ -381,10 +373,9 @@ export function OrderHistory() {
                     </div>
                   </div>
 
-                  {/* Actions Footer */}
                   <div className="flex items-center justify-end mt-5 pt-3 border-t border-slate-50">
-                    <button 
-                      onClick={() => setSelectedOrder(order)} 
+                    <button
+                      onClick={() => setSelectedOrder(order)}
                       className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-[#e2e7d8] hover:bg-[#d4dbc8] text-[#414b35] rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" strokeWidth={2.5} />
@@ -402,7 +393,6 @@ export function OrderHistory() {
           </div>
         )}
 
-        {/* Pagination Footer */}
         {totalPages > 1 && (
           <div className="p-5 px-7 flex items-center justify-end gap-2 bg-[#fcfdfa]">
             <button
@@ -479,7 +469,6 @@ export function OrderHistory() {
         )}
       </div>
 
-      {/* Order Details Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
@@ -495,7 +484,7 @@ export function OrderHistory() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 gap-4 text-sm">
                 <div>
@@ -523,7 +512,7 @@ export function OrderHistory() {
                   ))}
                 </div>
               </div>
-              
+
               <div className="pt-4 border-t border-dashed border-gray-200 flex justify-between items-center">
                 <span className="font-extrabold text-gray-600 uppercase tracking-wider text-sm">Total</span>
                 <span className="text-2xl font-black text-[#2a3022]">{selectedOrder.totalAmount.toLocaleString()} MMK</span>

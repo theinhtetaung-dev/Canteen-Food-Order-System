@@ -17,13 +17,11 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-    // GET ALL
     @GetMapping
     public ResponseEntity<List<ReviewResponse>> getAll() {
         return ResponseEntity.ok(reviewService.getAll());
     }
 
-    // CREATE
     @PostMapping
     public ResponseEntity<ReviewResponse> create(
             @Valid @RequestBody ReviewRequest request,
@@ -32,7 +30,6 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.create(request, username));
     }
 
-    // UPDATE
     @PutMapping("/{id}")
     public ResponseEntity<ReviewResponse> update(
             @PathVariable Integer id,
@@ -42,7 +39,6 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.update(id, request, username));
     }
 
-    // DELETE
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(
             @PathVariable Integer id,

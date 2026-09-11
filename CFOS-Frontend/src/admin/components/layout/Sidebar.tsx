@@ -111,7 +111,7 @@ export function Sidebar() {
         const allUsers = await fetchAllUsers();
         const found = allUsers.find(u => u.userName.toLowerCase() === user.rollNumber.toLowerCase());
         const roleId = found ? found.roleId : (user.role === 'superadmin' ? 1 : 3);
-        
+
         const { data } = await api.get(`/api/rbac/roles/${roleId}/permissions`);
         if (data && data.permissions) {
           const perms = data.permissions.map((p: any) => `${p.menuName}_${p.actionName}`);
@@ -134,7 +134,7 @@ export function Sidebar() {
         if (found) {
           setDbName(found.fullName || found.userName);
           setDbRole(found.roleName.toLowerCase() === 'superadmin' || found.roleName.toLowerCase() === 'admin'
-            ? 'Super Admin' 
+            ? 'Super Admin'
             : (found.roleName.toLowerCase() === 'manager' ? 'Canteen Manager' : found.roleName.toLowerCase() === 'professor' ? 'Professor' : 'Student'));
           if (found.canteenId) {
             setUserCanteenId(found.canteenId);
@@ -161,7 +161,7 @@ export function Sidebar() {
       const pending = data.filter((o) => {
         const isPending = o.status === "pending";
         const matchesCanteen = canteenId === null || o.canteenId === canteenId;
-        
+
         const stringId = String(o.id);
         const prefixedId = stringId.startsWith("ORD-") ? stringId : `ORD-${stringId}`;
         const isNotWatched = !watchedIds.includes(stringId) && !watchedIds.includes(prefixedId);
@@ -236,7 +236,7 @@ export function Sidebar() {
   return (
     <aside className="w-64 bg-[#f4f7ec] border-r border-[#e2e8d5] flex flex-col justify-between p-6 shrink-0 h-screen sticky top-0 font-sans">
       <div className="space-y-8">
-        {/* Brand Logo & Title */}
+
         <div className="flex items-center gap-3 px-2">
           <div className="p-1 bg-[#e2f0c2] rounded-xl shadow-sm overflow-hidden flex items-center justify-center w-11 h-11">
             <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
@@ -251,7 +251,6 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* Navigation Links */}
         <nav className="space-y-1.5">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -283,7 +282,6 @@ export function Sidebar() {
         </nav>
       </div>
 
-      {/* Unified Profile Footer */}
       <div className="pt-4 border-t border-[#dce5c7] flex flex-col gap-3 w-full shrink-0">
         <NavLink
           to="/profile"

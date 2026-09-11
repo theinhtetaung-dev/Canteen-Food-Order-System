@@ -17,7 +17,6 @@ export function CategoryFilter({
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
 
-  // Drag-to-scroll state
   const [isMouseDown, setIsMouseDown] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -28,8 +27,6 @@ export function CategoryFilter({
       const { scrollLeft, scrollWidth, clientWidth } =
         scrollContainerRef.current;
 
-      // scrollWidth က clientWidth ထက် ကြီးနေမှသာ Overflow ဖြစ်ပြီး Scroll ရတာပါ
-      // Pixel တွက်ချက်မှု တိကျစေရန် Math.ceil သုံးထားပါသည်
       const hasOverflow = scrollWidth > clientWidth;
 
       setShowLeftArrow(scrollLeft > 2);
@@ -39,16 +36,14 @@ export function CategoryFilter({
     }
   };
 
-  // 1. Category တွေ ပြောင်းလဲတိုင်း သို့မဟုတ် Window Resize လုပ်တိုင်း checkScroll လုပ်မည်
   useEffect(() => {
-    // DOM render ပြီးစီးအောင် ခဏစောင့်ပြီး စစ်ပေးရန်
+
     const timer = setTimeout(() => {
       checkScroll();
     }, 100);
 
     window.addEventListener("resize", checkScroll);
 
-    // 2. ResizeObserver သုံးပြီး Container အရွယ်အစားပြောင်းလဲမှုကို အမြဲ စောင့်ကြည့်မည်
     let observer: ResizeObserver | null = null;
     if (scrollContainerRef.current) {
       observer = new ResizeObserver(() => checkScroll());
@@ -60,7 +55,7 @@ export function CategoryFilter({
       window.removeEventListener("resize", checkScroll);
       if (observer) observer.disconnect();
     };
-  }, [foodCategories]); // foodCategories ပြောင်းတိုင်း ပြန်စစ်ပါမည်
+  }, [foodCategories]);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollContainerRef.current) {
@@ -77,7 +72,6 @@ export function CategoryFilter({
     }
   };
 
-  // Mouse Drag Handlers
   const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
     if (!scrollContainerRef.current) return;
     setIsMouseDown(true);
@@ -117,7 +111,7 @@ export function CategoryFilter({
 
   return (
     <div className="relative flex items-center justify-center w-full px-8 sm:px-10">
-      {/* Left Arrow */}
+
       {showLeftArrow && (
         <button
           type="button"
@@ -129,7 +123,6 @@ export function CategoryFilter({
         </button>
       )}
 
-      {/* Main Scroll Container */}
       <div
         ref={scrollContainerRef}
         onScroll={checkScroll}
@@ -168,7 +161,6 @@ export function CategoryFilter({
         </div>
       </div>
 
-      {/* Right Arrow */}
       {showRightArrow && (
         <button
           type="button"

@@ -53,17 +53,14 @@ export const Users: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // Pagination State
+
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
-  // Filter Dropdown States
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState('All Categories');
   const filterRef = useRef<HTMLDivElement>(null);
 
-  // View Toggle State
   const [viewType, setViewType] = useState<'table' | 'card'>('table');
 
   const loadData = async () => {
@@ -82,7 +79,6 @@ export const Users: React.FC = () => {
     loadData();
   }, []);
 
-  // Close filter menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
@@ -126,7 +122,7 @@ export const Users: React.FC = () => {
     const matchesSearch =
       user.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.rollNo.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesBatch =
       selectedBatch === 'All Categories' ||
       user.rollNo.toLowerCase().includes(selectedBatch.split(' ')[0].toLowerCase());
@@ -140,19 +136,17 @@ export const Users: React.FC = () => {
 
   return (
     <div className="max-w-6xl space-y-6 relative">
-      {/* Title & Subtitle */}
+
       <div>
         <h2 className="text-3xl font-black text-gray-900 tracking-tight">
           Student Users
         </h2>
       </div>
 
-      {/* Main Container Card */}
       <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-sm space-y-4">
-        
-        {/* Search, Filter, Export Actions Header */}
+
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          {/* Search Inputs */}
+
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="relative w-full sm:w-72">
               <input
@@ -178,10 +172,8 @@ export const Users: React.FC = () => {
             </button>
           </div>
 
-          {/* Action Dropdown and Buttons */}
           <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-            
-            {/* View Toggle */}
+
             <div className="flex items-center border border-slate-200 rounded-xl p-0.5 bg-slate-50">
               <button
                 type="button"
@@ -209,7 +201,6 @@ export const Users: React.FC = () => {
               </button>
             </div>
 
-            {/* Export XLS Button */}
             <button
               onClick={() => {
                 Swal.fire({
@@ -234,7 +225,6 @@ export const Users: React.FC = () => {
           </div>
         </div>
 
-        {/* Users Table / Card View */}
         {viewType === 'table' ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -289,7 +279,7 @@ export const Users: React.FC = () => {
 
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-3">
-                          {/* RESET PASSWORD BUTTON */}
+
                           <button
                             onClick={() => {
                               Swal.fire({
@@ -338,7 +328,6 @@ export const Users: React.FC = () => {
                             <RotateCw className="w-4 h-4 stroke-[2.5]" />
                           </button>
 
-                          {/* DELETE USER BUTTON */}
                           <button
                             onClick={() => {
                               Swal.fire({
@@ -430,7 +419,7 @@ export const Users: React.FC = () => {
                         {user.status}
                       </span>
                     </div>
-                    
+
                     <div className="space-y-1.5 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-600">
                       <div className="flex justify-between">
                         <span className="font-medium text-slate-400">Email:</span>
@@ -548,7 +537,6 @@ export const Users: React.FC = () => {
           </div>
         )}
 
-        {/* Pagination Logic */}
         {!isLoading && totalPages > 1 && (
           <div className="flex items-center justify-between mt-4 text-xs">
             <span className="text-gray-500 font-medium">

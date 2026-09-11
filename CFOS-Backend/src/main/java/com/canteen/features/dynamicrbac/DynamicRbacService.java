@@ -38,7 +38,7 @@ public class DynamicRbacService {
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
         List<RolePermission> rolePermissions = rolePermissionRepository.findByRole_RoleId(roleId);
-        
+
         List<PermissionResModel> permissions = rolePermissions.stream()
                 .map(rp -> mapToPermissionResModel(rp.getPermission()))
                 .collect(Collectors.toList());
@@ -55,14 +55,12 @@ public class DynamicRbacService {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
-        // Delete existing permissions for this role
         rolePermissionRepository.deleteByRole_RoleId(roleId);
 
-        // Map and save new permissions
         List<Integer> permissionIds = reqModel.getPermissionIds();
         if (permissionIds != null && !permissionIds.isEmpty()) {
             List<Permission> permissions = permissionRepository.findAllById(permissionIds);
-            
+
             List<RolePermission> newRolePermissions = permissions.stream().map(permission -> {
                 RolePermission rp = new RolePermission();
                 rp.setRole(role);
@@ -72,7 +70,6 @@ public class DynamicRbacService {
 
             rolePermissionRepository.saveAll(newRolePermissions);
         }
-
 
     }
 

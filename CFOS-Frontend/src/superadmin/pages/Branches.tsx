@@ -36,15 +36,12 @@ export const Branches: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
-  
-  // Page Mode: 'list' | 'create' | 'edit'
+
   const [viewMode, setViewMode] = useState<'list' | 'create' | 'edit'>('list');
   const [editingBranch, setEditingBranch] = useState<Branch | null>(null);
 
-  // View Toggle State
   const [viewType, setViewType] = useState<'table' | 'card'>('table');
 
-  // Form State
   const [formData, setFormData] = useState({
     branchName: '',
     location: '',
@@ -210,11 +207,10 @@ export const Branches: React.FC = () => {
     setViewMode('create');
   };
 
-  // ---------------- VIEW 1: CREATE OR EDIT CANTEEN FORM ----------------
   if (viewMode === 'create' || viewMode === 'edit') {
     return (
       <div className="w-full max-w-3xl mx-auto p-4 sm:p-6 md:p-8 space-y-6">
-        {/* Breadcrumb Navigation */}
+
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
           <span>Canteens</span>
           <span>/</span>
@@ -223,7 +219,6 @@ export const Branches: React.FC = () => {
           </span>
         </div>
 
-        {/* Back Link & Header Title */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => { setViewMode('list'); setEditingBranch(null); }}
@@ -236,7 +231,6 @@ export const Branches: React.FC = () => {
           </h2>
         </div>
 
-        {/* Form Container */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 md:p-8">
           <div className="mb-6">
             <h3 className="text-sm font-bold text-slate-900">Canteen Details</h3>
@@ -247,7 +241,7 @@ export const Branches: React.FC = () => {
 
           <form onSubmit={viewMode === 'create' ? handleCreateSubmit : handleEditSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
-              {/* Canteen Name */}
+
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Canteen Name
@@ -262,7 +256,6 @@ export const Branches: React.FC = () => {
                 />
               </div>
 
-              {/* Location */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Location / Address
@@ -277,7 +270,6 @@ export const Branches: React.FC = () => {
               </div>
             </div>
 
-            {/* Footer: Action buttons right-aligned on desktop, full-width on mobile */}
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-slate-100">
               <button
                 type="button"
@@ -299,19 +291,17 @@ export const Branches: React.FC = () => {
     );
   }
 
-  // ---------------- VIEW 2: CANTEENS LIST TABLE ----------------
   return (
     <div className="max-w-6xl space-y-6 relative">
-      {/* Title & Subtitle */}
+
       <div>
         <h2 className="text-3xl font-black text-gray-900 tracking-tight">
           Canteens
         </h2>
       </div>
 
-      {/* Main Container */}
       <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-sm space-y-4">
-        {/* Top Controls Bar */}
+
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="relative w-full sm:w-72">
@@ -339,7 +329,7 @@ export const Branches: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-            {/* View Toggle */}
+
             <div className="flex items-center border border-slate-200 rounded-xl p-0.5 bg-slate-50">
               <button
                 type="button"
@@ -377,7 +367,6 @@ export const Branches: React.FC = () => {
           </div>
         </div>
 
-        {/* Table List / Card View */}
         {viewType === 'table' ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -421,7 +410,7 @@ export const Branches: React.FC = () => {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-3">
-                          {/* EDIT BUTTON */}
+
                           <button
                             onClick={() => startEdit(branch)}
                             title="Edit Canteen"
@@ -430,7 +419,6 @@ export const Branches: React.FC = () => {
                             <Edit className="w-4 h-4 stroke-[2.5]" />
                           </button>
 
-                          {/* DELETE BUTTON */}
                           <button
                             onClick={() => {
                               Swal.fire({
@@ -519,7 +507,7 @@ export const Branches: React.FC = () => {
                 <div key={branch.branchId} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-4">
                   <div>
                     <h4 className="font-bold text-slate-900 text-sm">{branch.branchName}</h4>
-                    
+
                     <div className="space-y-1.5 mt-3 pt-3 border-t border-slate-100 text-xs text-slate-600">
                       <div className="flex justify-between">
                         <span className="font-medium text-slate-400">Location:</span>
@@ -610,7 +598,6 @@ export const Branches: React.FC = () => {
           </div>
         )}
 
-        {/* Pagination Logic */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-4 text-xs">
             <span className="text-gray-500 font-medium">

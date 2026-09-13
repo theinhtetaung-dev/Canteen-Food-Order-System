@@ -36,14 +36,12 @@ interface RolePermission {
 }
 
 const ROLES: Role[] = [
-  { roleId: 2, roleName: 'Admin', description: 'System Administrator with full access options.' },
-  { roleId: 3, roleName: 'Canteen Admin', description: 'Manage food menu items, categories, and process incoming canteen orders.' },
-  { roleId: 4, roleName: 'Student / User', description: 'Browse menu categories, place orders, and review personal transaction logs.' },
-  { roleId: 5, roleName: 'Professor', description: 'Browse menu categories and view personal transaction logs.' },
+  { roleId: 2, roleName: 'Admin', description: 'System Administrator with food, category, order and POS management options.' },
+  { roleId: 4, roleName: 'User', description: 'Browse menu categories, place orders, and review personal transaction logs.' },
+  { roleId: 5, roleName: 'Professor', description: 'Browse menu categories, place orders, and view transaction logs with professor privileges.' },
 ];
 
 const ALL_PERMISSIONS: Permission[] = [
-
   { permissionId: 1, menuName: 'Dashboard', actionName: 'READ', label: 'View Dashboard', description: 'Access dashboard metrics and summary cards' },
 
   { permissionId: 2, menuName: 'Canteen Management', actionName: 'CREATE', label: 'Create Canteen', description: 'Add new canteens/branches' },
@@ -73,31 +71,31 @@ const ALL_PERMISSIONS: Permission[] = [
 ];
 
 const INITIAL_ROLE_PERMISSIONS: RolePermission[] = [
-
-  { roleId: 3, permissionId: 1 },
-  { roleId: 3, permissionId: 3 },
-  { roleId: 3, permissionId: 4 },
-  { roleId: 3, permissionId: 6 },
-  { roleId: 3, permissionId: 7 },
-  { roleId: 3, permissionId: 8 },
-  { roleId: 3, permissionId: 9 },
-  { roleId: 3, permissionId: 10 },
-  { roleId: 3, permissionId: 11 },
-  { roleId: 3, permissionId: 12 },
-  { roleId: 3, permissionId: 13 },
-  { roleId: 3, permissionId: 15 },
-  { roleId: 3, permissionId: 16 },
-  { roleId: 3, permissionId: 19 },
+  { roleId: 2, permissionId: 1 },
+  { roleId: 2, permissionId: 3 },
+  { roleId: 2, permissionId: 4 },
+  { roleId: 2, permissionId: 6 },
+  { roleId: 2, permissionId: 7 },
+  { roleId: 2, permissionId: 8 },
+  { roleId: 2, permissionId: 9 },
+  { roleId: 2, permissionId: 10 },
+  { roleId: 2, permissionId: 11 },
+  { roleId: 2, permissionId: 12 },
+  { roleId: 2, permissionId: 13 },
+  { roleId: 2, permissionId: 15 },
+  { roleId: 2, permissionId: 16 },
 
   { roleId: 4, permissionId: 1 },
   { roleId: 4, permissionId: 3 },
   { roleId: 4, permissionId: 7 },
   { roleId: 4, permissionId: 10 },
   { roleId: 4, permissionId: 11 },
-  { roleId: 4, permissionId: 15 },
 
   { roleId: 5, permissionId: 1 },
+  { roleId: 5, permissionId: 3 },
   { roleId: 5, permissionId: 7 },
+  { roleId: 5, permissionId: 10 },
+  { roleId: 5, permissionId: 11 },
 ];
 
 const swalSuccessClass = {
@@ -143,7 +141,7 @@ const ToggleSwitch: React.FC<{
 };
 
 export const Permissions: React.FC = () => {
-  const [activeRoleId, setActiveRoleId] = useState<number>(3);
+  const [activeRoleId, setActiveRoleId] = useState<number>(2);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
 
@@ -292,6 +290,7 @@ export const Permissions: React.FC = () => {
       });
 
       setSavedRolePermissions([...draftRolePermissions]);
+      window.dispatchEvent(new Event("permissionsUpdated"));
 
       Swal.fire({
         title: 'Permissions Saved!',

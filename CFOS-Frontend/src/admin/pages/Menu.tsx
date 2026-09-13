@@ -67,7 +67,7 @@ const getCategoryStyle = (catName: string) => {
 };
 
 export function Menu() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
   const [items, setItems] = useState<MenuItem[]>([]);
   const [dbCategories, setDbCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -550,14 +550,16 @@ export function Menu() {
               <span>Refresh</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setIsAddModalOpen(true)}
-              className="bg-[#518218] text-white flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#3f6711] transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add New Item</span>
-            </button>
+            {can("Food Category & Menu", "CREATE") && (
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-[#518218] text-white flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#3f6711] transition-colors shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add New Item</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -639,22 +641,26 @@ export function Menu() {
 
                     <td className="py-4 px-6 text-right">
                       <div className="flex items-center justify-end gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setEditingItem(item)}
-                          className="text-gray-400 hover:text-gray-600 transition-colors"
-                          title="Edit Item"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeletingItem(item)}
-                          className="text-red-600 hover:text-red-800 transition-colors"
-                          title="Delete Item"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {can("Food Category & Menu", "UPDATE") && (
+                          <button
+                            type="button"
+                            onClick={() => setEditingItem(item)}
+                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                            title="Edit Item"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        )}
+                        {can("Food Category & Menu", "DELETE") && (
+                          <button
+                            type="button"
+                            onClick={() => setDeletingItem(item)}
+                            className="text-red-600 hover:text-red-800 transition-colors"
+                            title="Delete Item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

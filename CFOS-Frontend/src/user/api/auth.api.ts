@@ -30,8 +30,37 @@ export async function registerUser(payload: RegisterPayload): Promise<User> {
   return loginUser(payload);
 }
 
+export async function fetchCurrentUserProfile(): Promise<User | null> {
+  const token = localStorage.getItem("canteen_token");
+  if (!token) return null;
+
+  try {
+    const res = await api.get("/api/users/me");
+    const profile = res.data;
+    if (!profile) return null;
+
+    const sessionUser = getSessionUser();
+    const user: User = {
+      id: profile.userName,
+      rollNumber: profile.userName,
+      role: (profile.roleName || "user").toLowerCase() as any,
+      roleId: profile.roleId,
+      name: profile.fullName || profile.userName,
+      email: profile.email || "",
+      phone: profile.phoneNumber || "",
+      permissions: profile.permissions || [],
+    };
+
+    writeStorage(SESSION_KEY, user);
+    return user;
+  } catch (err) {
+    console.error("Failed to fetch user profile", err);
+    return null;
+  }
+}
+
 export async function loginUser(payload: LoginPayload): Promise<User> {
-  const { data } = await api.post<{ token: string; userName: string; role: string }>(
+  const { data } = await api.post<{ token: string; userName: string; role: string; roleId?: number; permissions?: string[] }>(
     "/api/auth/login",
     {
       userName: payload.rollNumber,
@@ -41,7 +70,7 @@ export async function loginUser(payload: LoginPayload): Promise<User> {
 
   localStorage.setItem("canteen_token", data.token);
 
-  let profile;
+  let profile: any;
   try {
     const res = await api.get("/api/users/me");
     profile = res.data;
@@ -53,9 +82,11 @@ export async function loginUser(payload: LoginPayload): Promise<User> {
     id: data.userName,
     rollNumber: data.userName,
     role: data.role.toLowerCase() as any,
+    roleId: profile?.roleId ?? data.roleId,
     name: profile?.fullName || data.userName,
     email: profile?.email || "",
     phone: profile?.phoneNumber || "",
+    permissions: profile?.permissions ?? data.permissions ?? [],
   };
 
   writeStorage(SESSION_KEY, user);

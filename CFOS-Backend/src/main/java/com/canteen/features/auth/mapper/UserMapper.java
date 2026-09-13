@@ -37,6 +37,7 @@ public class UserMapper {
         UserResModel dto = new UserResModel();
         dto.setUserId(user.getUserId());
         if (user.getRole() != null) {
+            dto.setRoleId(user.getRole().getRoleId());
             dto.setRoleName(user.getRole().getRoleName());
         }
         dto.setUserName(user.getUserName());

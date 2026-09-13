@@ -21,7 +21,7 @@ interface Order {
 }
 
 export function OrderLists() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
   const [userCanteenId, setUserCanteenId] = useState<number | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -270,7 +270,7 @@ export function OrderLists() {
   const renderActionButton = (order: Order) => {
     return (
       <div className="flex items-center justify-center gap-2">
-        {order.status !== "Completed" && order.status !== "Cancelled" && (
+        {order.status !== "Completed" && order.status !== "Cancelled" && can("Orders & POS", "UPDATE") && (
           <div className="relative inline-block text-left">
             <select
               value=""

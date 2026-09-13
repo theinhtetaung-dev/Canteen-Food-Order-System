@@ -10,6 +10,7 @@ import {
 import {
   clearSession,
   getSessionUser,
+  fetchCurrentUserProfile,
   loginUser,
   registerUser,
   updateUserProfile,
@@ -30,6 +31,9 @@ interface AuthContextValue {
   register: (payload: RegisterPayload) => Promise<User>;
   logout: () => void;
   updateProfile: (payload: ProfileUpdatePayload) => Promise<void>;
+  can: (menu: string, action: string) => boolean;
+  hasPermission: (permission: string) => boolean;
+  refreshPermissions: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -38,10 +42,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    setUser(getSessionUser());
-    setIsLoading(false);
+  const refreshPermissions = useCallback(async () => {
+    const updated = await fetchCurrentUserProfile();
+    if (updated) {
+      setUser(updated);
+    }
   }, []);
+
+  useEffect(() => {
+    const initialUser = getSessionUser();
+    setUser(initialUser);
+    setIsLoading(false);
+
+    if (initialUser) {
+      fetchCurrentUserProfile().then((u) => {
+        if (u) setUser(u);
+      });
+    }
+
+    const handlePermissionsUpdated = () => {
+      refreshPermissions();
+    };
+
+    window.addEventListener("permissionsUpdated", handlePermissionsUpdated);
+    window.addEventListener("storage", handlePermissionsUpdated);
+
+    return () => {
+      window.removeEventListener("permissionsUpdated", handlePermissionsUpdated);
+      window.removeEventListener("storage", handlePermissionsUpdated);
+    };
+  }, [refreshPermissions]);
+
+  const hasPermission = useCallback(
+    (permission: string): boolean => {
+      if (!user) return false;
+      if (user.role === "superadmin") return true;
+      if (!user.permissions) return false;
+      return user.permissions.includes(permission);
+    },
+    [user],
+  );
+
+  const can = useCallback(
+    (menu: string, action: string): boolean => {
+      if (!user) return false;
+      if (user.role === "superadmin") return true;
+      const key = `${menu}_${action}`;
+      return hasPermission(key);
+    },
+    [user, hasPermission],
+  );
 
   const login = useCallback(async (payload: LoginPayload): Promise<User> => {
     const loggedIn = await loginUser(payload);
@@ -86,8 +136,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       register,
       logout,
       updateProfile,
+      can,
+      hasPermission,
+      refreshPermissions,
     }),
-    [user, isLoading, login, register, logout, updateProfile],
+    [user, isLoading, login, register, logout, updateProfile, can, hasPermission, refreshPermissions],
   );
 
   return (

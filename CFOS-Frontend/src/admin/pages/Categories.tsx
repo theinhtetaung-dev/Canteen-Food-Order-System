@@ -18,8 +18,10 @@ import {
   deleteCategory,
   type Category
 } from '../../user/api/category.api';
+import { useAuth } from '../../user/context/AuthContext';
 
 export const Categories: React.FC = () => {
+  const { can } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -144,13 +146,15 @@ export const Categories: React.FC = () => {
             Manage food categories for restaurant menus.
           </p>
         </div>
-        <button
-          onClick={handleOpenCreateModal}
-          className="flex items-center gap-1.5 px-4 py-2 bg-[#284208] text-white hover:bg-[#1c2e0a] text-xs font-bold rounded-xl transition-all shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Create Category</span>
-        </button>
+        {can("Food Category & Menu", "CREATE") && (
+          <button
+            onClick={handleOpenCreateModal}
+            className="flex items-center gap-1.5 px-4 py-2 bg-[#284208] text-white hover:bg-[#1c2e0a] text-xs font-bold rounded-xl transition-all shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create Category</span>
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-sm space-y-4">
@@ -226,20 +230,27 @@ export const Categories: React.FC = () => {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-3">
-                          <button
-                            onClick={() => handleOpenEditModal(cat)}
-                            title="Edit Category"
-                            className="text-blue-600 hover:text-blue-800 transition-colors"
-                          >
-                            <Pencil className="w-4 h-4 stroke-[2.5]" />
-                          </button>
-                          <button
-                            onClick={() => setCategoryToDelete(cat)}
-                            title="Delete Category"
-                            className="text-red-500 hover:text-red-700 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4 stroke-[2.5]" />
-                          </button>
+                          {can("Food Category & Menu", "UPDATE") && (
+                            <button
+                              onClick={() => handleOpenEditModal(cat)}
+                              title="Edit Category"
+                              className="text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                              <Pencil className="w-4 h-4 stroke-[2.5]" />
+                            </button>
+                          )}
+                          {can("Food Category & Menu", "DELETE") && (
+                            <button
+                              onClick={() => setCategoryToDelete(cat)}
+                              title="Delete Category"
+                              className="text-red-500 hover:text-red-700 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4 stroke-[2.5]" />
+                            </button>
+                          )}
+                          {!can("Food Category & Menu", "UPDATE") && !can("Food Category & Menu", "DELETE") && (
+                            <span className="text-gray-400 text-xs font-medium">Read only</span>
+                          )}
                         </div>
                       </td>
                     </tr>

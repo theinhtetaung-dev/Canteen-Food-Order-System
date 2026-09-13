@@ -4,9 +4,11 @@ export interface User {
   id: string;
   rollNumber: string;
   role: UserRole;
+  roleId?: number;
   name?: string;
   email?: string;
   phone?: string;
+  permissions?: string[];
 }
 
 export interface RegisterPayload {

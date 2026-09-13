@@ -35,9 +35,9 @@ public class DynamicRbacService {
 
     public RolePermissionResModel getRolePermissions(Integer roleId) {
         Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleId));
 
-        List<RolePermission> rolePermissions = rolePermissionRepository.findByRole_RoleId(roleId);
+        List<RolePermission> rolePermissions = rolePermissionRepository.findByRoleIdWithPermissions(roleId);
 
         List<PermissionResModel> permissions = rolePermissions.stream()
                 .map(rp -> mapToPermissionResModel(rp.getPermission()))
@@ -53,13 +53,21 @@ public class DynamicRbacService {
     @Transactional
     public void assignPermissionsToRole(Integer roleId, AssignPermissionsReqModel reqModel) {
         Role role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Role not found: " + roleId));
+
+        if ("SuperAdmin".equalsIgnoreCase(role.getRoleName()) || Integer.valueOf(1).equals(roleId)) {
+            throw new IllegalArgumentException("SuperAdmin permissions are permanent and cannot be modified.");
+        }
 
         rolePermissionRepository.deleteByRole_RoleId(roleId);
 
         List<Integer> permissionIds = reqModel.getPermissionIds();
         if (permissionIds != null && !permissionIds.isEmpty()) {
-            List<Permission> permissions = permissionRepository.findAllById(permissionIds);
+            List<Integer> distinctIds = permissionIds.stream().distinct().toList();
+            List<Permission> permissions = permissionRepository.findAllById(distinctIds)
+                    .stream()
+                    .filter(p -> Boolean.FALSE.equals(p.getDeleteFlag()) || p.getDeleteFlag() == null)
+                    .toList();
 
             List<RolePermission> newRolePermissions = permissions.stream().map(permission -> {
                 RolePermission rp = new RolePermission();
@@ -70,7 +78,6 @@ public class DynamicRbacService {
 
             rolePermissionRepository.saveAll(newRolePermissions);
         }
-
     }
 
     private PermissionResModel mapToPermissionResModel(Permission permission) {

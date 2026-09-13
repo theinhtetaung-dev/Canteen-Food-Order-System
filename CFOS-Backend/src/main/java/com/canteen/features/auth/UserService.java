@@ -30,6 +30,7 @@ import com.canteen.utils.exceptions.DuplicateResourceException;
 import com.canteen.utils.exceptions.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -117,10 +118,11 @@ public class UserService {
         }
 
         String roleName = user.getRole() != null ? user.getRole().getRoleName() : "USER";
+        Integer roleId = user.getRole() != null ? user.getRole().getRoleId() : null;
 
         java.util.List<String> permissions = new java.util.ArrayList<>();
-        if (user.getRole() != null) {
-            permissions = rolePermissionRepository.findByRole_RoleId(user.getRole().getRoleId())
+        if (roleId != null) {
+            permissions = rolePermissionRepository.findByRoleIdWithPermissions(roleId)
                 .stream()
                 .map(rp -> rp.getPermission().getMenuName() + "_" + rp.getPermission().getActionName())
                 .toList();
@@ -132,6 +134,8 @@ public class UserService {
         response.setToken(token);
         response.setUserName(user.getUserName());
         response.setRole(roleName);
+        response.setRoleId(roleId);
+        response.setPermissions(permissions);
 
         return response;
     }
@@ -185,9 +189,17 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserResModel getUserProfile(String username) {
-        return userRepository.findByUserName(username)
-                .map(UserMapper::toDto)
+        User user = userRepository.findByUserName(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
+        UserResModel dto = UserMapper.toDto(user);
+        if (user.getRole() != null) {
+            List<String> permissions = rolePermissionRepository.findByRoleIdWithPermissions(user.getRole().getRoleId())
+                    .stream()
+                    .map(rp -> rp.getPermission().getMenuName() + "_" + rp.getPermission().getActionName())
+                    .toList();
+            dto.setPermissions(permissions);
+        }
+        return dto;
     }
 
     @Transactional

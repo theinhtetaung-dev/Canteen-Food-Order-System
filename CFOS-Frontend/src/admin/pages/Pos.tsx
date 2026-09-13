@@ -9,8 +9,10 @@ import { api } from "../../user/api/axios";
 import { fetchBranches, type Branch } from "../../user/api/branch.api";
 import { formatPrice } from "../../user/lib/utils";
 import type { MenuItem } from "../../user/types/menu";
+import { useAuth } from "../../user/context/AuthContext";
 
 export default function Pos() {
+  const { can } = useAuth();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [appliedQuery, setAppliedQuery] = useState(searchParams.get("search") || "");
@@ -324,7 +326,7 @@ export default function Pos() {
               Cancel
             </button>
             <button
-              disabled={lines.length === 0 || isCheckingOut}
+              disabled={lines.length === 0 || isCheckingOut || !can("Orders & POS", "CREATE")}
               onClick={placeOrder}
               className="flex-1 rounded-xl bg-[#5b7a42] text-white py-3.5 text-sm font-bold shadow-md hover:bg-[#4a6335] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >

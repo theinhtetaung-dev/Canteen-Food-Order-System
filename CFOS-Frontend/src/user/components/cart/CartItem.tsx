@@ -22,7 +22,7 @@ export function CartItem({ line, onAdd, onRemove, onDelete, onUpdateComment }: C
           className="h-20 w-20 shrink-0 rounded-xl object-cover border border-gray-50 shadow-sm"
         />
         <div className="flex flex-1 flex-col justify-between py-0.5">
-          {/* Top Row: Item name and Delete button */}
+
           <div className="flex items-start justify-between gap-2">
             <h4 className="font-bold text-sm text-gray-800 leading-snug line-clamp-2">
               {item.name}
@@ -37,12 +37,11 @@ export function CartItem({ line, onAdd, onRemove, onDelete, onUpdateComment }: C
             </button>
           </div>
 
-          {/* Bottom Row: Price and Quantity Selector */}
           <div className="flex items-end justify-between mt-2 gap-2">
             <span className="text-sm font-extrabold text-brand">
               {formatPrice(item.price * quantity)}
             </span>
-            
+
             <div className="flex items-center gap-2 rounded-full bg-brand/5 border border-brand/10 p-0.5 shadow-sm shrink-0">
               <button
                 type="button"

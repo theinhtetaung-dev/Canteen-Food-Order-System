@@ -37,21 +37,19 @@ export function Report() {
     setCurrentPage(1);
   }, [orderStatus, startDate, endDate]);
 
-
-
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return dateString;
     const dd = String(date.getDate()).padStart(2, '0');
     const mm = String(date.getMonth() + 1).padStart(2, '0');
     const yyyy = date.getFullYear();
-    
+
     let hours = date.getHours();
     const ampm = hours >= 12 ? 'PM' : 'AM';
     hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
+    hours = hours ? hours : 12;
     const min = String(date.getMinutes()).padStart(2, '0');
-    
+
     return `${dd}-${mm}-${yyyy} ${hours}:${min} ${ampm}`;
   };
 
@@ -64,7 +62,7 @@ export function Report() {
 
   const loadData = async () => {
     setIsGenerating(true);
-      
+
       let currentCanteenId = userCanteenId;
       if (!currentCanteenId && user) {
         try {
@@ -74,7 +72,7 @@ export function Report() {
             currentCanteenId = found.canteenId;
             setUserCanteenId(currentCanteenId);
           }
-        } catch(e) { 
+        } catch(e) {
           console.error("Failed to load db user in report", e);
         }
       }
@@ -85,7 +83,7 @@ export function Report() {
       } catch (ordersErr) {
         console.error("Failed to fetch all orders", ordersErr);
       }
-      
+
       let filteredDateOrders = allOrders;
       if (currentCanteenId) {
         filteredDateOrders = filteredDateOrders.filter(o => o.canteenId === currentCanteenId);
@@ -104,7 +102,7 @@ export function Report() {
           filteredDateOrders = filteredDateOrders.filter(o => new Date(o.createdAt) <= endD);
         }
       }
-      
+
       const totalOrdersCount = filteredDateOrders.filter(o => o.status.toLowerCase() === "completed").length;
       const totalRevenueCount = filteredDateOrders
         .filter(o => o.status.toLowerCase() === "completed")
@@ -127,7 +125,7 @@ export function Report() {
 
   const handleDownloadExcel = () => {
     if (orders.length === 0) return;
-    
+
     const headers = ['NO', 'USER', 'TOTAL AMOUNT (MMK)', 'STATUS', 'ORDER DATE'];
     const rows = orders.map((order, idx) => [
       (idx + 1).toString(),
@@ -136,12 +134,12 @@ export function Report() {
       order.status,
       formatDateTime(order.createdAt)
     ]);
-    
+
     const csvContent = [
       headers.join(','),
       ...rows.map(row => row.join(','))
     ].join('\n');
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -162,7 +160,6 @@ export function Report() {
     loadData();
   };
 
-  // Filter for the Sales Master List table based on live search and order status
   const visibleOrders = orders.filter((order) => {
     const matchesStatus = orderStatus === "all" || order.status.toLowerCase() === orderStatus.toLowerCase();
     return matchesStatus;
@@ -198,22 +195,19 @@ export function Report() {
     <div id="printable-report" className="p-8 max-w-[1600px] mx-auto min-h-screen font-sans space-y-6 animate-in fade-in duration-300 bg-[#fdfefb]">
       <style>{`
         @media print {
-          /* Setup page size and margins for A4 */
           @page {
             size: A4 portrait;
             margin: 12mm 10mm 12mm 10mm;
           }
 
-          /* Hide everything outside of the printable report */
-          aside, 
-          nav, 
-          header, 
-          footer, 
+          aside,
+          nav,
+          header,
+          footer,
           .no-print {
             display: none !important;
           }
 
-          /* Reset layout wrapper of the dashboard to normal block flow */
           .flex.min-h-screen {
             display: block !important;
             min-height: 0 !important;
@@ -227,7 +221,6 @@ export function Report() {
             width: 100% !important;
           }
 
-          /* Reset report container for printing */
           #printable-report {
             width: 100% !important;
             max-width: 100% !important;
@@ -242,7 +235,6 @@ export function Report() {
             display: block !important;
           }
 
-          /* Make summary cards responsive/inline for print */
           .grid.grid-cols-1.md\\:grid-cols-3 {
             display: grid !important;
             grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -288,7 +280,6 @@ export function Report() {
             font-size: 20pt !important;
           }
 
-          /* Keep table neat on A4 */
           table {
             width: 100% !important;
             border-collapse: collapse !important;
@@ -300,20 +291,18 @@ export function Report() {
             font-size: 8.5pt !important;
           }
 
-          /* Prevent page-breaks in the middle of card sections or rows */
           tr {
             page-break-inside: avoid !important;
             page-break-after: auto !important;
           }
 
-          /* Stop animations & transitions */
           * {
             animation: none !important;
             transition: none !important;
           }
         }
       `}</style>
-      {/* Header */}
+
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-[#1c2e0a] tracking-tight">Canteen Operations Reports</h1>
@@ -323,12 +312,11 @@ export function Report() {
         </div>
       </div>
 
-      {/* Filter Panel (White Card) */}
       <div className="bg-white border border-[#e2e8d5] rounded-3xl p-6 shadow-sm no-print">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
           <div className="relative">
             <label className="block text-[10px] font-extrabold text-[#5b7a42] uppercase tracking-wider mb-1.5">Order Status</label>
-            <select 
+            <select
               value={orderStatus}
               onChange={(e) => setOrderStatus(e.target.value)}
               className="w-full appearance-none bg-white border border-[#dce5c7] text-[#284208] text-sm font-semibold rounded-xl px-4 py-2.5 pr-10 outline-none focus:ring-2 focus:ring-[#8db552]"
@@ -348,7 +336,7 @@ export function Report() {
                 {formatDateDisplay(startDate)}
               </span>
               <Calendar className="w-4 h-4 text-gray-450 pointer-events-none" />
-              <input 
+              <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
@@ -364,7 +352,7 @@ export function Report() {
                 {formatDateDisplay(endDate)}
               </span>
               <Calendar className="w-4 h-4 text-gray-450 pointer-events-none" />
-              <input 
+              <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
@@ -373,7 +361,7 @@ export function Report() {
             </div>
           </div>
 
-          <button 
+          <button
             onClick={handleGenerateReport}
             disabled={isGenerating}
             className="w-full bg-[#0f4d2a] text-white flex items-center justify-center gap-2.5 px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#0b3b20] transition-colors shadow-sm disabled:opacity-70 h-[42px]"
@@ -390,7 +378,6 @@ export function Report() {
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         <div className="bg-white border border-[#e2e8d5] p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
           <div className="flex items-start gap-4">
@@ -435,21 +422,20 @@ export function Report() {
         </div>
       </div>
 
-      {/* Data Table Section */}
       <div className="bg-white border border-[#e2e8d5] rounded-3xl shadow-sm flex flex-col overflow-hidden">
-        
+
         <div className="p-6 border-b border-[#e2e8d5] flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#fcfdfa]">
           <h3 className="text-xl font-black text-[#1c2e0a]">Sales Master List</h3>
-          
+
           <div className="flex items-center gap-3 no-print">
-            <button 
+            <button
               onClick={handleDownloadExcel}
               className="flex items-center gap-2 px-4 py-2 border border-[#dce5c7] text-[#284208] rounded-xl text-xs font-bold hover:bg-[#f4f7ec] transition-colors shadow-sm"
             >
               <Download className="w-4 h-4" />
               <span>Excel</span>
             </button>
-            <button 
+            <button
               onClick={() => window.print()}
               className="flex items-center gap-2 px-4 py-2 bg-[#3f5d13] text-white rounded-xl text-xs font-bold hover:bg-[#2e450e] transition-colors shadow-sm"
             >
@@ -474,8 +460,8 @@ export function Report() {
               {visibleOrders.map((order, idx) => {
                 const isRowVisibleOnScreen = idx >= (currentPage - 1) * ITEMS_PER_PAGE && idx < currentPage * ITEMS_PER_PAGE;
                 return (
-                  <tr 
-                    key={order.id} 
+                  <tr
+                    key={order.id}
                     className={`hover:bg-[#fcfdfa] transition-colors ${isRowVisibleOnScreen ? '' : 'hidden print:table-row'}`}
                   >
                     <td className="py-4 px-6 text-sm font-bold text-gray-500 font-mono">
@@ -510,7 +496,6 @@ export function Report() {
           </table>
         </div>
 
-        {/* Pagination Footer */}
         {(() => {
           const totalPages = Math.ceil(visibleOrders.length / ITEMS_PER_PAGE);
           if (totalPages <= 1) return null;
@@ -596,7 +581,7 @@ export function Report() {
             </div>
           );
         })()}
-        
+
       </div>
     </div>
   );

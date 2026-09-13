@@ -35,10 +35,8 @@ public class FoodService {
 
     public FoodResponse createFood(FoodRequest dto, MultipartFile image, String username) throws IOException {
 
-        // 1. DTO → Entity (basic fields only)
         Food food = foodMapper.toEntity(dto);
 
-        // 2. Load relationships
         FoodCategory category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() ->
                         new FoodCategoryNotFoundException(dto.getCategoryId()));
@@ -58,16 +56,13 @@ public class FoodService {
             food.setBranch(user.getCanteen());
         }
 
-        // 3. Handle image upload (local folder)
         if (image != null && !image.isEmpty()) {
             String imageUrl = fileStorageService.saveImage(image);
             food.setImageUrl(imageUrl);
         }
 
-        // 4. Save to DB
         Food saved = foodRepository.save(food);
 
-        // 5. Entity → DTO
         return foodMapper.toDTO(saved);
     }
 
@@ -110,13 +105,11 @@ public class FoodService {
         Food food = foodRepository.findById(id)
                 .orElseThrow(() -> new FoodNotFoundException(id));
 
-        // update fields
         food.setFoodName(dto.getFoodName());
         food.setDescription(dto.getDescription());
         food.setPrice(dto.getPrice());
         food.setIsAvailable(dto.getIsAvailable());
 
-        // update category if changed
         if (dto.getCategoryId() != null) {
             FoodCategory category = categoryRepository.findById(dto.getCategoryId())
                     .orElseThrow(() -> new FoodCategoryNotFoundException(dto.getCategoryId()));
@@ -130,7 +123,6 @@ public class FoodService {
             food.setBranch(branch);
         }
 
-        // update image if new one uploaded
         if (image != null && !image.isEmpty()) {
             String imageUrl = fileStorageService.saveImage(image);
             food.setImageUrl(imageUrl);

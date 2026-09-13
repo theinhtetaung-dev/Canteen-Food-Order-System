@@ -71,7 +71,6 @@ public class OrderService {
 
         BigDecimal totalAmount = BigDecimal.ZERO;
 
-        // Process order items in-memory without hitting the database again
         if (request.getOrderItems() != null) {
             for (var itemRequest : request.getOrderItems()) {
 
@@ -88,7 +87,6 @@ public class OrderService {
                 orderItem.setSnapPrice(food.getPrice());
                 orderItem.setComment(itemRequest.getComment());
 
-                // Calculate subtotal
                 BigDecimal subTotal = orderItem.getSnapPrice().multiply(new BigDecimal(orderItem.getQuantity()));
                 orderItem.setSubTotal(subTotal);
 
@@ -143,14 +141,6 @@ public class OrderService {
         orderSseService.broadcast(response);
         return response;
     }
-
-    // @Transactional
-    // public void deleteOrder(Integer id) {
-    // Order order = orderRepository.findById(id)
-    // .orElseThrow(() -> new ResourceNotFoundException("Order not found: " + id));
-    // order.setDeleteFlag(true);
-    // orderRepository.save(order);
-    // }
 
     public Page<OrderResponseModel> getOrdersByCanteenId(Integer canteenId, int page, int size, String sortBy, String direction) {
         PaginationValidator.validate(page, size, sortBy, direction,

@@ -22,12 +22,10 @@ export default function ReviewsPage() {
   const ITEMS_PER_PAGE = 6;
   const isMobile = useMediaQuery("(max-width: 768px)");
 
-  // Filtering & Sorting State
   const [activeTab, setActiveTab] = useState<"all" | "my">("all");
   const [ratingFilter, setRatingFilter] = useState<number | null>(null);
   const [sortBy, setSortBy] = useState<"latest" | "highest">("latest");
 
-  // Form & Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<Review | null>(null);
   const [formRating, setFormRating] = useState(5);
@@ -54,8 +52,6 @@ export default function ReviewsPage() {
   useEffect(() => {
     loadReviews();
   }, []);
-
-
 
   const handleOpenCreateModal = () => {
     setEditingReview(null);
@@ -143,17 +139,14 @@ export default function ReviewsPage() {
   const processedReviews = useMemo(() => {
     let list = [...reviewsList];
 
-    // 1. Filter by Tab
     if (activeTab === "my" && user) {
       list = list.filter((r) => r.userName === user.rollNumber);
     }
 
-    // 2. Filter by Rating
     if (ratingFilter !== null) {
       list = list.filter((r) => Math.round(r.rating) === ratingFilter);
     }
 
-    // 3. Sort
     if (sortBy === "latest") {
       list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     } else if (sortBy === "highest") {
@@ -169,7 +162,6 @@ export default function ReviewsPage() {
     return processedReviews.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [processedReviews, startIndex]);
 
-  // Reset pagination index when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab, ratingFilter, sortBy]);
@@ -196,9 +188,8 @@ export default function ReviewsPage() {
         </div>
       </div>
 
-      {/* Statistics Section */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3 mb-8">
-        {/* Card 1: Average Rating */}
+
         <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-center items-center text-center">
           <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Average Rating</span>
           <div className="flex items-center gap-2.5">
@@ -222,14 +213,12 @@ export default function ReviewsPage() {
           </div>
         </div>
 
-        {/* Card 2: Total Reviews */}
         <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-center items-center text-center">
           <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Total Reviews</span>
           <span className="text-4xl font-black text-gray-900">{totalReviews}</span>
           <span className="text-[10px] text-gray-400 font-semibold mt-0.5">Verified canteen reviews</span>
         </div>
 
-        {/* Card 3: Rating Distribution */}
         <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-center space-y-1.5">
           <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Rating Distribution</span>
           <div className="space-y-1">
@@ -249,9 +238,8 @@ export default function ReviewsPage() {
         </div>
       </div>
 
-      {/* Filtering & Sorting Toolbar */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-gray-100 pb-4 mb-6">
-        {/* Tabs */}
+
         <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl w-fit">
           <button
             type="button"
@@ -281,9 +269,8 @@ export default function ReviewsPage() {
         )}
         </div>
 
-        {/* Filters and Sorting */}
         <div className="flex flex-wrap items-center gap-4 text-xs">
-          {/* Rating Filter Chips */}
+
           <div className="flex items-center gap-1.5">
             <span className="font-bold text-gray-400 mr-1">Rating:</span>
             <button
@@ -315,7 +302,6 @@ export default function ReviewsPage() {
             ))}
           </div>
 
-          {/* Sort Dropdown */}
           <div className="flex items-center gap-2">
             <span className="font-bold text-gray-400">Sort by:</span>
             <select
@@ -346,7 +332,7 @@ export default function ReviewsPage() {
           </button>
         </div>
       ) : totalReviews === 0 ? (
-        /* Global Empty State */
+
         <div className="text-center py-16 px-6 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center max-w-xl mx-auto space-y-5 my-8">
           <div className="bg-brand-light/20 p-4 rounded-full border border-brand-light/30 text-brand">
             <Star className="h-8 w-8 stroke-[1.5]" />
@@ -378,7 +364,7 @@ export default function ReviewsPage() {
           </div>
         </div>
       ) : processedReviews.length === 0 ? (
-        /* Filtered Empty State */
+
         <div className="text-center py-16 px-6 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center max-w-xl mx-auto space-y-4 my-8">
           <div className="bg-gray-50 p-4 rounded-full border border-gray-100 text-gray-400">
             <Star className="h-8 w-8 stroke-[1.5]" />
@@ -398,7 +384,7 @@ export default function ReviewsPage() {
           </button>
         </div>
       ) : (
-        /* Review cards list */
+
         <>
           <div
             className={cn(
@@ -558,7 +544,6 @@ export default function ReviewsPage() {
         </>
       )}
 
-      {/* Write/Edit Review Modal */}
       {isModalOpen && (
         <>
           <button
@@ -650,7 +635,6 @@ export default function ReviewsPage() {
         </>
       )}
 
-      {/* Delete Review Confirmation Modal */}
       {deleteConfirmId !== null && (
         <>
           <button

@@ -116,9 +116,8 @@ export async function createProfessor(payload: {
   });
 }
 
-
 export async function resetUserPassword(userId: string): Promise<void> {
-  // Typical endpoint for password reset by admin
+
   await api.post(`/api/users/${userId}/reset-password`);
 }
 

@@ -28,4 +28,3 @@ public class FoodResponse {
     public void setUpdatedAt(LocalDateTime updatedAt) {
     }
 }
-

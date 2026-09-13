@@ -194,8 +194,8 @@ export default function OrdersPage() {
                     <td className="px-6 py-4 font-semibold text-brand-dark">{formatPrice(order.totalPrice)}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                        ${order.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                        ${order.status === 'completed' ? 'bg-green-100 text-green-800' :
+                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
                           'bg-red-100 text-red-800'}`}
                       >
                         {order.status}
@@ -241,7 +241,7 @@ export default function OrdersPage() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
+
             <div className="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
               <p className="text-sm font-semibold text-gray-800">Order Code: <span className="font-normal text-gray-600">{detailOrder.id}</span></p>
               {(detailOrder.canteenName || detailOrder.canteenId) && (
@@ -289,7 +289,6 @@ export default function OrdersPage() {
         </>
       )}
 
-      {/* Cancel Confirmation Modal */}
       {cancelConfirmId !== null && (
         <>
           <button

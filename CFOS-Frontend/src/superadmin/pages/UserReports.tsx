@@ -32,7 +32,6 @@ import { fetchBranches, type Branch } from "@user/api/branch.api";
 import Swal from 'sweetalert2';
 import { formatDate, formatDateTime } from "@user/lib/utils";
 
-// Standardized SweetAlert2 classes matching the Campus Bites theme
 const swalAlertClass = {
   popup: 'rounded-2xl border border-slate-200 p-6 shadow-xl bg-white font-sans',
   title: 'text-lg font-bold text-gray-900',
@@ -41,12 +40,11 @@ const swalAlertClass = {
 };
 
 export const UserReports: React.FC = () => {
-  // Raw Data States
+
   const [dbUsers, setDbUsers] = useState<ReportUser[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Filter UI States
   const [reportType, setReportType] = useState<string>('1');
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -56,14 +54,12 @@ export const UserReports: React.FC = () => {
   const [searchInput, setSearchInput] = useState<string>('');
   const [appliedSearch, setAppliedSearch] = useState<string>('');
 
-  // Table State
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   });
 
-  // Fetch Data on Load
   const loadData = async () => {
     try {
       setIsLoading(true);
@@ -84,16 +80,14 @@ export const UserReports: React.FC = () => {
     loadData();
   }, []);
 
-  // Handle Generate Report action
   const handleGenerateReport = () => {
     setAppliedSearch(searchInput);
     setPagination(prev => ({ ...prev, pageIndex: 0 }));
   };
 
-  // Perform client-side filtering based on panel inputs
   const filteredUsers = useMemo<ReportUser[]>(() => {
     return dbUsers.filter(u => {
-      // 1. Live Search filter
+
       if (appliedSearch.trim() !== '') {
         const query = appliedSearch.toLowerCase();
         const matchesSearch =
@@ -104,7 +98,6 @@ export const UserReports: React.FC = () => {
         if (!matchesSearch) return false;
       }
 
-      // 2. Role Filter mapping: Canteen Admin -> Manager, Student -> User, Super Admin -> SuperAdmin/Admin, Professor -> Professor
       if (roleFilter !== 'ALL') {
         const roleLower = u.roleName.toLowerCase();
         if (roleFilter === 'CANTEEN_ADMIN') {
@@ -118,7 +111,6 @@ export const UserReports: React.FC = () => {
         }
       }
 
-      // 3. Status Filter: mapping Active, Suspended, Inactive
       if (statusFilter !== 'ALL') {
         const isSuspended = u.deleteFlag;
         const isActive = u.status === 'ACTIVE' && !u.deleteFlag;
@@ -129,20 +121,17 @@ export const UserReports: React.FC = () => {
         if (statusFilter === 'INACTIVE' && !isInactive) return false;
       }
 
-      // 4. Report Type Specific Filters
       if (reportType === '2') {
-        // Canteen Admin Allocation Report (Managers assigned to canteens)
+
         if (u.roleName.toLowerCase() !== 'manager') return false;
       } else if (reportType === '4') {
-        // Account Status & Security Audit Report (Active, Suspended, Inactive Accounts)
-        // No hard filtration, but layout will highlight status metrics
+
       }
 
-      // 5. Date Range Filter
       if (dateRangeFilter !== 'ALL_TIME') {
         const userDate = new Date(u.createdAt);
         const today = new Date();
-        today.setHours(23, 59, 59, 999); // end of today
+        today.setHours(23, 59, 59, 999);
 
         if (dateRangeFilter === 'TODAY') {
           const startOfToday = new Date();
@@ -171,7 +160,6 @@ export const UserReports: React.FC = () => {
     });
   }, [dbUsers, appliedSearch, roleFilter, statusFilter, reportType, dateRangeFilter, startDate, endDate]);
 
-  // KPI Calculations
   const kpis = useMemo(() => {
     const total = filteredUsers.length;
     const activeStudents = filteredUsers.filter(u => u.roleName.toLowerCase() === 'user' && u.status === 'ACTIVE' && !u.deleteFlag).length;
@@ -186,7 +174,6 @@ export const UserReports: React.FC = () => {
     };
   }, [filteredUsers]);
 
-  // Export CSV Handler
   const handleExportCSV = () => {
     if (filteredUsers.length === 0) {
       Swal.fire({
@@ -214,9 +201,9 @@ export const UserReports: React.FC = () => {
       ];
     });
 
-    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" 
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF"
       + [headers.join(','), ...rows.map(e => e.map(val => `"${val}"`).join(','))].join('\n');
-    
+
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -233,7 +220,6 @@ export const UserReports: React.FC = () => {
     });
   };
 
-  // Export Excel (.xlsx) mock / tab-separated download
   const handleExportExcel = () => {
     if (filteredUsers.length === 0) {
       Swal.fire({
@@ -245,7 +231,6 @@ export const UserReports: React.FC = () => {
       return;
     }
 
-    // Creating an Excel-compatible XML formatted workbook or simple TSV file to make sure it opens cleanly
     const headers = ['No', 'Username', 'Full Name', 'Role', 'Status', 'Canteen', 'Email', 'Phone', 'Joined Date'];
     const rows = filteredUsers.map((u, idx) => {
       const statusStr = u.deleteFlag ? 'Suspended' : u.status === 'ACTIVE' ? 'Active' : 'Inactive';
@@ -280,12 +265,10 @@ export const UserReports: React.FC = () => {
     });
   };
 
-  // Trigger Native Print / PDF Download
   const handlePrint = () => {
     window.print();
   };
 
-  // React Table Columns setup
   const columns = useMemo<ColumnDef<ReportUser>[]>(() => [
     {
       id: 'serialNo',
@@ -417,7 +400,6 @@ export const UserReports: React.FC = () => {
     },
   ], [pagination]);
 
-  // React Table initialization
   const table = useReactTable({
     data: filteredUsers,
     columns,
@@ -434,8 +416,7 @@ export const UserReports: React.FC = () => {
 
   return (
     <div className="space-y-6 relative max-w-7xl">
-      
-      {/* 1. Header (hidden during print) */}
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
         <div>
           <h2 className="text-3xl font-black text-gray-900 tracking-tight">
@@ -452,10 +433,8 @@ export const UserReports: React.FC = () => {
         </button>
       </div>
 
-      {/* 2. Filter & Report Selection Panel (hidden during print) */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6 print:hidden">
-        
-        {/* Row 1: Report Selection & Search */}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           <div className="space-y-1.5">
             <label className="text-xs font-extrabold text-slate-700 uppercase tracking-wider block">Report Type</label>
@@ -463,9 +442,9 @@ export const UserReports: React.FC = () => {
               value={reportType}
               onChange={(e) => {
                 setReportType(e.target.value);
-                // Auto-reset filters for specific report requirements if necessary
+
                 if (e.target.value === '2') {
-                  setRoleFilter('CANTEEN_ADMIN'); // Focus on managers
+                  setRoleFilter('CANTEEN_ADMIN');
                 } else {
                   setRoleFilter('ALL');
                 }
@@ -495,9 +474,8 @@ export const UserReports: React.FC = () => {
           </div>
         </div>
 
-        {/* Row 2: Secondary Filters & Date Ranges */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 pt-1 border-t border-slate-100">
-          
+
           <div className="space-y-1.5">
             <label className="text-xs font-extrabold text-slate-700 uppercase tracking-wider block">Role Filter</label>
             <select
@@ -542,7 +520,6 @@ export const UserReports: React.FC = () => {
             </select>
           </div>
 
-          {/* Conditional Custom Date Inputs */}
           {dateRangeFilter === 'CUSTOM' ? (
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
@@ -590,10 +567,8 @@ export const UserReports: React.FC = () => {
         )}
       </div>
 
-      {/* 3. KPI Overview Bar (Appears above table based on filters) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        
-        {/* KPI 1 */}
+
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex items-center gap-4 transition-all hover:scale-[1.01]">
           <div className="p-3.5 bg-slate-50 text-slate-700 rounded-xl border border-slate-100">
             <Users className="w-5 h-5" />
@@ -606,7 +581,6 @@ export const UserReports: React.FC = () => {
           </div>
         </div>
 
-        {/* KPI 2 */}
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex items-center gap-4 transition-all hover:scale-[1.01]">
           <div className="p-3.5 bg-blue-50/70 text-blue-600 rounded-xl border border-blue-50">
             <CheckCircle2 className="w-5 h-5" />
@@ -619,7 +593,6 @@ export const UserReports: React.FC = () => {
           </div>
         </div>
 
-        {/* KPI 3 */}
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex items-center gap-4 transition-all hover:scale-[1.01]">
           <div className="p-3.5 bg-[#F2F7E6] text-[#3B5B11] rounded-xl border border-[#E1EEB4]">
             <Building2 className="w-5 h-5" />
@@ -632,7 +605,6 @@ export const UserReports: React.FC = () => {
           </div>
         </div>
 
-        {/* KPI 4 */}
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex items-center gap-4 transition-all hover:scale-[1.01]">
           <div className="p-3.5 bg-red-50 text-red-600 rounded-xl border border-red-100">
             <ShieldAlert className="w-5 h-5" />
@@ -646,10 +618,8 @@ export const UserReports: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. Interactive Data Preview Table Container */}
       <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4 print:hidden">
-        
-        {/* Table Header: Controls & Exports */}
+
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pb-2 border-b border-slate-100">
           <div>
             <h3 className="font-extrabold text-slate-900 text-base leading-none">
@@ -663,7 +633,6 @@ export const UserReports: React.FC = () => {
             </span>
           </div>
 
-          {/* Export Actions Panel */}
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handleExportCSV}
@@ -685,7 +654,6 @@ export const UserReports: React.FC = () => {
           </div>
         </div>
 
-        {/* Data Table */}
         <div className="overflow-x-auto min-h-[250px]">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -756,7 +724,6 @@ export const UserReports: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination controls */}
         {!isLoading && filteredUsers.length > 0 && (
           <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-100 text-xs print:hidden">
             <span className="text-slate-500 font-medium">
@@ -768,7 +735,7 @@ export const UserReports: React.FC = () => {
                 )}
               </span> of <span className="font-bold text-slate-800">{filteredUsers.length}</span> user records
             </span>
-            
+
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => table.previousPage()}
@@ -804,7 +771,6 @@ export const UserReports: React.FC = () => {
         )}
       </div>
 
-      {/* 5. Print-Only Beautiful Layout (visible ONLY during print output) */}
       <div className="hidden print:block font-sans text-slate-800 p-8 space-y-6">
         <div className="flex justify-between items-start border-b-2 border-slate-800 pb-4">
           <div>
@@ -827,7 +793,6 @@ export const UserReports: React.FC = () => {
           </div>
         </div>
 
-        {/* Print KPIs */}
         <div className="grid grid-cols-4 gap-4 p-4 bg-slate-50 border border-slate-200 rounded-xl text-center">
           <div>
             <div className="text-xs font-bold text-slate-500 uppercase">Total Accounts</div>
@@ -847,7 +812,6 @@ export const UserReports: React.FC = () => {
           </div>
         </div>
 
-        {/* Print Table */}
         <table className="w-full text-left border-collapse border border-slate-300 text-xs">
           <thead>
             <tr className="bg-slate-100 text-slate-800 font-bold border-b border-slate-300">
@@ -882,7 +846,6 @@ export const UserReports: React.FC = () => {
           </tbody>
         </table>
 
-        {/* Print Footer */}
         <div className="pt-8 border-t border-slate-300 flex justify-between text-[10px] text-slate-400 font-bold uppercase">
           <span>Campus Bites Security Division</span>
           <span>Confidential - For Internal Use Only</span>

@@ -20,7 +20,7 @@ public class ReportController {
             @RequestParam(required = false, defaultValue = "daily") String type,
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
-        
+
         ReportResponseModel response = reportService.getReport(type, startDate, endDate);
         return ResponseEntity.ok(response);
     }

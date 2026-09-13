@@ -67,16 +67,15 @@ const getCategoryStyle = (catName: string) => {
 };
 
 export function Menu() {
-  const { user } = useAuth();
+  const { user, can } = useAuth();
   const [items, setItems] = useState<MenuItem[]>([]);
   const [dbCategories, setDbCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [branches, setBranches] = useState<any[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<number | "all">("all");
 
-  // Search query in input
   const [searchQuery, setSearchQuery] = useState("");
-  // Search query applied to the filter
+
   const [activeSearchQuery, setActiveSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [sortBy, setSortBy] = useState("default");
@@ -89,7 +88,6 @@ export function Menu() {
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const [deletingItem, setDeletingItem] = useState<MenuItem | null>(null);
 
-  // Form states
   const [newItemName, setNewItemName] = useState("");
   const [newItemPrice, setNewItemPrice] = useState("");
   const [newItemCategoryId, setNewItemCategoryId] = useState<number | "">("");
@@ -117,7 +115,7 @@ export function Menu() {
       ]);
       setDbCategories(catData);
       setBranches(branchData);
-      
+
       let mapped = menuData.map((d: any) => ({
         id: String(d.id),
         name: d.name,
@@ -342,7 +340,7 @@ export function Menu() {
       const matchesCategory =
         selectedCategory === "All Categories" ||
         item.category === selectedCategory;
-      const matchesBranch = 
+      const matchesBranch =
         selectedBranch === "all" ||
         item.canteen === selectedBranch;
       return matchesSearch && matchesCategory && matchesBranch;
@@ -380,7 +378,7 @@ export function Menu() {
 
   return (
     <div className="w-full p-8 space-y-6 bg-[#fdfefb] min-h-screen relative font-sans">
-      {/* 1. Header */}
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[#0f172a]">Menu Management</h1>
@@ -389,7 +387,6 @@ export function Menu() {
           </p>
         </div>
 
-        {/* Global Search & Sort */}
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -416,7 +413,7 @@ export function Menu() {
           >
             Search
           </button>
-          
+
           <button
             onClick={() => { setSearchQuery(""); setActiveSearchQuery(""); setCurrentPage(1); }}
             className="px-4 py-2 bg-[#e2e7d8] text-[#414b35] rounded-xl text-sm font-bold hover:bg-[#d4dbc8] transition-colors shadow-sm"
@@ -462,9 +459,8 @@ export function Menu() {
         </div>
       </div>
 
-      {/* 2. Main Table Card */}
       <div className="bg-white rounded-3xl border border-emerald-100/60 shadow-sm overflow-hidden">
-        {/* Filter Bar */}
+
         <div className="p-5 flex items-center justify-between border-b border-gray-100 bg-[#fbfdf8]">
           <div className="flex items-center gap-3">
             {user && user.role === 'superadmin' && branches.length > 0 && (
@@ -554,18 +550,19 @@ export function Menu() {
               <span>Refresh</span>
             </button>
 
-            <button
-              type="button"
-              onClick={() => setIsAddModalOpen(true)}
-              className="bg-[#518218] text-white flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#3f6711] transition-colors shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add New Item</span>
-            </button>
+            {can("Food Category & Menu", "CREATE") && (
+              <button
+                type="button"
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-[#518218] text-white flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-[#3f6711] transition-colors shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add New Item</span>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* 3. Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -644,22 +641,26 @@ export function Menu() {
 
                     <td className="py-4 px-6 text-right">
                       <div className="flex items-center justify-end gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setEditingItem(item)}
-                          className="text-gray-400 hover:text-gray-600 transition-colors"
-                          title="Edit Item"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeletingItem(item)}
-                          className="text-red-600 hover:text-red-800 transition-colors"
-                          title="Delete Item"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {can("Food Category & Menu", "UPDATE") && (
+                          <button
+                            type="button"
+                            onClick={() => setEditingItem(item)}
+                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                            title="Edit Item"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        )}
+                        {can("Food Category & Menu", "DELETE") && (
+                          <button
+                            type="button"
+                            onClick={() => setDeletingItem(item)}
+                            className="text-red-600 hover:text-red-800 transition-colors"
+                            title="Delete Item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -680,7 +681,6 @@ export function Menu() {
           </table>
         </div>
 
-        {/* Pagination Footer */}
         {totalPages > 1 && (
           <div className="p-5 px-7 flex items-center justify-end gap-2 bg-[#fafcf7] border-t border-gray-100">
             <button
@@ -757,13 +757,12 @@ export function Menu() {
         )}
       </div>
 
-      {/* 5. EXACT DELETE CONFIRMATION MODAL */}
       {deletingItem && (
         <div className="fixed inset-0 bg-black/25 backdrop-blur-[1.5px] z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-[26px] w-[380px] shadow-2xl overflow-hidden border border-gray-100/50 animate-in fade-in zoom-in-95 duration-150">
-            {/* Modal Content Wrapper */}
+
             <div className="p-7 pb-6">
-              {/* Header: Icon + Title in One Line */}
+
               <div className="flex items-center gap-3.5 mb-5">
                 <div className="w-12 h-12 rounded-full bg-[#fdeded] flex items-center justify-center shrink-0">
                   <AlertTriangle className="w-5 h-5 text-[#c51d24]" />
@@ -773,14 +772,12 @@ export function Menu() {
                 </h3>
               </div>
 
-              {/* Description Paragraph */}
               <div className="text-[13px] text-gray-700 leading-[1.6] font-medium tracking-normal mb-6">
                 Are you sure you want to delete "{deletingItem.name}"?
                 <br />
                 This action cannot be undone.
               </div>
 
-              {/* Action Buttons Right-Aligned */}
               <div className="flex items-center justify-end gap-2.5">
                 <button
                   type="button"
@@ -799,7 +796,6 @@ export function Menu() {
               </div>
             </div>
 
-            {/* Bottom Warning Bar */}
             <div className="bg-[#f2f3ed] py-3.5 px-6 border-t border-gray-200/50 flex items-center gap-2 text-[10px] font-extrabold tracking-wider text-[#5b5c56] uppercase">
               <Info className="w-3.5 h-3.5 text-[#5b5c56] shrink-0" />
               <span>GLOBAL MENU UPDATE WARNING</span>
@@ -808,7 +804,6 @@ export function Menu() {
         </div>
       )}
 
-      {/* 6. ADD ITEM MODAL */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
@@ -950,7 +945,6 @@ export function Menu() {
         </div>
       )}
 
-      {/* 7. EDIT ITEM MODAL */}
       {editingItem && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200">

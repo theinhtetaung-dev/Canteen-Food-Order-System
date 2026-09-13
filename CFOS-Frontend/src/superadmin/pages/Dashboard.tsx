@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Store, 
-  Users, 
-  UserCheck, 
-  Shield, 
-  Plus, 
+import {
+  Store,
+  Users,
+  UserCheck,
+  Shield,
+  Plus,
   ArrowRight,
   TrendingUp,
   MapPin,
@@ -13,13 +13,13 @@ import {
   Sparkles,
   ChevronDown
 } from 'lucide-react';
-import { 
-  ResponsiveContainer, 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   Tooltip,
   PieChart,
   Pie,
@@ -50,27 +50,22 @@ export const Dashboard: React.FC = () => {
     async function loadDashboardStats() {
       try {
         setIsLoading(true);
-        // Fetch Students
+
         const students = await fetchStudents();
         setTotalUsers(students.length);
 
-        // Fetch Professors
         const allUsers = await fetchAllUsers();
         const professors = allUsers.filter((u) => u.roleName && u.roleName.toLowerCase() === "professor");
         setTotalProfessors(professors.length);
 
-        // Fetch Canteens/Branches
         const branches = await fetchBranches();
         setTotalCanteens(branches.length);
 
-        // Fetch Canteen Admins
         const admins = await fetchKitchenAdmins();
         setTotalAdminsCount(admins.length);
-        
-        // Take top 4 most recent admins
+
         setRecentAdmins(admins.slice(0, 4));
 
-        // Create canteen allocation overview mapping canteens to admins
         const allocations = branches.map((branch) => {
           const assignedAdmin = admins.find(
             (admin) => admin.canteenId === branch.branchId || admin.restaurant === branch.branchName
@@ -97,8 +92,7 @@ export const Dashboard: React.FC = () => {
       try {
         const res = await fetchSuperadminDashboard(dateRange);
         setRegistrationGrowthData(res.registrationGrowth || []);
-        
-        // Map backend generic pie data to recharts expected format
+
         const pieMapped = (res.roleDistribution || []).map((p) => ({
           name: p.name,
           value: Number(p.value),
@@ -114,7 +108,7 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="w-full space-y-8 font-sans">
-      {/* 1. Header Section */}
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mt-1">
@@ -152,10 +146,9 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. KPI Summary Cards (4 Cards Grid) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {/* Card 1: Total Canteens */}
-        <div 
+
+        <div
           onClick={() => navigate('/branches')}
           className="bg-[#F8FBF2] p-5 rounded-2xl flex items-center justify-between border border-gray-100/60 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-md cursor-pointer"
         >
@@ -171,8 +164,7 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Card 2: Canteen Admins */}
-        <div 
+        <div
           onClick={() => navigate('/kitchen-admin')}
           className="bg-[#F8FBF2] p-5 rounded-2xl flex items-center justify-between border border-gray-100/60 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-md cursor-pointer"
         >
@@ -188,8 +180,7 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Card 3: Registered Students */}
-        <div 
+        <div
           onClick={() => navigate('/users')}
           className="bg-[#F8FBF2] p-5 rounded-2xl flex items-center justify-between border border-gray-100/60 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-md cursor-pointer"
         >
@@ -207,8 +198,7 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Card 4: Professor Accounts */}
-        <div 
+        <div
           onClick={() => navigate('/professors')}
           className="bg-[#F8FBF2] p-5 rounded-2xl flex items-center justify-between border border-gray-100/60 shadow-sm transition-all hover:translate-y-[-2px] hover:shadow-md cursor-pointer"
         >
@@ -227,9 +217,8 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Visual Analytics Section (2 Column Grid) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Chart: Registration Growth */}
+
         <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -253,14 +242,14 @@ export const Dashboard: React.FC = () => {
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
                 <XAxis dataKey="label" stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={false} />
                 <YAxis stroke="#94A3B8" fontSize={10} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  contentStyle={{ 
-                    background: '#ffffff', 
-                    border: '1px solid #F1F5F9', 
+                <Tooltip
+                  contentStyle={{
+                    background: '#ffffff',
+                    border: '1px solid #F1F5F9',
                     borderRadius: '12px',
                     fontSize: '11px',
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)'
-                  }} 
+                  }}
                   formatter={(value: any) => [value, 'Signups']}
                 />
                 <Area type="monotone" dataKey="value" stroke="#88C425" strokeWidth={2} fillOpacity={1} fill="url(#colorSignups)" />
@@ -269,7 +258,6 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Chart: Role Distribution */}
         <div className="lg:col-span-5 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
           <div>
             <h3 className="text-base font-bold text-gray-900">User Role Distribution</h3>
@@ -291,17 +279,17 @@ export const Dashboard: React.FC = () => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip 
-                  contentStyle={{ 
-                    background: '#ffffff', 
-                    border: '1px solid #F1F5F9', 
+                <Tooltip
+                  contentStyle={{
+                    background: '#ffffff',
+                    border: '1px solid #F1F5F9',
                     borderRadius: '12px',
-                    fontSize: '11px' 
-                  }} 
+                    fontSize: '11px'
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>
-            {/* Center label */}
+
             <div className="absolute flex flex-col items-center justify-center pointer-events-none">
               <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Total Users</span>
               <span className="text-xl font-black text-gray-900">
@@ -309,8 +297,7 @@ export const Dashboard: React.FC = () => {
               </span>
             </div>
           </div>
-          
-          {/* Custom Legends */}
+
           <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-50 text-[10px] font-bold text-gray-500">
             {roleDistributionData.map((r) => (
               <div key={r.name} className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50">
@@ -323,9 +310,8 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. Quick Management Tables / Lists */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Block: Recently Created Canteen Admins */}
+
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -333,7 +319,7 @@ export const Dashboard: React.FC = () => {
                 <h3 className="text-base font-bold text-gray-900">Recently Created Canteen Admins</h3>
                 <p className="text-[11px] text-gray-400 font-medium">Top active managers managing school canteens</p>
               </div>
-              <button 
+              <button
                 onClick={() => navigate('/kitchen-admin')}
                 className="text-xs font-bold text-[#88C425] hover:text-[#72A61E] transition-colors flex items-center gap-1"
               >
@@ -393,14 +379,13 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Block: Canteen Allocation Overview */}
         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
           <div className="flex items-center justify-between mb-5">
             <div>
               <h3 className="text-base font-bold text-gray-900">Canteen Allocation Overview</h3>
               <p className="text-[11px] text-gray-400 font-medium">Branches allocation map and assignments</p>
             </div>
-            <button 
+            <button
               onClick={() => navigate('/branches')}
               className="text-xs font-bold text-[#88C425] hover:text-[#72A61E] transition-colors flex items-center gap-1"
             >
@@ -417,7 +402,7 @@ export const Dashboard: React.FC = () => {
           ) : (
             <div className="space-y-3">
               {canteenAllocations.map((canteen) => (
-                <div 
+                <div
                   key={canteen.id}
                   className="p-3.5 rounded-xl border border-slate-100 bg-slate-50/50 flex items-center justify-between gap-4 transition-all hover:bg-slate-50 hover:border-slate-200/60"
                 >

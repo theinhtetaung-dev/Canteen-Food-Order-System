@@ -75,8 +75,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
         const d = JSON.parse(event.data);
         if (d.userName === user.id || d.userId === user.id) {
           refresh();
-          
-          // Optionally add a notification for status updates
+
           const backendStatus = (d.orderStatus || d.status || "").toLowerCase();
           const orderId = `ORD-${d.orderId || d.id}`;
           if (backendStatus === "preparing" || backendStatus === "complete" || backendStatus === "completed" || backendStatus === "cancel" || backendStatus === "cancelled") {
@@ -91,7 +90,7 @@ export function OrderProvider({ children }: { children: ReactNode }) {
               createdAt: new Date().toISOString(),
             });
             localStorage.setItem("canteen_notifications", JSON.stringify(notifications));
-            refresh(); // refresh again to pickup new notification
+            refresh();
           }
         }
       } catch (err) {

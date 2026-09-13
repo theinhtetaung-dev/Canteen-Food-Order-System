@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({ selectedDayFilter, setSelectedDa
       </div>
 
       <div className="flex items-center gap-3">
-        {/* Date Filter Dropdown */}
+
         <div className="relative" ref={dayDropdownRef}>
           <button
             type="button"
@@ -88,7 +88,6 @@ export const Header: React.FC<HeaderProps> = ({ selectedDayFilter, setSelectedDa
           )}
         </div>
 
-        {/* Kitchen Status Badge / Toggle */}
         <button
           type="button"
           onClick={toggleKitchen}

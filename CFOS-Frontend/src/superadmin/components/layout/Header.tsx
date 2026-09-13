@@ -6,7 +6,6 @@ export const Header: React.FC = () => {
     <header className="bg-[#D1D89D] px-8 py-3 flex items-center justify-between border-b border-black/5">
       <h1 className="text-xl font-bold text-gray-800">Dashboard</h1>
 
-      {/* Search Input Bar */}
       <div className="relative w-80">
         <input
           type="text"
@@ -16,7 +15,6 @@ export const Header: React.FC = () => {
         <Search className="w-4 h-4 text-gray-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
       </div>
 
-      {/* Top Header Profile Indicator */}
       <div className="flex items-center gap-3">
         <img
           src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200"

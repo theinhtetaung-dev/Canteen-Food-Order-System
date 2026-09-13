@@ -18,7 +18,7 @@ public class PaymentMapper {
         payment.setAmount(request.getAmount());
         payment.setPaymentMethod(request.getPaymentMethod());
         payment.setPaidAt(LocalDateTime.now());
-        
+
         return payment;
     }
 

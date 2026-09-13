@@ -1,6 +1,6 @@
 export interface ChartPoint {
   month: string;
-  value: number; // Y-coordinate value for SVG calculation
+  value: number;
 }
 
 export interface DashboardData {

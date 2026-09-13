@@ -11,16 +11,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * Logs every HTTP request and its response.
- *
- * Sample output:
- *   --> POST /api/auth/login (anonymous)
- *   <-- POST /api/auth/login 200 OK [42 ms]
- *
- *   --> GET /api/foods (admin)
- *   <-- GET /api/foods 200 OK [8 ms]
- */
 @Slf4j
 @Component
 @Order(1)
@@ -33,7 +23,6 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // Skip noisy static/actuator endpoints
         String path = request.getRequestURI();
         if (shouldSkip(path)) {
             filterChain.doFilter(request, response);
@@ -44,7 +33,6 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         String caller  = resolveCaller(request);
         long   start   = System.currentTimeMillis();
 
-        // Skip logging OPTIONS preflight at INFO level — log at TRACE only
         if ("OPTIONS".equalsIgnoreCase(method)) {
             log.trace("--> {} {} (preflight, {})", method, path, caller);
             filterChain.doFilter(request, response);
@@ -69,16 +57,15 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         }
     }
 
-    /** Extract caller identity from the Authorization header (JWT subject) or mark as anonymous. */
     private String resolveCaller(HttpServletRequest request) {
         String auth = request.getHeader("Authorization");
         if (auth != null && auth.startsWith("Bearer ")) {
             try {
-                // Decode the JWT payload (no verification here — logging only)
+
                 String payload = auth.substring(7).split("\\.")[1];
                 byte[] decoded = java.util.Base64.getUrlDecoder().decode(payload);
                 String json = new String(decoded);
-                // Extract "sub" field simply
+
                 int subIdx = json.indexOf("\"sub\":");
                 if (subIdx >= 0) {
                     int start = json.indexOf('"', subIdx + 6) + 1;
@@ -92,7 +79,6 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         return "anonymous";
     }
 
-    /** Paths that produce too much noise and don't need request logging. */
     private boolean shouldSkip(String path) {
         return path.startsWith("/actuator")
                 || path.startsWith("/swagger")

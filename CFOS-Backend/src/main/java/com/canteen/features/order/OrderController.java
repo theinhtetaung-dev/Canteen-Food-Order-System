@@ -55,7 +55,7 @@ public class OrderController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String direction) {
-        
+
         String username = (String) httpRequest.getAttribute("username");
         Page<OrderResponseModel> response = orderService.getMyOrders(username, page, size, sortBy, direction);
         return ResponseEntity.ok(response);
@@ -81,7 +81,7 @@ public class OrderController {
     public ResponseEntity<OrderResponseModel> updateOrderStatus(
             @PathVariable Integer id,
             @RequestParam("status") String statusStr) {
-        
+
         com.canteen.model.Status status = com.canteen.model.Status.fromString(statusStr);
         OrderResponseModel response = orderService.updateStatus(id, status);
         return ResponseEntity.ok(response);

@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
+import java.util.List;
+
 @Component
 public class RequireAuthInterceptor implements HandlerInterceptor {
 
@@ -14,28 +16,30 @@ public class RequireAuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        // Allow guest to register (POST /api/users)
-        if ("/api/users".equals(request.getRequestURI()) && "POST".equalsIgnoreCase(request.getMethod())) {
+        Object isAuthenticated = request.getAttribute("isAuthenticated");
+        boolean isAuth = isAuthenticated != null && (Boolean) isAuthenticated;
+
+        if (!isAuth && "/api/users".equals(request.getRequestURI()) && "POST".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
 
-        // Allow guest to browse menu (GET /api/foods/**)
         if (request.getRequestURI().startsWith("/api/foods") && "GET".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
 
-        // Allow guest to fetch canteen list (GET /api/branches)
+        if (request.getRequestURI().startsWith("/api/food-categories") && "GET".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
         if (request.getRequestURI().startsWith("/api/branches") && "GET".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
 
-        // Allow guest to view reviews (GET /api/reviews)
         if (request.getRequestURI().startsWith("/api/reviews") && "GET".equalsIgnoreCase(request.getMethod())) {
             return true;
         }
 
-        Object isAuthenticated = request.getAttribute("isAuthenticated");
-        if (isAuthenticated == null || !(Boolean) isAuthenticated) {
+        if (!isAuth) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Valid JWT token is required\"}");
             response.setContentType("application/json");
@@ -62,33 +66,32 @@ public class RequireAuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        String uri = request.getRequestURI();
+
+        if (uri.startsWith("/api/rbac")) {
+            return false;
+        }
+
+        if (uri.equals("/api/users/me") || uri.startsWith("/api/users/me/") ||
+            uri.equals("/api/users/change-password") || uri.startsWith("/api/users/change-password/") ||
+            uri.startsWith("/api/notifications") ||
+            uri.equals("/api/orders/my-orders") ||
+            (uri.startsWith("/api/reviews") && "POST".equalsIgnoreCase(request.getMethod()))) {
+            return true;
+        }
+
         @SuppressWarnings("unchecked")
-        java.util.List<String> userPermissions = (java.util.List<String>) request.getAttribute("permissions");
+        List<String> userPermissions = (List<String>) request.getAttribute("permissions");
         if (userPermissions == null) {
             return false;
         }
 
-        String uri = request.getRequestURI();
         String method = request.getMethod();
-
         String requiredMenu = getRequiredMenu(uri);
         String requiredAction = getRequiredAction(method);
 
-        if (requiredAction == null) {
+        if (requiredAction == null || requiredMenu == null) {
             return false;
-        }
-
-        // Special exceptions: profile operations
-        if (uri.startsWith("/api/users")) {
-            // Allow profile related endpoints, handling optional trailing slash
-            if (uri.equals("/api/users/me") || uri.equals("/api/users/me/") ||
-                uri.equals("/api/users/change-password") || uri.equals("/api/users/change-password/")) {
-                return true;
-            }
-        }
-
-        if (requiredMenu == null) {
-            return true; // if endpoint is not explicitly mapped, permit it by default
         }
 
         String requiredPermission = requiredMenu + "_" + requiredAction;
@@ -106,7 +109,7 @@ public class RequireAuthInterceptor implements HandlerInterceptor {
             return "Role & Permission System";
         } else if (uri.startsWith("/api/branches")) {
             return "Canteen Management";
-        } else if (uri.startsWith("/api/dashboard")) {
+        } else if (uri.startsWith("/api/dashboard") || uri.startsWith("/api/reports")) {
             return "Dashboard";
         }
         return null;

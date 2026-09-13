@@ -103,7 +103,7 @@ export function ProfileForm() {
             <p className="text-sm font-semibold text-brand-dark">Profile updated successfully!</p>
           </div>
         )}
-        
+
         {error && (
           <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-center">
             <p className="text-sm font-semibold text-red-600">{error}</p>

@@ -1,6 +1,5 @@
 package com.canteen.features.foodCategory;
 
-
 import com.canteen.features.foodCategory.dto.FoodCategoryRequest;
 import com.canteen.features.foodCategory.dto.FoodCategoryResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,7 +17,6 @@ public class FoodCategoryController {
 
     private final FoodCategoryService foodCategoryService;
 
-    // CREATE
     @PostMapping
     public ResponseEntity<FoodCategoryResponse> create(
             @Valid @RequestBody FoodCategoryRequest request,
@@ -28,7 +26,6 @@ public class FoodCategoryController {
         return ResponseEntity.ok(foodCategoryService.create(request, username));
     }
 
-    // UPDATE
     @PutMapping("/{id}")
     public ResponseEntity<FoodCategoryResponse> update(
             @PathVariable Integer id,
@@ -37,14 +34,12 @@ public class FoodCategoryController {
         return ResponseEntity.ok(foodCategoryService.update(id, request));
     }
 
-    // GET ALL
     @GetMapping
     public ResponseEntity<List<FoodCategoryResponse>> getAll() {
 
         return ResponseEntity.ok(foodCategoryService.getAll());
     }
 
-    // GET BY ID
     @GetMapping("/{id}")
     public ResponseEntity<FoodCategoryResponse> getById(
             @PathVariable Integer id) {
@@ -52,7 +47,6 @@ public class FoodCategoryController {
         return ResponseEntity.ok(foodCategoryService.getById(id));
     }
 
-    // DELETE (SOFT DELETE)
     @DeleteMapping("/{id}")
     public ResponseEntity<String> delete(@PathVariable Integer id) {
 

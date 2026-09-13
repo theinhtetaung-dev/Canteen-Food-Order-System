@@ -1,10 +1,3 @@
--- ============================================================
--- DB V4 Migration: Create Tbl_Review
--- ============================================================
--- This migration creates the Tbl_Review table.
--- Run this script ONCE against the existing CFOSDB database.
--- ============================================================
-
 USE CFOSDB;
 
 CREATE TABLE IF NOT EXISTS Tbl_Review (

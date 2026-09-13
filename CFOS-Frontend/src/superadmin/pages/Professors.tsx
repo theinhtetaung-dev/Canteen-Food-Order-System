@@ -39,12 +39,10 @@ const swalResetClass = {
   actions: 'flex items-center justify-center gap-2 mt-4',
 };
 
-// We will fetch users of role "User" (who represent Professors / Customers)
-// The structure in fetchStudents maps rollNo to u.userName, and userName to u.fullName
 interface ProfessorUser {
   id: string;
-  username: string; // original userName
-  fullName: string; // original fullName
+  username: string;
+  fullName: string;
   email: string;
   phone: string;
   status: 'Active' | 'Inactive';
@@ -59,13 +57,10 @@ export const Professors: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
-  // Page Mode: 'list' | 'create'
   const [viewMode, setViewMode] = useState<'list' | 'create'>('list');
 
-  // View Toggle State
   const [viewType, setViewType] = useState<'table' | 'card'>('table');
 
-  // Form State
   const [formData, setFormData] = useState({
     username: '',
     fullName: '',
@@ -76,27 +71,11 @@ export const Professors: React.FC = () => {
   const [professorToDelete, setProfessorToDelete] = useState<ProfessorUser | null>(null);
   const [professorToReset, setProfessorToReset] = useState<ProfessorUser | null>(null);
 
-  // We load all users of role "User" using the existing fetchStudents which retrieves and filters them.
-  // We can query the full backend users endpoint by fetching all users or using fetchStudents.
-  // Let's use the fetchStudents API and map it back to username / fullName.
-  // Wait, let's double check fetchStudents implementation:
-  // u.userName => rollNo, u.fullName || u.userName => userName.
-  // So:
-  // - rollNo corresponds to username
-  // - userName corresponds to fullName
   const loadProfessors = async () => {
     try {
       setIsLoading(true);
       const data: StudentUser[] = await fetchStudents();
-      
-      // Let's get the raw data from fetchStudents or map it
-      // Wait, let's fetch all users from fetchAllUsers instead so we get the raw email and role!
-      // In user.api.ts:
-      // export async function fetchAllUsers(): Promise<ReportUser[]>
-      // Let's use fetchAllUsers and filter roleName.toLowerCase() === 'user'!
-      // Wait! Let's import fetchAllUsers instead of fetchStudents so we get proper email and phone numbers!
-      // Yes! fetchAllUsers gives us u.email and u.phoneNumber, whereas fetchStudents defaults u.phone to "+959 000 0000".
-      // Let's call fetchAllUsers to show the most accurate and rich data!
+
     } catch (err) {
       console.error("Failed to fetch user accounts", err);
     }
@@ -107,7 +86,7 @@ export const Professors: React.FC = () => {
       setIsLoading(true);
       const { fetchAllUsers } = await import("@user/api/user.api");
       const allUsers = await fetchAllUsers();
-      // Filter for users with role "User"
+
       const mapped = allUsers
         .filter((u) => u.roleName && u.roleName.toLowerCase() === "professor")
         .map((u) => ({
@@ -204,18 +183,16 @@ export const Professors: React.FC = () => {
     }
   };
 
-  // ---------------- VIEW 1: CREATE NEW PROFESSOR FORM ----------------
   if (viewMode === 'create') {
     return (
       <div className="w-full max-w-4xl mx-auto p-4 sm:p-6 md:p-8 space-y-6">
-        {/* Breadcrumb Navigation */}
+
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
           <span>Professors</span>
           <span>/</span>
           <span className="text-slate-700">Create Professor Account</span>
         </div>
 
-        {/* Back Link & Header Title */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => setViewMode('list')}
@@ -228,7 +205,6 @@ export const Professors: React.FC = () => {
           </h2>
         </div>
 
-        {/* Form Container */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 md:p-8">
           <div className="mb-6">
             <h3 className="text-sm font-bold text-slate-900">Professor Details</h3>
@@ -239,7 +215,7 @@ export const Professors: React.FC = () => {
 
           <form onSubmit={handleCreateSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
-              {/* Username */}
+
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Username
@@ -254,7 +230,6 @@ export const Professors: React.FC = () => {
                 />
               </div>
 
-              {/* Full Name */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Full Name
@@ -269,7 +244,6 @@ export const Professors: React.FC = () => {
                 />
               </div>
 
-              {/* Email Address */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Email Address
@@ -284,7 +258,6 @@ export const Professors: React.FC = () => {
                 />
               </div>
 
-              {/* Phone Number */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Phone Number
@@ -298,7 +271,6 @@ export const Professors: React.FC = () => {
                 />
               </div>
 
-              {/* Password (Read-Only Warning) */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   Default Password
@@ -315,7 +287,6 @@ export const Professors: React.FC = () => {
               </div>
             </div>
 
-            {/* Footer Actions */}
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t border-slate-100">
               <button
                 type="button"
@@ -337,19 +308,17 @@ export const Professors: React.FC = () => {
     );
   }
 
-  // ---------------- VIEW 2: LIST TABLE ----------------
   return (
     <div className="max-w-6xl space-y-6 relative">
-      {/* Title & Subtitle */}
+
       <div>
         <h2 className="text-3xl font-black text-gray-900 tracking-tight">
           Professor Account Creation
         </h2>
       </div>
 
-      {/* Main Container */}
       <div className="bg-white rounded-2xl border border-gray-200/80 p-5 shadow-sm space-y-4">
-        {/* Top Controls Bar */}
+
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <div className="relative w-full sm:w-72">
@@ -377,7 +346,7 @@ export const Professors: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-            {/* View Toggle */}
+
             <div className="flex items-center border border-slate-200 rounded-xl p-0.5 bg-slate-50">
               <button
                 type="button"
@@ -415,7 +384,6 @@ export const Professors: React.FC = () => {
           </div>
         </div>
 
-        {/* Table / Card View */}
         {viewType === 'table' ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
@@ -459,7 +427,7 @@ export const Professors: React.FC = () => {
                       <td className="py-3 px-4 text-gray-600 font-mono text-[11px]">{prof.phone}</td>
                       <td className="py-3 px-4 text-center">
                         <div className="flex items-center justify-center gap-3">
-                          {/* Reset password */}
+
                           <button
                             onClick={() => setProfessorToReset(prof)}
                             title="Reset Credentials"
@@ -467,7 +435,7 @@ export const Professors: React.FC = () => {
                           >
                             <RotateCw className="w-4 h-4 stroke-[2.5]" />
                           </button>
-                          {/* Delete */}
+
                           <button
                             onClick={() => setProfessorToDelete(prof)}
                             title="Delete Account"
@@ -556,7 +524,6 @@ export const Professors: React.FC = () => {
           </div>
         )}
 
-        {/* Pagination */}
         {!isLoading && totalPages > 1 && (
           <div className="flex items-center justify-between mt-4 text-xs">
             <span className="text-gray-500 font-medium">
@@ -638,7 +605,6 @@ export const Professors: React.FC = () => {
         )}
       </div>
 
-      {/* DELETE DIALOG */}
       {professorToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-md mx-4 p-6 bg-white rounded-2xl shadow-xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
@@ -717,7 +683,6 @@ export const Professors: React.FC = () => {
         </div>
       )}
 
-      {/* RESET DIALOG */}
       {professorToReset && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
           <div className="w-full max-w-md mx-4 p-6 bg-white rounded-2xl shadow-xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">

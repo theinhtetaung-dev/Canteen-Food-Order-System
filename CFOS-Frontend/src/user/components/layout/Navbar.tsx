@@ -103,7 +103,7 @@ export function Navbar() {
         if (found) {
           setDbName(found.fullName || found.userName);
           setDbRole(found.roleName.toLowerCase() === 'superadmin' || found.roleName.toLowerCase() === 'admin'
-            ? 'Super Admin' 
+            ? 'Super Admin'
             : (found.roleName.toLowerCase() === 'manager' ? 'Canteen Manager' : found.roleName.toLowerCase() === 'professor' ? 'Professor' : 'Student'));
         }
       } catch (err) {
@@ -142,7 +142,7 @@ export function Navbar() {
 
   return (
     <>
-      {/* Mobile Top Nav */}
+
       <nav className="sticky top-0 z-40 w-full border-b border-[#e2e8d5] bg-[#f4f7ec] shadow-sm md:hidden">
         <div className="mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
@@ -281,7 +281,6 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Desktop Sidebar */}
       <aside className="sticky top-0 z-40 hidden h-screen w-64 flex-col overflow-y-auto border-r border-[#e2e8d5] bg-[#f4f7ec] md:flex">
         <div className="flex h-full flex-col px-4 py-6 justify-between">
           <div>
@@ -318,7 +317,7 @@ export function Navbar() {
                   </Link>
                 );
               })}
-              
+
               {isAuthenticated && (
                 <>
                   <div className="my-2 border-t border-gray-100" />
@@ -352,7 +351,6 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Unified Bottom Profile Card Widget */}
           {isAuthenticated && (
             <div className="pt-4 border-t border-[#dce5c7] flex flex-col gap-3 w-full shrink-0">
               <NavLink

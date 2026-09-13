@@ -24,9 +24,9 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
                 .allowedOrigins(
-                        "http://localhost:5173",   // Vite dev server
+                        "http://localhost:5173",
                         "http://localhost:5174",
-                        "http://localhost:3000",   // Alternative dev port
+                        "http://localhost:3000",
                         "http://127.0.0.1:5173",
                         "http://127.0.0.1:5174"
                 )
@@ -36,12 +36,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .maxAge(3600);
     }
 
-    /**
-     * Register a CorsFilter bean so that CORS headers are added BEFORE
-     * Spring Security processes the request. Without this, preflight OPTIONS
-     * requests get blocked by the security filter chain before reaching the
-     * MVC CORS configuration above.
-     */
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();

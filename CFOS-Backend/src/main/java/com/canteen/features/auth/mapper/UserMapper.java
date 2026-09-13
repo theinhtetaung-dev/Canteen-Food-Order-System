@@ -23,7 +23,7 @@ public class UserMapper {
 
     public static void updateEntity(User user, UpdateUserReqModel request) {
         if (user == null || request == null) return;
-        
+
         user.setUserName(request.getUserName());
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
@@ -37,6 +37,7 @@ public class UserMapper {
         UserResModel dto = new UserResModel();
         dto.setUserId(user.getUserId());
         if (user.getRole() != null) {
+            dto.setRoleId(user.getRole().getRoleId());
             dto.setRoleName(user.getRole().getRoleName());
         }
         dto.setUserName(user.getUserName());

@@ -29,11 +29,10 @@ function LandingPage({ slides, menuCount, avgRating }: { slides: HeroSlide[], me
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      {/* Main Content */}
+
       <main className="flex-1 px-8 lg:px-12 py-12 lg:py-20 flex items-center justify-center">
         <div className="grid w-full max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
 
-          {/* Left Column */}
           <div className="animate-fadeIn space-y-8">
             <div className="inline-flex items-center rounded-full bg-brand-light/50 px-4 py-2">
               <span className="text-sm font-medium text-brand">
@@ -72,13 +71,11 @@ function LandingPage({ slides, menuCount, avgRating }: { slides: HeroSlide[], me
             </div>
           </div>
 
-          {/* Right Column */}
           <div className="relative flex min-h-[400px] items-center justify-center lg:min-h-[500px]">
-            {/* Background decorative circles */}
+
             <div className="absolute h-[340px] w-[340px] rounded-full bg-brand-light/30 sm:h-[450px] sm:w-[450px] lg:h-[550px] lg:w-[550px]" />
             <div className="absolute h-[300px] w-[300px] rounded-full bg-white shadow-xl sm:h-[400px] sm:w-[400px] lg:h-[480px] lg:w-[480px]" />
 
-            {/* Main Image */}
             <div className={`relative z-10 transition-all duration-500 ${isAnimating ? "scale-90 opacity-0" : "scale-100 opacity-100"}`}>
               <img
                 src={slide?.image || heroImage}
@@ -87,12 +84,10 @@ function LandingPage({ slides, menuCount, avgRating }: { slides: HeroSlide[], me
               />
             </div>
 
-            {/* Floating Badge */}
             <div className={`absolute bottom-12 right-4 z-20 rounded-2xl bg-white px-5 py-3 shadow-[0_8px_30px_rgb(0,0,0,0.12)] sm:bottom-16 sm:right-12 lg:bottom-20 lg:right-16 transition-all duration-500 ${isAnimating ? "translate-x-4 opacity-0" : "translate-x-0 opacity-100"}`}>
               <p className="text-sm font-bold text-gray-800">{slide?.name || "Fried Rice"}</p>
             </div>
 
-            {/* Slider Dots */}
             <div className="absolute -bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
               {slides.map((_, index) => (
                 <div

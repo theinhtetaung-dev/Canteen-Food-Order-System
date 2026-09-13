@@ -39,11 +39,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String role = jwtUtil.extractRole(token);
                 java.util.List<String> tokenPermissions = jwtUtil.extractPermissions(token);
 
-                java.util.List<String> permissions = tokenPermissions;
+                java.util.List<String> permissions = tokenPermissions != null ? tokenPermissions : java.util.Collections.emptyList();
                 try {
                     if (role != null) {
-                        var foundRole = roleRepository.findByRoleName(role);
+                        var foundRole = roleRepository.findByRoleNameIgnoreCase(role);
                         if (foundRole.isPresent()) {
+                            role = foundRole.get().getRoleName();
                             permissions = rolePermissionRepository.findByRoleIdWithPermissions(foundRole.get().getRoleId())
                                     .stream()
                                     .map(rp -> rp.getPermission().getMenuName() + "_" + rp.getPermission().getActionName())
@@ -51,13 +52,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         }
                     }
                 } catch (Exception dbEx) {
-                    permissions = tokenPermissions;
+                    permissions = tokenPermissions != null ? tokenPermissions : java.util.Collections.emptyList();
                 }
 
                 request.setAttribute("username", username);
                 request.setAttribute("permissions", permissions);
                 request.setAttribute("role", role);
                 request.setAttribute("isAuthenticated", true);
+            } else {
+                request.setAttribute("isAuthenticated", false);
             }
         } catch (Exception e) {
             request.setAttribute("isAuthenticated", false);

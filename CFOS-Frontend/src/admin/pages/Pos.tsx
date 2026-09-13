@@ -9,10 +9,10 @@ import { api } from "../../user/api/axios";
 import { fetchBranches, type Branch } from "../../user/api/branch.api";
 import { formatPrice } from "../../user/lib/utils";
 import type { MenuItem } from "../../user/types/menu";
-
-
+import { useAuth } from "../../user/context/AuthContext";
 
 export default function Pos() {
+  const { can } = useAuth();
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "");
   const [appliedQuery, setAppliedQuery] = useState(searchParams.get("search") || "");
@@ -25,7 +25,6 @@ export default function Pos() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // POS Cart State
   const { lines, addToCart, removeFromCart, deleteFromCart, clearCart, totalItems, totalPrice, updateComment } = useCart();
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -35,8 +34,7 @@ export default function Pos() {
 
   useEffect(() => {
     let userCanteenId: number | null = null;
-    
-    // First get the user's assigned canteen
+
     api.get("/api/users/me")
       .then((res) => {
         userCanteenId = res.data.canteenId;
@@ -45,11 +43,11 @@ export default function Pos() {
       .finally(() => {
         fetchBranches()
           .then((branches) => {
-            // Filter to only their canteen if assigned
-            const availableBranches = userCanteenId 
+
+            const availableBranches = userCanteenId
               ? branches.filter(b => b.branchId === userCanteenId)
               : branches;
-            
+
             setCanteens(availableBranches);
             if (availableBranches.length > 0) {
               setSelectedShop(availableBranches[0].branchId);
@@ -57,7 +55,7 @@ export default function Pos() {
           })
           .catch((err) => console.error("Error loading canteens:", err));
       });
-      
+
     api.get<any[]>("/api/foods")
       .then(({ data }) => {
         const availableItems = data
@@ -134,8 +132,6 @@ export default function Pos() {
     }
   };
 
-
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh] py-12">
@@ -146,14 +142,13 @@ export default function Pos() {
 
   return (
     <div className="flex h-[calc(100vh-3rem)] -m-6 bg-gray-50 font-sans overflow-hidden">
-      {/* Left Main Content */}
+
       <div className="flex-1 flex flex-col overflow-y-auto relative pb-12">
         <div className="bg-white border-b border-gray-200/80 py-4 shadow-sm px-6 sticky top-0 z-10">
           <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
             <h2 className="text-xl font-black text-[#1c2e0a]">Walk-in POS</h2>
-            
-            <div className="flex flex-wrap items-center gap-3">
 
+            <div className="flex flex-wrap items-center gap-3">
 
               {selectedShop && shopCategories.length > 0 && (
                 <div className="relative shrink-0">
@@ -282,7 +277,6 @@ export default function Pos() {
         </main>
       </div>
 
-      {/* Right Side Cart Sidebar */}
       {lines.length > 0 && (
       <div className="w-[380px] bg-white border-l border-gray-200 shadow-[-4px_0_15px_rgba(0,0,0,0.03)] flex flex-col shrink-0 z-20">
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5 bg-white shrink-0">
@@ -294,7 +288,7 @@ export default function Pos() {
             {totalItems} items
           </span>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-gray-50/50">
           <ul className="space-y-4">
             {lines.map((line) => (
@@ -322,7 +316,7 @@ export default function Pos() {
             <span>Total Amount</span>
             <span className="text-[#5b7a42] text-xl">{formatPrice(totalPrice)}</span>
           </div>
-          
+
           <div className="flex gap-3">
             <button
               disabled={lines.length === 0 || isCheckingOut}
@@ -332,7 +326,7 @@ export default function Pos() {
               Cancel
             </button>
             <button
-              disabled={lines.length === 0 || isCheckingOut}
+              disabled={lines.length === 0 || isCheckingOut || !can("Orders & POS", "CREATE")}
               onClick={placeOrder}
               className="flex-1 rounded-xl bg-[#5b7a42] text-white py-3.5 text-sm font-bold shadow-md hover:bg-[#4a6335] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
@@ -350,8 +344,8 @@ export default function Pos() {
       </div>
       )}
 
-      <FoodDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} onAddToCart={(id) => { 
-        addToCart(id); 
+      <FoodDetailModal item={selectedItem} onClose={() => setSelectedItem(null)} onAddToCart={(id) => {
+        addToCart(id);
         setSelectedItem(null);
         setSuccessMessage("Added to cart.");
         setTimeout(() => setSuccessMessage(""), 3000);
@@ -374,7 +368,7 @@ export default function Pos() {
             </div>
             <h3 className="text-2xl font-black text-center text-gray-900 mb-2">Order Confirmed!</h3>
             <p className="text-center text-gray-500 mb-6 font-semibold">Order ID: ORD-{confirmedOrder.orderId}</p>
-            
+
             <div className="bg-gray-50 rounded-xl p-4 mb-6 space-y-3 max-h-60 overflow-y-auto border border-gray-100">
               {confirmedOrder.lines.map((line: any) => (
                 <div key={line.item.id} className="text-sm">
@@ -395,7 +389,7 @@ export default function Pos() {
               </div>
             </div>
 
-            <button 
+            <button
               onClick={() => setConfirmedOrder(null)}
               className="w-full bg-[#5b7a42] text-white py-3.5 rounded-xl font-bold shadow-md hover:bg-[#4a6335] active:scale-[0.98] transition-all"
             >

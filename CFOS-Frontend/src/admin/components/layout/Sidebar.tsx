@@ -22,7 +22,7 @@ import brandLogo from "../../../assets/logo.png";
 
 export function Sidebar() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, can } = useAuth();
   const [userCanteenId, setUserCanteenId] = useState<number | null>(null);
   const [newOrdersCount, setNewOrdersCount] = useState(0);
   const [lang, setLang] = useState<"EN" | "MM">(
@@ -100,51 +100,15 @@ export function Sidebar() {
 
   const [dbName, setDbName] = useState("");
   const [dbRole, setDbRole] = useState("");
-  const [userPermissions, setUserPermissions] = useState<string[]>([]);
-  const [permissionsLoaded, setPermissionsLoaded] = useState(false);
 
   useEffect(() => {
-    async function loadPermissions() {
-      if (!user) return;
-      try {
-        const { api } = await import("@user/api/axios");
-        const allUsers = await fetchAllUsers();
-        const found = allUsers.find(u => u.userName.toLowerCase() === user.rollNumber.toLowerCase());
-        const roleId = found ? found.roleId : (user.role === 'superadmin' ? 1 : 3);
-        
-        const { data } = await api.get(`/api/rbac/roles/${roleId}/permissions`);
-        if (data && data.permissions) {
-          const perms = data.permissions.map((p: any) => `${p.menuName}_${p.actionName}`);
-          setUserPermissions(perms);
-        }
-        setPermissionsLoaded(true);
-      } catch (err) {
-        console.error("Failed to load permissions in sidebar", err);
-      }
+    if (!user) return;
+    setDbName(user.name || user.rollNumber);
+    const r = user.role.toLowerCase();
+    setDbRole(r === 'superadmin' ? 'Super Admin' : (r === 'admin' ? 'Admin' : (r === 'professor' ? 'Professor' : 'Student')));
+    if ((user as any).canteenId) {
+      setUserCanteenId((user as any).canteenId);
     }
-    loadPermissions();
-  }, [user]);
-
-  useEffect(() => {
-    async function loadDbUser() {
-      if (!user) return;
-      try {
-        const allUsers = await fetchAllUsers();
-        const found = allUsers.find(u => u.userName.toLowerCase() === user.rollNumber.toLowerCase());
-        if (found) {
-          setDbName(found.fullName || found.userName);
-          setDbRole(found.roleName.toLowerCase() === 'superadmin' || found.roleName.toLowerCase() === 'admin'
-            ? 'Super Admin' 
-            : (found.roleName.toLowerCase() === 'manager' ? 'Canteen Manager' : found.roleName.toLowerCase() === 'professor' ? 'Professor' : 'Student'));
-          if (found.canteenId) {
-            setUserCanteenId(found.canteenId);
-          }
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    loadDbUser();
   }, [user]);
 
   async function loadPendingOrdersCount(canteenId: number | null) {
@@ -161,7 +125,7 @@ export function Sidebar() {
       const pending = data.filter((o) => {
         const isPending = o.status === "pending";
         const matchesCanteen = canteenId === null || o.canteenId === canteenId;
-        
+
         const stringId = String(o.id);
         const prefixedId = stringId.startsWith("ORD-") ? stringId : `ORD-${stringId}`;
         const isNotWatched = !watchedIds.includes(stringId) && !watchedIds.includes(prefixedId);
@@ -201,17 +165,15 @@ export function Sidebar() {
   }, [userCanteenId]);
 
   const navItems = [
-    { label: translate("dashboard", lang), path: "/", icon: LayoutDashboard, permission: "Dashboard_READ" },
-    { label: translate("walkinPos", lang), path: "/pos", icon: UtensilsCrossed, permission: "Orders & POS_READ" },
-    { label: translate("ordersManagement", lang), path: "/orders", icon: ShoppingBag, permission: "Orders & POS_READ" },
-    { label: translate("orderHistory", lang), path: "/orders-history", icon: History, permission: "Orders & POS_READ" },
-    { label: translate("menuItems", lang), path: "/menu", icon: Utensils, permission: "Food Category & Menu_READ" },
-    { label: translate("categories", lang), path: "/categories", icon: Layers, permission: "Food Category & Menu_READ" },
-    { label: translate("reports", lang), path: "/reports", icon: BarChart3, permission: "Orders & POS_READ" },
+    { label: translate("dashboard", lang), path: "/", icon: LayoutDashboard, menu: "Dashboard", action: "READ" },
+    { label: translate("walkinPos", lang), path: "/pos", icon: UtensilsCrossed, menu: "Orders & POS", action: "READ" },
+    { label: translate("ordersManagement", lang), path: "/orders", icon: ShoppingBag, menu: "Orders & POS", action: "READ" },
+    { label: translate("orderHistory", lang), path: "/orders-history", icon: History, menu: "Orders & POS", action: "READ" },
+    { label: translate("menuItems", lang), path: "/menu", icon: Utensils, menu: "Food Category & Menu", action: "READ" },
+    { label: translate("categories", lang), path: "/categories", icon: Layers, menu: "Food Category & Menu", action: "READ" },
+    { label: translate("reports", lang), path: "/reports", icon: BarChart3, menu: "Dashboard", action: "READ" },
   ].filter(item => {
-    if (user?.role === 'superadmin') return true;
-    if (!permissionsLoaded) return true;
-    return userPermissions.includes(item.permission);
+    return can(item.menu, item.action);
   });
 
   const handleLogout = () => {
@@ -236,7 +198,7 @@ export function Sidebar() {
   return (
     <aside className="w-64 bg-[#f4f7ec] border-r border-[#e2e8d5] flex flex-col justify-between p-6 shrink-0 h-screen sticky top-0 font-sans">
       <div className="space-y-8">
-        {/* Brand Logo & Title */}
+
         <div className="flex items-center gap-3 px-2">
           <div className="p-1 bg-[#e2f0c2] rounded-xl shadow-sm overflow-hidden flex items-center justify-center w-11 h-11">
             <img src={brandLogo} alt="Logo" className="w-full h-full object-cover" />
@@ -251,7 +213,6 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* Navigation Links */}
         <nav className="space-y-1.5">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -283,7 +244,6 @@ export function Sidebar() {
         </nav>
       </div>
 
-      {/* Unified Profile Footer */}
       <div className="pt-4 border-t border-[#dce5c7] flex flex-col gap-3 w-full shrink-0">
         <NavLink
           to="/profile"

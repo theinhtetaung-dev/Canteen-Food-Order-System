@@ -27,4 +27,3 @@ export interface HeroSlide {
   image: string;
   description?: string;
 }
-

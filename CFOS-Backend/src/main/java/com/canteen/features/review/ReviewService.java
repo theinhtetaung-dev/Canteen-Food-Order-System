@@ -20,7 +20,6 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
 
-    // GET ALL
     public List<ReviewResponse> getAll() {
         return reviewRepository.findAllActive()
                 .stream()
@@ -28,7 +27,6 @@ public class ReviewService {
                 .toList();
     }
 
-    // CREATE
     @Transactional
     public ReviewResponse create(ReviewRequest request, String username) {
         User user = userRepository.findByUserName(username)
@@ -44,7 +42,6 @@ public class ReviewService {
         return toResponse(review);
     }
 
-    // UPDATE
     @Transactional
     public ReviewResponse update(Integer id, ReviewRequest request, String username) {
         Review review = reviewRepository.findById(id)
@@ -53,7 +50,6 @@ public class ReviewService {
         User user = userRepository.findByUserName(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
 
-        // Check if user is the author
         if (!review.getUser().getUserId().equals(user.getUserId())) {
             throw new IllegalArgumentException("You can only edit your own reviews");
         }
@@ -65,7 +61,6 @@ public class ReviewService {
         return toResponse(review);
     }
 
-    // DELETE (SOFT DELETE)
     @Transactional
     public void delete(Integer id, String username) {
         Review review = reviewRepository.findById(id)
@@ -74,9 +69,8 @@ public class ReviewService {
         User user = userRepository.findByUserName(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
 
-        // Check if user is the author or admin (we can allow admin to delete, or just check role)
         boolean isOwner = review.getUser().getUserId().equals(user.getUserId());
-        boolean isAdmin = user.getRole() != null && 
+        boolean isAdmin = user.getRole() != null &&
                 ("Admin".equalsIgnoreCase(user.getRole().getRoleName()) || "SuperAdmin".equalsIgnoreCase(user.getRole().getRoleName()));
 
         if (!isOwner && !isAdmin) {

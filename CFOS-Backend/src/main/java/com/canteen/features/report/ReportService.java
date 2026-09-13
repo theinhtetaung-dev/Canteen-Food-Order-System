@@ -30,7 +30,7 @@ public class ReportService {
         try {
             return LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("dd-M-yyyy"));
         } catch (Exception e) {
-            return LocalDate.parse(dateStr); // fallback to yyyy-MM-dd
+            return LocalDate.parse(dateStr);
         }
     }
 
@@ -38,7 +38,6 @@ public class ReportService {
     public ReportResponseModel getReport(String type, String startDateStr, String endDateStr) {
         String reportType = (type != null) ? type.toLowerCase() : "daily";
 
-        // Determine default date ranges based on type
         LocalDate endDate = (endDateStr != null && !endDateStr.isEmpty())
                 ? parseDateStr(endDateStr)
                 : LocalDate.now();
@@ -48,23 +47,21 @@ public class ReportService {
             startDate = parseDateStr(startDateStr);
         } else {
             if ("yearly".equals(reportType)) {
-                startDate = endDate.minusYears(4); // Show 5 years including current
+                startDate = endDate.minusYears(4);
             } else if ("monthly".equals(reportType)) {
-                startDate = endDate.minusMonths(11); // Show 12 months including current
+                startDate = endDate.minusMonths(11);
             } else {
-                startDate = endDate.minusDays(29); // Show 30 days including current
+                startDate = endDate.minusDays(29);
             }
         }
 
         LocalDateTime start = startDate.atStartOfDay();
         LocalDateTime end = endDate.atTime(LocalTime.MAX);
 
-        // Fetch completed orders
         List<Order> orders = orderRepository.findByOrderStatusAndCreatedAtBetween(Status.COMPLETE, start, end);
 
         ReportResponseModel report = new ReportResponseModel();
 
-        // Compute Totals
         BigDecimal totalRevenue = BigDecimal.ZERO;
         long totalItemsSold = 0;
         for (Order order : orders) {
@@ -77,7 +74,6 @@ public class ReportService {
         report.setTotalOrders((long) orders.size());
         report.setTotalItemsSold(totalItemsSold);
 
-        // Compute Food Sales Breakdown
         Map<String, FoodSalesBreakdown> foodSalesMap = new HashMap<>();
         for (Order order : orders) {
             for (OrderItem item : order.getOrderItems()) {
@@ -89,13 +85,11 @@ public class ReportService {
             }
         }
         List<FoodSalesBreakdown> foodSalesList = new ArrayList<>(foodSalesMap.values());
-        foodSalesList.sort((a, b) -> b.getQuantitySold().compareTo(a.getQuantitySold())); // Sort descending
+        foodSalesList.sort((a, b) -> b.getQuantitySold().compareTo(a.getQuantitySold()));
         report.setFoodSales(foodSalesList);
 
-        // Compute Period Breakdown
         Map<String, ReportPeriodBreakdown> periodMap = new LinkedHashMap<>();
 
-        // Pre-populate period map to avoid gaps
         if ("yearly".equals(reportType)) {
             LocalDate current = startDate.withDayOfYear(1);
             while (!current.isAfter(endDate)) {
@@ -110,7 +104,7 @@ public class ReportService {
                 periodMap.put(label, new ReportPeriodBreakdown(label, 0L, BigDecimal.ZERO));
                 current = current.plusMonths(1);
             }
-        } else { // daily
+        } else {
             LocalDate current = startDate;
             while (!current.isAfter(endDate)) {
                 String label = current.toString();
@@ -119,7 +113,6 @@ public class ReportService {
             }
         }
 
-        // Group order data
         for (Order order : orders) {
             String label;
             if ("yearly".equals(reportType)) {

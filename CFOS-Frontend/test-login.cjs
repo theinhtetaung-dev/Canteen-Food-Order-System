@@ -1,4 +1,3 @@
-
 const http = require('http');
 const req = http.request({
   hostname: 'localhost',
@@ -31,4 +30,3 @@ const req = http.request({
 });
 req.write(JSON.stringify({username: 'admin', password: 'password'}));
 req.end();
-

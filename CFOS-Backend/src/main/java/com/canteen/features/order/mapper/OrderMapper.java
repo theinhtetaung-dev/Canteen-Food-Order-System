@@ -11,10 +11,10 @@ public class OrderMapper {
 
     public static OrderResponseModel toDto(Order order) {
         if (order == null) return null;
-        
+
         OrderResponseModel dto = new OrderResponseModel();
         dto.setOrderId(order.getOrderId());
-        
+
         if (order.getUser() != null) {
             dto.setUserName(order.getUser().getUserName());
             if (order.getUser().getRole() != null) {
@@ -22,7 +22,7 @@ public class OrderMapper {
             }
         }
         dto.setTotalAmount(order.getTotalAmount());
-        
+
         if (order.getOrderStatus() != null) {
             dto.setOrderStatus(order.getOrderStatus());
         }
@@ -30,7 +30,7 @@ public class OrderMapper {
             dto.setOrderItems(order.getOrderItems().stream()
                 .map(OrderMapper::toOrderItemDto)
                 .collect(Collectors.toList()));
-            
+
             if (!order.getOrderItems().isEmpty()) {
                 com.canteen.model.OrderItem firstItem = order.getOrderItems().get(0);
                 if (firstItem.getFood() != null && firstItem.getFood().getBranch() != null) {
@@ -39,7 +39,7 @@ public class OrderMapper {
                 }
             }
         }
-        
+
         dto.setDeleteFlag(order.getDeleteFlag());
         dto.setCreatedAt(order.getCreatedAt());
         dto.setUpdatedAt(order.getUpdatedAt());
@@ -51,11 +51,11 @@ public class OrderMapper {
 
         OrderItemResponse dto = new OrderItemResponse();
         dto.setOrderItemId(item.getOrderItemId());
-        
+
         if (item.getFood() != null) {
             dto.setFoodName(item.getFood().getFoodName());
         }
-        
+
         dto.setQuantity(item.getQuantity());
         dto.setSnapPrice(item.getSnapPrice());
         dto.setSubTotal(item.getSubTotal());

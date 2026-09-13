@@ -39,7 +39,7 @@ const ReviewPage: React.FC = () => {
   const chartData = useMemo(() => {
     const dataByMonth: Record<string, { pos: number; neg: number }> = {};
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
+
     months.forEach(m => dataByMonth[m] = { pos: 0, neg: 0 });
 
     let maxVal = 0;
@@ -56,9 +56,9 @@ const ReviewPage: React.FC = () => {
 
     const scale = maxVal > 0 ? 200 / maxVal : 1;
 
-    return months.map(m => ({ 
-      month: m, 
-      pos: dataByMonth[m].pos * scale, 
+    return months.map(m => ({
+      month: m,
+      pos: dataByMonth[m].pos * scale,
       neg: dataByMonth[m].neg * scale,
       rawPos: dataByMonth[m].pos,
       rawNeg: dataByMonth[m].neg
@@ -74,11 +74,9 @@ const ReviewPage: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 max-w-7xl mx-auto font-sans animate-fade-in">
-      
-      {/* TOP ROW: RATINGS & STATISTICS */}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* RATINGS BOX */}
+
         <section className="bg-[#f4f9f1] p-6 rounded-3xl border border-gray-100 shadow-sm">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-bold text-gray-800">Ratings</h2>
@@ -88,14 +86,13 @@ const ReviewPage: React.FC = () => {
           </div>
 
           <div className="flex flex-col md:flex-row gap-8">
-            {/* Big Score Card */}
+
             <div className="bg-[#d9e8cc] rounded-3xl p-6 flex flex-col items-center justify-center min-w-[160px] text-center">
               <span className="text-5xl font-bold text-gray-900 mb-2">{averageRating}</span>
               <div className="flex gap-0.5 text-amber-500 text-xl mb-2">★★★★★</div>
               <span className="text-gray-500 text-sm font-medium">{totalReviews} Reviews</span>
             </div>
 
-            {/* Category Bars */}
             <div className="flex-1 flex flex-col gap-4 justify-center">
               {categories.map((cat) => (
                 <div key={cat.label} className="w-full">
@@ -112,7 +109,6 @@ const ReviewPage: React.FC = () => {
           </div>
         </section>
 
-        {/* REVIEW STATISTICS (CHART) */}
         <section className="bg-[#f4f9f1] p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-gray-800">Review Statistics</h2>
@@ -129,13 +125,12 @@ const ReviewPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Simple CSS Bar Chart */}
           <div className="flex-1 flex items-end justify-between px-2 pt-10 pb-2 relative border-l border-b border-gray-200">
-            {/* Horizontal Grid Lines Background */}
+
             <div className="absolute inset-0 flex flex-col justify-between py-2 pointer-events-none opacity-20 px-2">
                {[200, 150, 100, 50, 0].map(val => <div key={val} className="border-t border-black w-full relative"><span className="absolute -left-7 -top-2 text-[10px] text-black font-bold">{val > 0 ? '' : '0'}</span></div>)}
             </div>
-            
+
             {chartData.map((data) => (
               <div key={data.month} className="flex flex-col items-center gap-1 w-full z-10" title={`Positive: ${data.rawPos}, Negative: ${data.rawNeg}`}>
                 <div className="flex items-end gap-1 h-32">
@@ -149,10 +144,8 @@ const ReviewPage: React.FC = () => {
         </section>
       </div>
 
-      {/* BOTTOM SECTION: FILTER & REVIEWS LIST */}
       <section className="bg-[#e2e8df] p-6 rounded-3xl border border-gray-100 shadow-sm">
-        
-        {/* Filters Header */}
+
         <div className="flex flex-wrap items-center gap-4 mb-8">
           <button className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl text-sm font-bold text-gray-700 shadow-sm border border-gray-100">
             <span className="text-amber-500">★</span> Rating <span className="text-xs">▼</span>
@@ -170,11 +163,10 @@ const ReviewPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Review Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {currentReviews.map((r) => (
             <div key={r.reviewId} className="bg-white rounded-[2rem] p-4 shadow-md border border-gray-50 flex flex-col gap-3 relative overflow-hidden">
-               {/* Content Head */}
+
                <div className="flex gap-3">
                  <div className="w-16 h-16 rounded-2xl bg-[#f4f9f1] flex items-center justify-center text-2xl border border-gray-100 shadow-sm">
                    💬
@@ -184,7 +176,7 @@ const ReviewPage: React.FC = () => {
                     <span className="text-[10px] text-gray-400 font-bold flex items-center gap-1">★ {r.rating} <span className="font-normal">Rating</span></span>
                  </div>
                </div>
-               
+
                <div className="flex justify-between items-center px-1">
                   <span className="text-sm font-bold text-gray-900">{r.userFullName || r.userName || 'Anonymous'}</span>
                   <span className="text-[10px] text-gray-400 font-semibold">
@@ -195,8 +187,7 @@ const ReviewPage: React.FC = () => {
                <p className="text-[11px] text-gray-500 leading-tight px-1 pb-2 line-clamp-3">
                  {r.reviewText}
                </p>
-               
-               {/* Card overlap effect bottom border */}
+
                <div className="absolute bottom-0 left-0 w-full h-1 bg-[#9ccc65]/30"></div>
             </div>
           ))}
@@ -207,7 +198,6 @@ const ReviewPage: React.FC = () => {
           )}
         </div>
 
-        {/* Pagination Footer */}
         {reviews.length > 0 && totalPages > 1 && (
           <div className="flex items-center justify-between mt-4 text-xs px-2">
             <span className="text-gray-500 font-medium">
@@ -293,4 +283,3 @@ const ReviewPage: React.FC = () => {
 };
 
 export default ReviewPage;
-

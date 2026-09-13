@@ -32,7 +32,7 @@ export function CheckoutModal({ open, onClose }: CheckoutModalProps) {
     setLoading(true);
     setError(null);
     try {
-      // Group cart items by canteen branch
+
       const groups: { [key: number]: typeof lines } = {};
       for (const line of lines) {
         const canteenId = line.item.canteen || 1;
